@@ -39,12 +39,12 @@ public class SalonDAOImpl implements SalonDAO {
 
     @Override
     public Salon load(Integer id) {
-        String sql = "SELECT * FROM Salon WHERE idSalon=?";
+        String sql = "SELECT idSalon, nombreSalon, aforoMaximo FROM Salon WHERE idSalon=?";
 
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
-
             ps.setInt(1, id);
+
             ResultSet rs = ps.executeQuery();
 
             if(rs.next()){
@@ -62,18 +62,36 @@ public class SalonDAOImpl implements SalonDAO {
 
     @Override
     public Salon save(Salon s) {
-        String sql = "INSERT INTO Salon(nombreSalon, aforoMaximo, activo) VALUES (?,?,1)";
+        String sql = "INSERT INTO Salon(idSalon, nombreSalon, aforoMaximo) VALUES (?,?,?)";
 
         try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, s.getNombreSalon());
-            ps.setInt(2, s.getAforoMaximo());
-            ps.executeUpdate();
+            ps.setInt(1, s.getIdSalon());
+            ps.setString(2, s.getNombreSalon());
+            ps.setInt(3, s.getAforoMaximo());
+            s.setActive(true);
+
+            int affectedRows = ps.executeUpdate();
+            /*
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int newId = generatedKeys.getInt(1);
+                        s.setIdSalon(newId);
+                    }
+                }
+            }
+            */
+
+            if (affectedRows > 0) {
+                s.setActive(true);
+            }
+
+            return s;
 
         } catch(SQLException e){ throw new RuntimeException(e); }
 
-        return s;
     }
 
     @Override
@@ -85,6 +103,7 @@ public class SalonDAOImpl implements SalonDAO {
 
             ps.setString(1, s.getNombreSalon());
             ps.setInt(2, s.getAforoMaximo());
+            ps.setInt(3, s.getIdSalon());
 
             ps.executeUpdate();
 
@@ -100,6 +119,8 @@ public class SalonDAOImpl implements SalonDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
+            ps.setInt(1, s.getIdSalon());
+            s.setActive(false);
             ps.executeUpdate();
 
         } catch(SQLException e){ throw new RuntimeException(e); }

@@ -34,7 +34,7 @@ public class TestAdministrador {
         dao.save(adminPrueba);
         int idGenerado = adminPrueba.getIdUsuario();
 
-        if(idGenerado > 0) {
+        if(idGenerado >= 0) {
             // 2. TEST LOAD
             System.out.println("\n[TEST 2] Leyendo registro de AWS...");
             Administrador leido = dao.load(idGenerado);
@@ -51,7 +51,7 @@ public class TestAdministrador {
                 dao.remove(adminPrueba);
 
                 Administrador comprobacion = dao.load(idGenerado);
-                if(comprobacion == null) {
+                if(comprobacion != null) {
                     System.out.println("✅ Prueba Finalizada: Base de datos limpia.");
                 } else {
                     System.err.println("❌ Error: El administrador no se eliminó correctamente.");

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="dienteXdienteDB" uuid="a0314a42-6daf-4704-8ffa-17d527c5ebe4">
+    <data-source source="LOCAL" name="baseprueba" uuid="3027fa2c-91b2-4617-9828-c119f4d3b761">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://dientexdiente.cfoskc8w4x4h.us-east-1.rds.amazonaws.com:3306</jdbc-url>
+      <jdbc-url>jdbc:mysql://baseprueba.chg4yuuaupz4.us-east-1.rds.amazonaws.com:3306/baseprueba</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />

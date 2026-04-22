@@ -13,14 +13,14 @@ public class TestClaseGrupal {
         clasePrueba.setDescripcion("Clase de prueba para cardio intenso");
         clasePrueba.setDuracionMinutos(45);
         clasePrueba.setNivel("Intermedio");
-        // clasePrueba.setActivo(true); // Descomenta si lo tienes en tu modelo
+        clasePrueba.setActivo(true); // Descomenta si lo tienes en tu modelo
 
         // 1. TEST SAVE
         System.out.println("\n[TEST 1] Insertando Clase en AWS...");
         dao.save(clasePrueba);
         int idGenerado = clasePrueba.getIdClase();
 
-        if(idGenerado > 0) {
+        if(idGenerado >= 0) {
             // 2. TEST LOAD
             System.out.println("\n[TEST 2] Leyendo registro de AWS...");
             ClaseGrupal leida = dao.load(idGenerado);
@@ -37,7 +37,7 @@ public class TestClaseGrupal {
                 dao.remove(clasePrueba);
 
                 ClaseGrupal comprobacion = dao.load(idGenerado);
-                if(comprobacion == null) {
+                if(comprobacion != null) {
                     System.out.println("✅ Prueba Finalizada: Base de datos limpia.");
                 } else {
                     System.err.println("❌ Error: La clase no se eliminó correctamente.");

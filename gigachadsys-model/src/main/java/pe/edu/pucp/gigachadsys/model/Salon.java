@@ -2,7 +2,7 @@ package pe.edu.pucp.gigachadsys.model;
 
 public class Salon {
     // Atributos
-    private String nobreSalon;
+    private String nombreSalon;
     private int aforoMaximo;
     private int idSalon;
     private boolean estado;
@@ -16,24 +16,26 @@ public class Salon {
     }
 
     //Constructores
-    public Salon() {
-    }
+    public Salon() {}
 
-    public Salon(String nobreSalon, int aforoMaximo) {
-        this.nobreSalon = nobreSalon;
+    public Salon(String nombreSalon, int aforoMaximo) {
+        this.nombreSalon = nombreSalon;
         this.aforoMaximo = aforoMaximo;
     }
 
     public Salon(int idSalon, String nombreSalon, int aforoMaximo) {
+        this.idSalon = idSalon;
+        this.nombreSalon = nombreSalon;
+        this.aforoMaximo = aforoMaximo;
     }
 
     //Setters y Getters
     public String getNombreSalon() {
-        return nobreSalon;
+        return nombreSalon;
     }
 
     public void setNombreSalon(String nobreSalon) {
-        this.nobreSalon = nobreSalon;
+        this.nombreSalon = nobreSalon;
     }
 
     public int getAforoMaximo() {
@@ -47,14 +49,13 @@ public class Salon {
     public void setActive(boolean estado) {
         this.estado = estado;
     }
-
+    public boolean isActive() {
+        return estado;
+    }
 
     //Metodos
 	public boolean verificarDisponibilidadAforo(int cantidadActual) {
         return true;
     }
 
-    public void setActivo(boolean activo) {
-
-    }
 }

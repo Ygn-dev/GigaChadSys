@@ -7,10 +7,12 @@ public class ClaseGrupal {
     private String descripcion;
     private  int duracionMinutos;
     private String nivelClase;
+	private Boolean activo;
 
 	//Constructor vacío
     public ClaseGrupal() {
-    }
+
+	}
 
     //Constructor con parámetros
     public ClaseGrupal(int idClase, String nombreDisciplina, String descripcion, int duracionMinutos, String nivelClase) {
@@ -65,6 +67,9 @@ public class ClaseGrupal {
 	public void setActive(boolean activo) {
 	}
 
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
+	}
 
     //Metodos
 }

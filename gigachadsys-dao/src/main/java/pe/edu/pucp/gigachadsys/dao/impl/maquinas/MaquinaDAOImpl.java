@@ -69,15 +69,18 @@ public class MaquinaDAOImpl implements MaquinaDAO {
 
     @Override
     public Maquina save(Maquina m) {
-        String sql = "INSERT INTO Maquina(nombre, marca, estado, fechaUltimoMantenimiento, activo) VALUES (?,?,?,?,1)";
+        String sql = "INSERT INTO Maquina(idMaquina, nombre, marca, estado, fechaUltimoMantenimiento, activo) VALUES (?,?,?,?,?,1)";
 
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, m.getNombre());
-            ps.setString(2, m.getMarca());
-            ps.setString(3, m.getEstado());
-            ps.setDate(4, new java.sql.Date(m.getFechaUltimoMantenimiento().getTime()));
+            ps.setInt(1, m.getIdMaquina());
+            ps.setString(2, m.getNombre());
+            ps.setString(3, m.getMarca());
+            ps.setString(4, m.getEstado());
+            ps.setDate(5, new java.sql.Date(m.getFechaUltimoMantenimiento().getTime()));
+
+            m.setActive(true);
 
             ps.executeUpdate();
 

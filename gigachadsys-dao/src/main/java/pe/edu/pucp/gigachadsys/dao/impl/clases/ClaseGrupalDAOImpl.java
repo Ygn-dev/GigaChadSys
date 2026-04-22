@@ -63,15 +63,16 @@ public class ClaseGrupalDAOImpl implements ClaseGrupalDAO {
 
     @Override
     public ClaseGrupal save(ClaseGrupal c) {
-        String sql = "INSERT INTO ClaseGrupal(nombreDisciplina, descripcion, duracionMinutos, nivel, activo) VALUES (?,?,?,?,1)";
+        String sql = "INSERT INTO ClaseGrupal(idClase,nombreDisciplina, descripcion, duracionMinutos, nivel) VALUES (?,?,?,?,?)";
 
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, c.getNombreDisciplina());
-            ps.setString(2, c.getDescripcion());
-            ps.setInt(3, c.getDuracionMinutos());
-            ps.setString(4, c.getNivel());
+            ps.setInt(1, c.getIdClase());
+            ps.setString(2, c.getNombreDisciplina());
+            ps.setString(3, c.getDescripcion());
+            ps.setInt(4, c.getDuracionMinutos());
+            ps.setString(5, c.getNivel());
 
             ps.executeUpdate();
 

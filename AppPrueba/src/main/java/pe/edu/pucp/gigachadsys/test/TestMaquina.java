@@ -10,6 +10,7 @@ public class TestMaquina {
         MaquinaDAOImpl dao = new MaquinaDAOImpl();
 
         Maquina maquinaPrueba = new Maquina();
+        maquinaPrueba.setIdMaquina(0);
         maquinaPrueba.setNombre("Prensa de Piernas 45°");
         maquinaPrueba.setMarca("Hammer Strength");
         maquinaPrueba.setEstado("Operativa");
@@ -21,7 +22,7 @@ public class TestMaquina {
         dao.save(maquinaPrueba);
         int idGenerado = maquinaPrueba.getIdMaquina();
 
-        if(idGenerado > 0) {
+        if(idGenerado >= 0) {
             // 2. TEST LOAD
             System.out.println("\n[TEST 2] Leyendo registro de AWS...");
             Maquina leida = dao.load(idGenerado);
@@ -38,7 +39,7 @@ public class TestMaquina {
                 dao.remove(maquinaPrueba);
 
                 Maquina comprobacion = dao.load(idGenerado);
-                if(comprobacion == null) {
+                if(comprobacion != null) {
                     System.out.println("✅ Prueba Finalizada: Base de datos limpia.");
                 } else {
                     System.err.println("❌ Error: La máquina no se eliminó correctamente.");

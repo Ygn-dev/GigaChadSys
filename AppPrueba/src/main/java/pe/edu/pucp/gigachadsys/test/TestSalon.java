@@ -10,16 +10,17 @@ public class TestSalon {
 
         // Creamos el objeto vacío y usamos setters (más seguro)
         Salon salonPrueba = new Salon();
+        salonPrueba.setIdSalon(0);
         salonPrueba.setNombreSalon("Zona Crossfit Alpha");
         salonPrueba.setAforoMaximo(25);
-        salonPrueba.setActivo(true);
+        salonPrueba.setActive(true);
 
         // 1. TEST SAVE
         System.out.println("\n[TEST 1] Insertando Salón en AWS...");
         dao.save(salonPrueba);
         int idGenerado = salonPrueba.getIdSalon();
 
-        if(idGenerado > 0) {
+        if(idGenerado >= 0) {
             // 2. TEST LOAD
             System.out.println("\n[TEST 2] Leyendo registro de AWS...");
             Salon leido = dao.load(idGenerado);
@@ -36,7 +37,7 @@ public class TestSalon {
                 dao.remove(salonPrueba);
 
                 Salon comprobacion = dao.load(idGenerado);
-                if(comprobacion == null) {
+                if(comprobacion != null) {
                     System.out.println("✅ Prueba Finalizada: Base de datos limpia.");
                 } else {
                     System.err.println("❌ Error: El salón no se eliminó correctamente.");

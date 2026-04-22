@@ -50,7 +50,7 @@ public class AdministradorDAOImpl implements AdministradorDAO {
     public Administrador load(Integer id) {
         //SQL QUERY
         String sql = "SELECT idUsuario, nombres, apellidoPaterno, apellidoMaterno,edad,DNI,email,telefono,contrasenia" +
-                ",rol,sede,sueldo,cargo from Administrador where id = ?";
+                ",rol,sede,sueldo,cargo from Administrador where idUsuario = ?";
 
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -105,6 +105,18 @@ public class AdministradorDAOImpl implements AdministradorDAO {
             pstmt.setString(11, administrador.getSede());
             pstmt.setDouble(12, administrador.getSueldo());
             pstmt.setString(13, administrador.getCargo());
+
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int newId = generatedKeys.getInt(1);
+                        administrador.setIdUsuario(newId);
+                    }
+                }
+            }
+
 
             return administrador;
 
