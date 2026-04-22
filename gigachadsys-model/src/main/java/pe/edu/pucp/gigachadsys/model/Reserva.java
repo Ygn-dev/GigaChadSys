@@ -1,3 +1,5 @@
+package pe.edu.pucp.gigachadsys.model;
+
 import java.time.LocalDateTime;
 
 public class Reserva {

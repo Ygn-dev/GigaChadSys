@@ -1,3 +1,5 @@
+package pe.edu.pucp.gigachadsys.model;
+
 public  abstract class Usuario implements  IPrintable{
 	//Atributos
     private int idUsuario;

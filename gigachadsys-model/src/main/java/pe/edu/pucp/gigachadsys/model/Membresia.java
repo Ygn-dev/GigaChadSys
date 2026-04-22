@@ -1,3 +1,5 @@
+package pe.edu.pucp.gigachadsys.model;
+
 public  abstract class Membresia {
     //Atributos
     private int idMembresia;

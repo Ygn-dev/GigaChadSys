@@ -1,3 +1,5 @@
+package pe.edu.pucp.gigachadsys.model;
+
 public class MembresiaBlack extends Membresia{
     //Atributos
     private int cantidadInvitadosPorMes;
