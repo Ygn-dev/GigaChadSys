@@ -1,3 +1,5 @@
+package pe.edu.pucp.gigachadsys.inter.clases;
+
 <<<<<<<< Updated upstream:gigachadsys-dao/src/main/java/pe/edu/pucp/gigachadsys/SesionClaseDAO.java
 package pe.edu.pucp.gigachadsys;
 ========
