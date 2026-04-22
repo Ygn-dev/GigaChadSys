@@ -1,7 +1,6 @@
 package pe.edu.pucp.gigachadsys.test;
 
 import pe.edu.pucp.gigachadsys.dao.impl.usuarios.AdministradorDAOImpl;
-import pe.edu.pucp.gigachadsys.model.Usuario;
 import pe.edu.pucp.gigachadsys.model.Administrador;
 
 public class TestAdministrador {
@@ -12,9 +11,20 @@ public class TestAdministrador {
         AdministradorDAOImpl dao = new AdministradorDAOImpl();
 
         // 3. Creamos un usuario con perfil de Administrador
-        Usuario adminPrueba = new Usuario(
-                0, "Chris", "Bumstead", "Cbum", 29, 87654321, "cbum@gigachad.com", 999111222, "olympia2024", "ADMINISTRADOR"
-        ) {
+        Administrador adminPrueba = new Administrador(
+                0,
+                "Chris",
+                "Bumstead",
+                "Cbum",
+                29,
+                87654321,
+                "cbum@gigachad.com",
+                999111222,
+                "olympia2024",
+                "ADMINISTRADOR",
+                "Lima",     // sede
+                5000.0      // sueldo
+        ){
             @Override
             public void mostrarDatos() { System.out.println("Admin: " + getNombres()); }
         };
@@ -27,7 +37,7 @@ public class TestAdministrador {
         if(idGenerado > 0) {
             // 2. TEST LOAD
             System.out.println("\n[TEST 2] Leyendo registro de AWS...");
-            Usuario leido = dao.load(idGenerado);
+            Administrador leido = dao.load(idGenerado);
             if(leido != null) {
                 System.out.println("Encontrado: " + leido.getNombres() + " - " + leido.getEmail());
 
@@ -38,9 +48,9 @@ public class TestAdministrador {
 
                 // 4. TEST REMOVE
                 System.out.println("\n[TEST 4] Eliminando registro de prueba (Limpiando BD)...");
-                dao.remove(idGenerado);
+                dao.remove(adminPrueba);
 
-                Usuario comprobacion = dao.load(idGenerado);
+                Administrador comprobacion = dao.load(idGenerado);
                 if(comprobacion == null) {
                     System.out.println("✅ Prueba Finalizada: Base de datos limpia.");
                 } else {

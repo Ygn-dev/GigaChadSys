@@ -112,4 +112,4 @@ public class ClaseGrupalDAOImpl implements ClaseGrupalDAO {
 
         } catch(SQLException e){ throw new RuntimeException(e); }
     }
-}}
+}
