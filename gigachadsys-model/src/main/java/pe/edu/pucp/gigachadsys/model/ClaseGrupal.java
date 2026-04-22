@@ -61,7 +61,14 @@ public class ClaseGrupal {
 	public void setNivelClase(String nivelClase) {
 		this.nivelClase = nivelClase;
 	}
-	
+
+	public void setActive(boolean activo) {
+	}
+
+    public String getNivel() {
+        return null;
+    }
+
 
 	//Metodos
 }

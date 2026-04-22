@@ -1,7 +1,6 @@
-package pe.edu.pucp.gigachadsys.dao.impl.clases;
 
-import pe.edu.pucp.gigachadsys.dao.MaquinaDAO;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
+import pe.edu.pucp.gigachadsys.inter.maquinas.MaquinaDAO;
 import pe.edu.pucp.gigachadsys.model.Maquina;
 
 import java.sql.*;

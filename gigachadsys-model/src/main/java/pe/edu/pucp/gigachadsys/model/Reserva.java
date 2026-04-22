@@ -1,5 +1,6 @@
 package pe.edu.pucp.gigachadsys.model;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class Reserva {
@@ -10,7 +11,7 @@ public class Reserva {
     private SesionClase sesionClase;
 
     //Constructores
-    public Reserva() {
+    public Reserva(int idReserva, Timestamp fechaHoraReserva, boolean asistio, int idSesion, int idUsuario) {
     }
 
     public Reserva(int idReserva, LocalDateTime fechaHoraReserva, boolean asistio, SesionClase sesionClase) {
@@ -29,7 +30,7 @@ public class Reserva {
         this.idReserva = idReserva;
     }
 
-    public LocalDateTime getFechaHoraReserva() {
+    public Timestamp getFechaHoraReserva() {
         return fechaHoraReserva;
     }
 

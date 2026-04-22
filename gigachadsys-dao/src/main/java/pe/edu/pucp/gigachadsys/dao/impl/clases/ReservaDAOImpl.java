@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.dao.impl.clases;
 
-import pe.edu.pucp.gigachadsys.dao.ReservaDAO;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
+import pe.edu.pucp.gigachadsys.inter.clases.ReservaDAO;
 import pe.edu.pucp.gigachadsys.model.Reserva;
 
 import java.sql.*;
@@ -69,8 +69,7 @@ public class ReservaDAOImpl implements ReservaDAO {
 
             ps.setTimestamp(1, r.getFechaHoraReserva());
             ps.setBoolean(2, r.isAsistio());
-            ps.setInt(3, r.getIdSesion());
-            ps.setInt(4, r.getIdUsuario());
+            ps.setInt(3, r.getIdReserva());
 
             ps.executeUpdate();
 
@@ -88,9 +87,7 @@ public class ReservaDAOImpl implements ReservaDAO {
 
             ps.setTimestamp(1, r.getFechaHoraReserva());
             ps.setBoolean(2, r.isAsistio());
-            ps.setInt(3, r.getIdSesion());
-            ps.setInt(4, r.getIdUsuario());
-            ps.setInt(5, r.getIdReserva());
+            ps.setInt(3, r.getIdReserva());
 
             ps.executeUpdate();
 

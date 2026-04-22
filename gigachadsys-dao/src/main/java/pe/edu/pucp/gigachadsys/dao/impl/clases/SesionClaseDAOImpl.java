@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.dao.impl.clases;
 
-import pe.edu.pucp.gigachadsys.dao.SesionClaseDAO;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
+import pe.edu.pucp.gigachadsys.inter.clases.SesionClaseDAO;
 import pe.edu.pucp.gigachadsys.model.SesionClase;
 
 import java.sql.*;
@@ -77,9 +77,7 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
             ps.setTimestamp(2, s.getHoraInicio());
             ps.setTimestamp(3, s.getHoraFin());
             ps.setInt(4, s.getCuposDisponibles());
-            ps.setInt(5, s.getIdSalon());
-            ps.setInt(6, s.getIdEntrenador());
-            ps.setInt(7, s.getIdClase());
+            ps.setInt(5, s.getIdSesion());
 
             ps.executeUpdate();
 
@@ -99,10 +97,7 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
             ps.setTimestamp(2, s.getHoraInicio());
             ps.setTimestamp(3, s.getHoraFin());
             ps.setInt(4, s.getCuposDisponibles());
-            ps.setInt(5, s.getIdSalon());
-            ps.setInt(6, s.getIdEntrenador());
-            ps.setInt(7, s.getIdClase());
-            ps.setInt(8, s.getIdSesion());
+            ps.setInt(5, s.getIdSesion());
 
             ps.executeUpdate();
 

@@ -96,9 +96,7 @@ public class PagoDAOImpl implements PagoDAO {
             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setDate(1, new java.sql.Date(p.getFechaPago().getTime()));
-            ps.setDouble(2, p.getMontoTotal());
             ps.setString(3, p.getTipo());
-            ps.setInt(4, p.getIdMetodoPago());
             ps.setInt(5, p.getIdPago());
 
             ps.executeUpdate();

@@ -82,21 +82,11 @@ public class SuscripcionDAOImpl implements SuscripcionDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, s.getEstadoMembresia());
             ps.setDate(2, new java.sql.Date(s.getFechaIngreso().getTime()));
             ps.setDate(3, new java.sql.Date(s.getFechaFinMembresia().getTime()));
-            ps.setInt(4, s.getIdPago());
-            ps.setInt(5, s.getIdUsuario());
 
-            if(s.getMembresiaBasicId() != null)
-                ps.setInt(6, s.getMembresiaBasicId());
-            else
-                ps.setNull(6, Types.INTEGER);
 
-            if(s.getMembresiaBlackId() != null)
-                ps.setInt(7, s.getMembresiaBlackId());
-            else
-                ps.setNull(7, Types.INTEGER);
+            ps.setNull(7, Types.INTEGER);
 
             ps.executeUpdate();
 
@@ -122,23 +112,13 @@ public class SuscripcionDAOImpl implements SuscripcionDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, s.getEstadoMembresia());
             ps.setDate(2, new java.sql.Date(s.getFechaIngreso().getTime()));
             ps.setDate(3, new java.sql.Date(s.getFechaFinMembresia().getTime()));
-            ps.setInt(4, s.getIdPago());
-            ps.setInt(5, s.getIdUsuario());
 
-            if(s.getMembresiaBasicId() != null)
-                ps.setInt(6, s.getMembresiaBasicId());
-            else
                 ps.setNull(6, Types.INTEGER);
 
-            if(s.getMembresiaBlackId() != null)
-                ps.setInt(7, s.getMembresiaBlackId());
-            else
                 ps.setNull(7, Types.INTEGER);
 
-            ps.setInt(8, s.getIdSuscripcion());
 
             ps.executeUpdate();
 
@@ -156,7 +136,6 @@ public class SuscripcionDAOImpl implements SuscripcionDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setInt(1, s.getIdSuscripcion());
             ps.executeUpdate();
 
         } catch(SQLException e){

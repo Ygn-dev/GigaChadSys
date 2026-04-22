@@ -1,13 +1,11 @@
 package pe.edu.pucp.gigachadsys.dao.impl.clases;
 
-import pe.edu.pucp.gigachadsys.dao.SalonDAO;
+import pe.edu.pucp.gigachadsys.inter.clases.SalonDAO;
 import pe.edu.pucp.gigachadsys.model.Salon;
 
 import java.sql.Connection;
 
-import pe.edu.pucp.gigachadsys.dao.SalonDAO;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
-import pe.edu.pucp.gigachadsys.model.Salon;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -69,7 +67,7 @@ public class SalonDAOImpl implements SalonDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, s.getNombreSalon());
+            ps.setString(1, s.getNobreSalon());
             ps.setInt(2, s.getAforoMaximo());
             ps.executeUpdate();
 
@@ -85,9 +83,8 @@ public class SalonDAOImpl implements SalonDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, s.getNombreSalon());
+            ps.setString(1, s.getNobreSalon());
             ps.setInt(2, s.getAforoMaximo());
-            ps.setInt(3, s.getIdSalon());
 
             ps.executeUpdate();
 
@@ -103,7 +100,6 @@ public class SalonDAOImpl implements SalonDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setInt(1, s.getIdSalon());
             ps.executeUpdate();
 
         } catch(SQLException e){ throw new RuntimeException(e); }

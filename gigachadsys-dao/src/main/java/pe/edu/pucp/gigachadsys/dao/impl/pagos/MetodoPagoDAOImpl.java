@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.dao.impl.pagos;
 
-import pe.edu.pucp.gigachadsys.dao.MetodoPagoDAO;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
+import pe.edu.pucp.gigachadsys.inter.pagos.MetodoPagoDAO;
 import pe.edu.pucp.gigachadsys.model.MetodoPago;
 
 import java.sql.*;
