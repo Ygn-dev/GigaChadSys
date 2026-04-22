@@ -14,7 +14,7 @@ public class TestMaquina {
         maquinaPrueba.setMarca("Hammer Strength");
         maquinaPrueba.setEstado("Operativa");
         maquinaPrueba.setFechaUltimoMantenimiento(new Date()); // Asigna la fecha de hoy
-        maquinaPrueba.setActivo(true);
+        maquinaPrueba.setActive(true);
 
         // 1. TEST SAVE
         System.out.println("\n[TEST 1] Insertando Máquina en AWS...");
@@ -35,7 +35,7 @@ public class TestMaquina {
 
                 // 4. TEST REMOVE
                 System.out.println("\n[TEST 4] Eliminando registro de prueba (Limpiando BD)...");
-                dao.remove(idGenerado);
+                dao.remove(maquinaPrueba);
 
                 Maquina comprobacion = dao.load(idGenerado);
                 if(comprobacion == null) {

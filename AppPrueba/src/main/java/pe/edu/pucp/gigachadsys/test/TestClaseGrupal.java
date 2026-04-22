@@ -34,7 +34,7 @@ public class TestClaseGrupal {
 
                 // 4. TEST REMOVE
                 System.out.println("\n[TEST 4] Eliminando registro de prueba (Limpiando BD)...");
-                dao.remove(idGenerado);
+                dao.remove(clasePrueba);
 
                 ClaseGrupal comprobacion = dao.load(idGenerado);
                 if(comprobacion == null) {

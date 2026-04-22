@@ -8,6 +8,7 @@ public class Maquina {
     private String marca;
     private String estado;
     private Date fechaUltimoMantenimiento;
+    private Boolean activo;
 
     // Constructor vacío
     public Maquina() {}
@@ -37,7 +38,8 @@ public class Maquina {
     public Date getFechaUltimoMantenimiento() { return fechaUltimoMantenimiento; }
     public void setFechaUltimoMantenimiento(Date fechaUltimoMantenimiento) { this.fechaUltimoMantenimiento = fechaUltimoMantenimiento; }
 
-    public void setActivo(boolean activo) {
+    public void setActive(boolean activo) {
+        this.activo = activo;
     }
 
 }

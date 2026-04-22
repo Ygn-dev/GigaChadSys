@@ -1,3 +1,4 @@
+package pe.edu.pucp.gigachadsys.dao.impl.maquinas;
 
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 import pe.edu.pucp.gigachadsys.inter.maquinas.MaquinaDAO;
