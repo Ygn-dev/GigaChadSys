@@ -37,6 +37,7 @@ public class Maquina {
     public Date getFechaUltimoMantenimiento() { return fechaUltimoMantenimiento; }
     public void setFechaUltimoMantenimiento(Date fechaUltimoMantenimiento) { this.fechaUltimoMantenimiento = fechaUltimoMantenimiento; }
 
-    public void setActive(boolean activo) {
+    public void setActivo(boolean activo) {
     }
+
 }

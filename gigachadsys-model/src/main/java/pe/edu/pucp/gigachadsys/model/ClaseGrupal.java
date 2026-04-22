@@ -54,21 +54,17 @@ public class ClaseGrupal {
 		this.duracionMinutos = duracionMinutos;
 	}
 
-	public String getNivelClase() {
+	public String getNivel() {
 		return nivelClase;
 	}
 
-	public void setNivelClase(String nivelClase) {
+	public void setNivel(String nivelClase) {
 		this.nivelClase = nivelClase;
 	}
 
 	public void setActive(boolean activo) {
 	}
 
-    public String getNivel() {
-        return null;
-    }
 
-
-	//Metodos
+    //Metodos
 }
