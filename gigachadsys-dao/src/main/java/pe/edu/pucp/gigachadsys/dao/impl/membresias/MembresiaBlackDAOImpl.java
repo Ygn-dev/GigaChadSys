@@ -80,8 +80,8 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
              PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, membresia.getNombre());
-            pstmt.setDouble(2, membresia.getCostoAnual());
-            pstmt.setInt(3, membresia.getCantidadInvitados());
+            pstmt.setDouble(2, membresia.getCostoMantenimientoAnual());
+            pstmt.setInt(3, membresia.getCantidadInvitadosPorMes());
             pstmt.setBoolean(4, true);
 
             pstmt.executeUpdate();
@@ -89,7 +89,7 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
             // recuperar ID generado
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    membresia.setMembresiaID(rs.getInt(1));
+                    membresia.setIdMembresia(rs.getInt(1));
                 }
             }
 
@@ -113,9 +113,9 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
             pstmt.setString(1, membresia.getNombre());
-            pstmt.setDouble(2, membresia.getCostoAnual());
-            pstmt.setInt(3, membresia.getCantidadInvitados());
-            pstmt.setInt(4, membresia.getMembresiaID());
+            pstmt.setDouble(2, membresia.getCostoMantenimientoAnual());
+            pstmt.setInt(3, membresia.getCantidadInvitadosPorMes());
+            pstmt.setInt(4, membresia.getIdMembresia());
 
             pstmt.executeUpdate();
 
@@ -135,7 +135,7 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
             pstmt.setBoolean(1, false);
-            pstmt.setInt(2, membresia.getMembresiaID());
+            pstmt.setInt(2, membresia.getIdMembresia());
 
             pstmt.executeUpdate();
 

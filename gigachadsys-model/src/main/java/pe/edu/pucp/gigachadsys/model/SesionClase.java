@@ -8,8 +8,8 @@ public class SesionClase {
     //Atributos
     private int idSesion;
     private Date fechaSesion;
-    private LocalDateTime horaInicio;
-    private LocalDateTime horaFin;
+    private Timestamp horaInicio;
+    private Timestamp horaFin;
     private int cuposDisponibles;
     private Salon salon;
     private Entrenador entrenador;
@@ -19,8 +19,8 @@ public class SesionClase {
     public SesionClase(int idSesion, java.sql.Date fechaSesion, Timestamp horaInicio, Timestamp horaFin, int cuposDisponibles, int idSalon, int idEntrenador, int idClase) {
     }
 
-    public SesionClase(int idSesion, Date fechaSesion, LocalDateTime horaInicio,
-                       LocalDateTime horaFin, int cuposDisponibles,
+    public SesionClase(int idSesion, Date fechaSesion, Timestamp horaInicio,
+                       Timestamp horaFin, int cuposDisponibles,
                        Salon salon, Entrenador entrenador, ClaseGrupal claseGrupal) {
         this.idSesion = idSesion;
         this.fechaSesion = fechaSesion;
@@ -53,7 +53,7 @@ public class SesionClase {
         return horaInicio;
     }
 
-    public void setHoraInicio(LocalDateTime horaInicio) {
+    public void setHoraInicio(Timestamp horaInicio) {
         this.horaInicio = horaInicio;
     }
 
@@ -61,7 +61,7 @@ public class SesionClase {
         return horaFin;
     }
 
-    public void setHoraFin(LocalDateTime horaFin) {
+    public void setHoraFin(Timestamp horaFin) {
         this.horaFin = horaFin;
     }
 
