@@ -83,7 +83,7 @@ public class AdministradorDAOImpl implements AdministradorDAO {
 
     @Override
     public Administrador save(Administrador administrador) {
-        //Administrador.setActive(true);
+        administrador.setActive(true);
 
         //SQL QUERY
         String sql = "INSERT INTO Administrador (idUsuario, nombres, apellidoPaterno, apellidoMaterno, edad, DNI, email"+
@@ -161,10 +161,9 @@ public class AdministradorDAOImpl implements AdministradorDAO {
 
 
     @Override
-    public void Administrador(Administrador administrador) {
-        /*
+    public void remove(Administrador administrador) {
         // TODO: please implement logical removal
-        //administrador.setActive(false);
+        administrador.setActive(false);
 
         //SQL QUERY
         String sql = "UPDATE Administrador SET activo = ? WHERE idUsuario = ?";
@@ -172,13 +171,13 @@ public class AdministradorDAOImpl implements AdministradorDAO {
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
-            pstmt.setBoolean(1, false); // lo desactivas
+            pstmt.setBoolean(1, false);
             pstmt.setInt(2, administrador.getIdUsuario());
 
             pstmt.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }*/
+        }
     }
 }

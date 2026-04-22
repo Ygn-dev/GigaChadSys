@@ -114,6 +114,10 @@ public  abstract class Usuario /*implements  IPrintable*/{
 		this.rol = rol;
 	}
 
+	public void setActive(boolean activo) {
+		this.activo = activo;
+	}
+
 	public Boolean getActivo() {return activo;	}
 
 	public void setActivo(Boolean activo) {	this.activo = activo; }
