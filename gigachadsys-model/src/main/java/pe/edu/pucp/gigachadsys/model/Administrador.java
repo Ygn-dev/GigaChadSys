@@ -1,6 +1,6 @@
 package pe.edu.pucp.gigachadsys.model;
 
-public class Administrador extends Usuario{
+public class Administrador extends Usuario {
     //Atributos
     private String sede;
     private double sueldo;

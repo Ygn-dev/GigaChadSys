@@ -1,5 +1,4 @@
 package pe.edu.pucp.gigachadsys.model;
-
 public class Salon {
     // Atributos
     private String nobreSalon;

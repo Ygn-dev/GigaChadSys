@@ -1,5 +1,4 @@
 package pe.edu.pucp.gigachadsys.model;
-
 public class SistemaGimnasio{
     //Atributos
     private GestorUsuario gestorUsuarios;
