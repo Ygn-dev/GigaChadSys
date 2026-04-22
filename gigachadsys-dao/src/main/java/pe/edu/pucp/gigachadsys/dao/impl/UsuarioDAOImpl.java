@@ -1,4 +1,5 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class UsuarioDAOImpl {
+public class UsuarioDAOImpl implements UsuarioDAO{
+
 }

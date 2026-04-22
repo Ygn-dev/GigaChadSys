@@ -1,4 +1,4 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class ReservaDAOImpl {
+public class ReservaDAOImpl implements ReservaDAO{
 }
