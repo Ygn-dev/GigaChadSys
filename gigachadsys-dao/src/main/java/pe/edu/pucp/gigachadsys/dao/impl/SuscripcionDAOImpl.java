@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class SuscripcionDAOImpl implements SuscripcionDAO{
+import pe.edu.pucp.gigachadsys.SuscripcionDAO;
+
+public class SuscripcionDAOImpl implements SuscripcionDAO {
 }

@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class PagoDAOImpl implements PagoDAO{
+import pe.edu.pucp.gigachadsys.PagoDAO;
+
+public class PagoDAOImpl implements PagoDAO {
 }

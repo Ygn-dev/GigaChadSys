@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class SesionClaseDAOImpl implements SesionClaseDAO{
+import pe.edu.pucp.gigachadsys.SesionClaseDAO;
+
+public class SesionClaseDAOImpl implements SesionClaseDAO {
 }

@@ -1,7 +1,6 @@
-package pe.edu.pucp.gigachadsys.dao.impl;
+package pe.edu.pucp.gigachadsys;
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;
-import pe.edu.pucp.gigachadsys.model.MembresiaBasic;
 import pe.edu.pucp.gigachadsys.model.MembresiaBlack;
 
 import java.util.List;

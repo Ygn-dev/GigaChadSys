@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class SalonDAOImpl implements SalonDAO{
+import pe.edu.pucp.gigachadsys.SalonDAO;
+
+public class SalonDAOImpl implements SalonDAO {
 }

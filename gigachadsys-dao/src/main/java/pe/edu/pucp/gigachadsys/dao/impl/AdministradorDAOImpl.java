@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class AdministradorDAOImpl implements AdministradorDAO{
+import pe.edu.pucp.gigachadsys.AdministradorDAO;
+
+public class AdministradorDAOImpl implements AdministradorDAO {
 }

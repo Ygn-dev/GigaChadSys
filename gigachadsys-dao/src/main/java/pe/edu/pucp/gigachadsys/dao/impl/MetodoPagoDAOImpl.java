@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class MetodoPagoDAOImpl implements MetodoPagoDAO{
+import pe.edu.pucp.gigachadsys.MetodoPagoDAO;
+
+public class MetodoPagoDAOImpl implements MetodoPagoDAO {
 }

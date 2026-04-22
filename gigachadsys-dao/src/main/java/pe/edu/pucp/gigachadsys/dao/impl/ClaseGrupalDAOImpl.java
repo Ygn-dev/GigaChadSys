@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class ClaseGrupalDAOImpl implements ClaseGrupalDAO{
+import pe.edu.pucp.gigachadsys.ClaseGrupalDAO;
+
+public class ClaseGrupalDAOImpl implements ClaseGrupalDAO {
 }

@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class SocioDAOImpl implements SocioDAO{
+import pe.edu.pucp.gigachadsys.SocioDAO;
+
+public class SocioDAOImpl implements SocioDAO {
 }

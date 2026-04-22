@@ -1,4 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl;
 
-public class MembresiaBlackDAOImpl implements MembresiaBlackDAO{
+import pe.edu.pucp.gigachadsys.MembresiaBlackDAO;
+
+public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
 }
