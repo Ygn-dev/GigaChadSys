@@ -9,8 +9,8 @@ public class MembresiaBasic extends Membresia{
         super();
     }
 
-    public MembresiaBasic(int idMembresia, String nombre, int duracion, boolean activa, double costoMantenimientoMensual) {
-        super(idMembresia, nombre, duracion, activa);
+    public MembresiaBasic(int idMembresia, String nombre, double costoMantenimientoMensual) {
+        super(idMembresia, nombre);
         this.costoMantenimientoMensual = costoMantenimientoMensual;
     }
     

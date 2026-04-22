@@ -1,8 +1,5 @@
 package pe.edu.pucp.gigachadsys.model;
 
-import java.util.List;
-import java.util.ArrayList;
-
 public class Socio extends  Usuario{
     //Atributos
     private boolean estadoMembresia;

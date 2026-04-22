@@ -4,18 +4,16 @@ public  abstract class Membresia {
     //Atributos
     private int idMembresia;
     private String nombre;
-    private int duracion;
     private boolean activa;
 
     //Constructores
     public Membresia() {
     }
 
-    public Membresia(int idMembresia, String nombre, int duracion, boolean activa) {
+    public Membresia(int idMembresia, String nombre) {
         this.idMembresia = idMembresia;
         this.nombre = nombre;
-        this.duracion = duracion;
-        this.activa = activa;
+        this.activa = true;
     }
     
     //Setters y Getters
@@ -33,14 +31,6 @@ public  abstract class Membresia {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public int getDuracion() {
-        return duracion;
-    }
-
-    public void setDuracion(int duracion) {
-        this.duracion = duracion;
     }
 
     public boolean isActiva() {
