@@ -1,4 +1,4 @@
-package pe.edu.pucp.gigachadsys.dao.impl;
+package pe.edu.pucp.gigachadsys.dao.impl.pagos;
 
 import pe.edu.pucp.gigachadsys.MetodoPagoDAO;
 
