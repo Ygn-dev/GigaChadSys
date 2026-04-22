@@ -8,10 +8,11 @@ public  class Pago /*implements  IPrintable*/{
     private Date fechaPago;
     private double monto;
     private String tipo;
-    private MetodoPago metodoPago;
+    private int metodoPago;
+    private boolean estado;
 
     //Constructores
-    public Pago(int idPago, Date fechaPago, double monto, String tipo, MetodoPago metodoPago) {
+    public Pago(int idPago, Date fechaPago, double monto, String tipo, int metodoPago) {
         this.idPago = idPago;
         this.fechaPago = fechaPago;
         this.monto = monto;
@@ -52,12 +53,16 @@ public  class Pago /*implements  IPrintable*/{
         this.tipo = tipo;
     }
 
-    public MetodoPago getMetodoPago() {
+    public int getMetodoPago() {
         return metodoPago;
     }
 
-    public void setMetodoPago(MetodoPago metodoPago) {
+    public void setMetodoPago(int metodoPago) {
         this.metodoPago = metodoPago;
+    }
+
+    public void setActive(boolean estado) {
+        this.estado = estado;
     }
 
 
@@ -76,8 +81,7 @@ public  class Pago /*implements  IPrintable*/{
     }
 
     public String generarComprobante(){
-
-        return "Hola";
+        return "";
     }
 
     public void registrarCobro(){
