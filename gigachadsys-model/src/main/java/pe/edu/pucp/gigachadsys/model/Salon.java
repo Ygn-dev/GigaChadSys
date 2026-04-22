@@ -4,6 +4,8 @@ public class Salon {
     // Atributos
     private String nobreSalon;
     private int aforoMaximo;
+    private int idSalon;
+    private boolean estado;
 
     public int getIdSalon() {
         return idSalon;
@@ -12,8 +14,6 @@ public class Salon {
     public void setIdSalon(int idSalon) {
         this.idSalon = idSalon;
     }
-
-    private int idSalon;
 
     //Constructores
     public Salon() {
@@ -42,6 +42,10 @@ public class Salon {
 
     public void setAforoMaximo(int aforoMaximo) {
         this.aforoMaximo = aforoMaximo;
+    }
+
+    public void setActive(boolean estado) {
+        this.estado = estado;
     }
 
 
