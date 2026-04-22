@@ -67,7 +67,7 @@ public class SalonDAOImpl implements SalonDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, s.getNobreSalon());
+            ps.setString(1, s.getNombreSalon());
             ps.setInt(2, s.getAforoMaximo());
             ps.executeUpdate();
 
@@ -83,7 +83,7 @@ public class SalonDAOImpl implements SalonDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, s.getNobreSalon());
+            ps.setString(1, s.getNombreSalon());
             ps.setInt(2, s.getAforoMaximo());
 
             ps.executeUpdate();
