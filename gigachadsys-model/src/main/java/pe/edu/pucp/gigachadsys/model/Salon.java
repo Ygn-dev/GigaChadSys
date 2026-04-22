@@ -5,6 +5,16 @@ public class Salon {
     private String nobreSalon;
     private int aforoMaximo;
 
+    public int getIdSalon() {
+        return idSalon;
+    }
+
+    public void setIdSalon(int idSalon) {
+        this.idSalon = idSalon;
+    }
+
+    private int idSalon;
+
     //Constructores
     public Salon() {
     }
@@ -18,11 +28,11 @@ public class Salon {
     }
 
     //Setters y Getters
-    public String getNobreSalon() {
+    public String getNombreSalon() {
         return nobreSalon;
     }
 
-    public void setNobreSalon(String nobreSalon) {
+    public void setNombreSalon(String nobreSalon) {
         this.nobreSalon = nobreSalon;
     }
 
@@ -40,7 +50,7 @@ public class Salon {
         return true;
     }
 
-    public void setActive(boolean activo) {
+    public void setActivo(boolean activo) {
 
     }
 }
