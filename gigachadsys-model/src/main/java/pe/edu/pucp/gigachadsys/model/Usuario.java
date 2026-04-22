@@ -1,6 +1,6 @@
 package pe.edu.pucp.gigachadsys.model;
 
-public  abstract class Usuario implements  IPrintable{
+public  abstract class Usuario /*implements  IPrintable*/{
 	//Atributos
     private int idUsuario;
     private String nombres;
@@ -12,6 +12,7 @@ public  abstract class Usuario implements  IPrintable{
     private int telefono;
     private String contrasenia;
     private String rol;
+	private Boolean activo;
 
     //Constructores
     public Usuario() {
@@ -29,6 +30,7 @@ public  abstract class Usuario implements  IPrintable{
         this.telefono = telefono;
         this.contrasenia = contrasenia;
         this.rol = rol;
+		this.activo = true;
     }
 
 	//Setters y Getters
@@ -111,6 +113,10 @@ public  abstract class Usuario implements  IPrintable{
 	public void setRol(String rol) {
 		this.rol = rol;
 	}
+
+	public Boolean getActivo() {return activo;	}
+
+	public void setActivo(Boolean activo) {	this.activo = activo; }
 
 	//Metodos
     public abstract void mostrarDatos();

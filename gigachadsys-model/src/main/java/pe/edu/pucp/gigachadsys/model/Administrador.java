@@ -4,6 +4,7 @@ public class Administrador extends Usuario {
     //Atributos
     private String sede;
     private double sueldo;
+    private String cargo;
 
      //Constructor vacío
      public Administrador() {
@@ -36,6 +37,14 @@ public class Administrador extends Usuario {
 
     public void setSueldo(double sueldo) {
         this.sueldo = sueldo;
+    }
+
+    public String getCargo() {
+         return cargo;
+    }
+
+    public void setCargo(String cargo) {
+         this.cargo = cargo;
     }
 
     //Metodos
