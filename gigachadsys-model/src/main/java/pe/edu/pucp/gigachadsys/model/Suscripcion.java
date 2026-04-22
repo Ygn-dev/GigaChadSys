@@ -12,7 +12,7 @@ public class Suscripcion {
     private Pago pago;
 
      //Constructores
-    public Suscripcion() {
+    public Suscripcion(int idSuscripcion, String estadoMembresia, java.sql.Date fechaIngreso, java.sql.Date fechaFinMembresia, int idPago, int idUsuario, Integer integer, Integer integer1) {
     }
 
     public Suscripcion(boolean estadoMembresia, Date fechaIngreso, Date fechaFinMembresia,
@@ -72,4 +72,7 @@ public class Suscripcion {
 
     }
 
+    public void setActive(boolean activo) {
+
+    }
 }

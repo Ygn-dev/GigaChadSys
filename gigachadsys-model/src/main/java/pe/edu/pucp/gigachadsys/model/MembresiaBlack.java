@@ -10,9 +10,8 @@ public class MembresiaBlack extends Membresia{
         super();
     }
 
-    public MembresiaBlack(int idMembresia, String nombre, int duracion, boolean activa,
-                          int cantidadInvitadosPorMes, double costoMantenimientoAnual) {
-        super(idMembresia, nombre, duracion, activa);
+    public MembresiaBlack(int idMembresia, String nombre, double costoMantenimientoAnual,int cantidadInvitadosPorMes) {
+        super(idMembresia, nombre);
         this.cantidadInvitadosPorMes = cantidadInvitadosPorMes;
         this.costoMantenimientoAnual = costoMantenimientoAnual;
     }

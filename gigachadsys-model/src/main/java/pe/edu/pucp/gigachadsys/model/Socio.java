@@ -1,12 +1,8 @@
 package pe.edu.pucp.gigachadsys.model;
 
-import java.util.List;
-import java.util.ArrayList;
-
 public class Socio extends  Usuario{
     //Atributos
     private boolean estadoMembresia;
-    private List<Reserva> reservas;
 
     //Constructores
     public Socio() {
@@ -19,7 +15,6 @@ public class Socio extends  Usuario{
 
         super(idUsuario, nombres, apellidoMaterno, apellidoPaterno, edad, dni, email, telefono, contrasenia, rol);
         this.estadoMembresia = estadoMembresia;
-        this.reservas = new ArrayList<>();
     }
 
     //Setters y Getters

@@ -14,6 +14,9 @@ public class Salon {
         this.aforoMaximo = aforoMaximo;
     }
 
+    public Salon(int idSalon, String nombreSalon, int aforoMaximo) {
+    }
+
     //Setters y Getters
     public String getNobreSalon() {
         return nobreSalon;
@@ -35,5 +38,9 @@ public class Salon {
     //Metodos
 	public boolean verificarDisponibilidadAforo(int cantidadActual) {
         return true;
+    }
+
+    public void setActive(boolean activo) {
+
     }
 }

@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import pe.edu.pucp.gigachadsys.AdministradorDAO;
+import pe.edu.pucp.gigachadsys.inter.usuarios.AdministradorDAO;
 import pe.edu.pucp.gigachadsys.model.Administrador;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 
