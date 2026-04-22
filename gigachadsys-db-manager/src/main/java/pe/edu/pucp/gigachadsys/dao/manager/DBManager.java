@@ -1,6 +1,5 @@
 package pe.edu.pucp.gigachadsys.dao.manager;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
