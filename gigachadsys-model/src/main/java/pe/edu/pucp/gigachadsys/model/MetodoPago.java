@@ -46,4 +46,7 @@ public class MetodoPago {
     public boolean validarMetodo(){
         return true;
     }
+
+    public void setActive(boolean activo) {
+    }
 }

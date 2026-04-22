@@ -1,5 +1,6 @@
 package pe.edu.pucp.gigachadsys.model;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -15,7 +16,7 @@ public class SesionClase {
     private ClaseGrupal claseGrupal;
 
     //Constructores
-    public SesionClase() {
+    public SesionClase(int idSesion, java.sql.Date fechaSesion, Timestamp horaInicio, Timestamp horaFin, int cuposDisponibles, int idSalon, int idEntrenador, int idClase) {
     }
 
     public SesionClase(int idSesion, Date fechaSesion, LocalDateTime horaInicio,
@@ -48,7 +49,7 @@ public class SesionClase {
         this.fechaSesion = fechaSesion;
     }
 
-    public LocalDateTime getHoraInicio() {
+    public Timestamp getHoraInicio() {
         return horaInicio;
     }
 
@@ -56,7 +57,7 @@ public class SesionClase {
         this.horaInicio = horaInicio;
     }
 
-    public LocalDateTime getHoraFin() {
+    public Timestamp getHoraFin() {
         return horaFin;
     }
 
