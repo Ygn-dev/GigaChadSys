@@ -2,7 +2,7 @@ package pe.edu.pucp.gigachadsys.model;
 
 import java.util.Date;
 
-public  class Pago implements  IPrintable{
+public  class Pago /*implements  IPrintable*/{
     //Atributos
     private int idPago;
     private Date fechaPago;
@@ -11,9 +11,6 @@ public  class Pago implements  IPrintable{
     private MetodoPago metodoPago;
 
     //Constructores
-    public Pago() {
-    }
-
     public Pago(int idPago, Date fechaPago, double monto, String tipo, MetodoPago metodoPago) {
         this.idPago = idPago;
         this.fechaPago = fechaPago;
@@ -65,7 +62,7 @@ public  class Pago implements  IPrintable{
 
 
     //Metodos
-    @Override
+
     public void mostrarDatos() {
 
     }
