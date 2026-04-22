@@ -1,4 +1,5 @@
 package pe.edu.pucp.gigachadsys.model;
+
 import java.util.List;
 import java.util.ArrayList;
 

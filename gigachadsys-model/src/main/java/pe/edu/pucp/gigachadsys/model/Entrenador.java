@@ -1,4 +1,5 @@
 package pe.edu.pucp.gigachadsys.model;
+
 import java.sql.Time;
 
 public class Entrenador extends Usuario{

@@ -1,4 +1,5 @@
 package pe.edu.pucp.gigachadsys.model;
+
 import java.util.Date;
 
 public class Suscripcion {
