@@ -2,7 +2,7 @@ package pe.edu.pucp.gigachadsys.dao.impl.suscripcion;
 
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 import pe.edu.pucp.gigachadsys.inter.suscripcion.SuscripcionDAO;
-import pe.edu.pucp.gigachadsys.model.Suscripcion;
+import pe.edu.pucp.gigachadsys.model.membresias.Suscripcion;
 
 import java.sql.*;
 import java.util.ArrayList;

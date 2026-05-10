@@ -6,7 +6,7 @@ import java.util.List;
 
 
 import pe.edu.pucp.gigachadsys.inter.membresias.MembresiaBlackDAO;
-import pe.edu.pucp.gigachadsys.model.MembresiaBlack;
+import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBlack;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 
 public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {

@@ -6,7 +6,7 @@ import java.util.List;
 
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 import pe.edu.pucp.gigachadsys.inter.usuarios.SocioDAO;
-import pe.edu.pucp.gigachadsys.model.Socio;
+import pe.edu.pucp.gigachadsys.model.personas.Socio;
 
 public class SocioDAOImpl implements SocioDAO {
 

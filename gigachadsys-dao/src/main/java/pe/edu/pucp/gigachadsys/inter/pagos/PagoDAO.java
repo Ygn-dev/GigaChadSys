@@ -2,7 +2,7 @@ package pe.edu.pucp.gigachadsys.inter.pagos;
 
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;
-import pe.edu.pucp.gigachadsys.model.Pago;
+import pe.edu.pucp.gigachadsys.model.pagos.Pago;
 
 import java.util.List;
 

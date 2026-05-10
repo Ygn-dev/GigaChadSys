@@ -1,6 +1,6 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.membresias;
 
-public class MembresiaBasic extends Membresia{
+public class MembresiaBasic extends Membresia {
     //Atributos
     private double costoMantenimientoMensual;
 

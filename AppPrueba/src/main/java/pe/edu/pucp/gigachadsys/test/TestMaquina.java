@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.test;
 
 import pe.edu.pucp.gigachadsys.dao.impl.maquinas.MaquinaDAOImpl;
-import pe.edu.pucp.gigachadsys.model.Maquina;
+import pe.edu.pucp.gigachadsys.model.clases.Maquina;
 import java.util.Date;
 
 public class TestMaquina {

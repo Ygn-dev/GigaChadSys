@@ -1,4 +1,8 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.sistema;
+
+import pe.edu.pucp.gigachadsys.model.clases.GestorClasesGrupales;
+import pe.edu.pucp.gigachadsys.model.membresias.GestorMembresias;
+import pe.edu.pucp.gigachadsys.model.personas.GestorUsuario;
 
 public class SistemaGimnasio{
     //Atributos

@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.test;
 
 import pe.edu.pucp.gigachadsys.dao.impl.clases.SalonDAOImpl; // Usa Alt+Enter si la ruta es diferente
-import pe.edu.pucp.gigachadsys.model.Salon;
+import pe.edu.pucp.gigachadsys.model.clases.Salon;
 
 public class TestSalon {
     public static void main(String[] args) {

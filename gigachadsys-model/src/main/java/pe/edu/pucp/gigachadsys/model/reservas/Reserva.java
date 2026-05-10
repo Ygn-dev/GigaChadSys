@@ -1,7 +1,8 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.reservas;
+
+import pe.edu.pucp.gigachadsys.model.clases.SesionClase;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 public class Reserva {
     //Atributos

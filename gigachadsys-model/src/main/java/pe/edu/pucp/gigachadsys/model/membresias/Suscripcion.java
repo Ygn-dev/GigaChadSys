@@ -1,4 +1,7 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.membresias;
+
+import pe.edu.pucp.gigachadsys.model.pagos.Pago;
+import pe.edu.pucp.gigachadsys.model.personas.Socio;
 
 import java.util.Date;
 

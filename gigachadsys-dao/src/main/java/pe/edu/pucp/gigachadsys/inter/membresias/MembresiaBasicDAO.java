@@ -2,7 +2,7 @@ package pe.edu.pucp.gigachadsys.inter.membresias;
 
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;
-import pe.edu.pucp.gigachadsys.model.MembresiaBasic;
+import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBasic;
 
 import java.util.List;
 

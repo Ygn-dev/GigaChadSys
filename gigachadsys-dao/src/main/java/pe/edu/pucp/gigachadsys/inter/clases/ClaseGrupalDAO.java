@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.inter.clases;
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;
-import pe.edu.pucp.gigachadsys.model.ClaseGrupal;
+import pe.edu.pucp.gigachadsys.model.clases.ClaseGrupal;
 
 import java.util.List;
 

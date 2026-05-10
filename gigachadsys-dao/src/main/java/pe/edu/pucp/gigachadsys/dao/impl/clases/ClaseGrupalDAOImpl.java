@@ -2,7 +2,7 @@ package pe.edu.pucp.gigachadsys.dao.impl.clases;
 
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 import pe.edu.pucp.gigachadsys.inter.clases.ClaseGrupalDAO;
-import pe.edu.pucp.gigachadsys.model.ClaseGrupal;
+import pe.edu.pucp.gigachadsys.model.clases.ClaseGrupal;
 
 import java.sql.*;
 import java.util.ArrayList;

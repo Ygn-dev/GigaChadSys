@@ -1,4 +1,7 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.clases;
+
+import pe.edu.pucp.gigachadsys.model.reservas.Reserva;
+import pe.edu.pucp.gigachadsys.model.personas.Socio;
 
 import java.util.List;
 import java.util.ArrayList;

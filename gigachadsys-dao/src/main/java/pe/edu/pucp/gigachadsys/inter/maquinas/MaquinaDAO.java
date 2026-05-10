@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.inter.maquinas;
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;
-import pe.edu.pucp.gigachadsys.model.Maquina;
+import pe.edu.pucp.gigachadsys.model.clases.Maquina;
 
 import java.util.List;
 

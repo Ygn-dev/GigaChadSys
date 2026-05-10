@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pe.edu.pucp.gigachadsys.inter.usuarios.EntrenadorDAO;
-import pe.edu.pucp.gigachadsys.model.Entrenador;
+import pe.edu.pucp.gigachadsys.model.personas.Entrenador;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 
 

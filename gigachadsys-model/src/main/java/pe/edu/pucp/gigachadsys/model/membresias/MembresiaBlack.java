@@ -1,6 +1,6 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.membresias;
 
-public class MembresiaBlack extends Membresia{
+public class MembresiaBlack extends Membresia {
     //Atributos
     private int cantidadInvitadosPorMes;
     private double costoMantenimientoAnual;

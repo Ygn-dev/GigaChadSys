@@ -1,4 +1,4 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.membresias;
 
 public  abstract class Membresia {
     //Atributos

@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.test;
 
 import pe.edu.pucp.gigachadsys.dao.impl.clases.ClaseGrupalDAOImpl;
-import pe.edu.pucp.gigachadsys.model.ClaseGrupal;
+import pe.edu.pucp.gigachadsys.model.clases.ClaseGrupal;
 
 public class TestClaseGrupal {
     public static void main(String[] args) {

@@ -1,7 +1,8 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.clases;
+
+import pe.edu.pucp.gigachadsys.model.personas.Entrenador;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 public class SesionClase {

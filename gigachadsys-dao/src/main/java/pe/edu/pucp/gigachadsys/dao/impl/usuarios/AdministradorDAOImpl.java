@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pe.edu.pucp.gigachadsys.inter.usuarios.AdministradorDAO;
-import pe.edu.pucp.gigachadsys.model.Administrador;
+import pe.edu.pucp.gigachadsys.model.personas.Administrador;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 
 public class AdministradorDAOImpl implements AdministradorDAO {

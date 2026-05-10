@@ -2,7 +2,7 @@ package pe.edu.pucp.gigachadsys.inter.usuarios;
 
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;
-import pe.edu.pucp.gigachadsys.model.Socio;
+import pe.edu.pucp.gigachadsys.model.personas.Socio;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.test;
 
 import pe.edu.pucp.gigachadsys.dao.impl.usuarios.AdministradorDAOImpl;
-import pe.edu.pucp.gigachadsys.model.Administrador;
+import pe.edu.pucp.gigachadsys.model.personas.Administrador;
 
 public class TestAdministrador {
     public static void main(String[] args) {

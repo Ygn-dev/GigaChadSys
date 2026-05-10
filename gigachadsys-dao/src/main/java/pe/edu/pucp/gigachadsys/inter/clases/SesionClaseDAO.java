@@ -2,7 +2,7 @@ package pe.edu.pucp.gigachadsys.inter.clases;
 
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;
-import pe.edu.pucp.gigachadsys.model.SesionClase;
+import pe.edu.pucp.gigachadsys.model.clases.SesionClase;
 
 import java.util.List;
 

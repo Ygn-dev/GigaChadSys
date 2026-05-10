@@ -1,4 +1,4 @@
-package pe.edu.pucp.gigachadsys.model;
+package pe.edu.pucp.gigachadsys.model.pagos;
 
 public class MetodoPago {
     //Atributos
