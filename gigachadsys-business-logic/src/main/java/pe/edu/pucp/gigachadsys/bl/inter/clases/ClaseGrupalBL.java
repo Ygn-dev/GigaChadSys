@@ -5,7 +5,7 @@ import pe.edu.pucp.gigachadsys.model.clases.ClaseGrupal;
 
 import java.util.List;
 
-public interface ClaseGrupalDAO extends BaseDAO<ClaseGrupal, Integer> {
+public interface ClaseGrupalBL {
     List<ClaseGrupal> listAll();
 }
 

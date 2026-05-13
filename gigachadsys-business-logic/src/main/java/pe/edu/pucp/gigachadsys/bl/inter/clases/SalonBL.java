@@ -6,6 +6,6 @@ import pe.edu.pucp.gigachadsys.model.clases.Salon;
 
 import java.util.List;
 
-public interface SalonDAO extends BaseDAO<Salon, Integer> {
+public interface SalonBL {
     List<Salon> listAll();
 }

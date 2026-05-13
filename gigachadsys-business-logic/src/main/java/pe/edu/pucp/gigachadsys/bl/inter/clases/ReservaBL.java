@@ -5,7 +5,7 @@ import pe.edu.pucp.gigachadsys.model.clases.Reserva;
 
 import java.util.List;
 
-public interface ReservaDAO extends BaseDAO<Reserva, Integer> {
+public interface ReservaBL {
     List<Reserva> listAll();
 }
 

@@ -6,6 +6,6 @@ import pe.edu.pucp.gigachadsys.model.clases.SesionClase;
 
 import java.util.List;
 
-public interface SesionClaseDAO extends BaseDAO<SesionClase, Integer>{
+public interface SesionClaseBL{
     List<SesionClase> listAll();
 }
