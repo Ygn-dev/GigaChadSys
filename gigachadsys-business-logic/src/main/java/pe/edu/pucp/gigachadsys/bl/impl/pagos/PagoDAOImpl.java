@@ -1,4 +1,4 @@
-package pe.edu.pucp.gigachadsys.dao.impl.pagos;
+package pe.edu.pucp.gigachadsys.bl.impl.pagos;
 
 import pe.edu.pucp.gigachadsys.dao.inter.pagos.PagoDAO;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
@@ -74,7 +74,7 @@ public class PagoDAOImpl implements PagoDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setDate(1, new java.sql.Date(p.getFechaPago().getTime()));
+            ps.setDate(1, new Date(p.getFechaPago().getTime()));
             ps.setDouble(2, p.getMonto());
             ps.setString(3, p.getTipo());
             ps.setInt(4, p.getIdPago());
@@ -95,7 +95,7 @@ public class PagoDAOImpl implements PagoDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setDate(1, new java.sql.Date(p.getFechaPago().getTime()));
+            ps.setDate(1, new Date(p.getFechaPago().getTime()));
             ps.setDouble(2,p.getMonto());
             ps.setString(3, p.getTipo());
             ps.setInt(4, p.getMetodoPago());

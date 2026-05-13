@@ -1,66 +1,90 @@
 package pe.edu.pucp.gigachadsys.test;
 
 import pe.edu.pucp.gigachadsys.dao.impl.usuarios.AdministradorDAOImpl;
+import pe.edu.pucp.gigachadsys.dao.inter.usuarios.AdministradorDAO;
 import pe.edu.pucp.gigachadsys.model.personas.Administrador;
+
+import java.util.List;
 
 public class TestAdministrador {
     public static void main(String[] args) {
-        System.out.println("=== BATERÍA DE PRUEBAS CRUD PARA USUARIOS (TABLA ADMINISTRADOR) ===");
+        AdministradorDAO administradorDAO = new AdministradorDAOImpl();
 
-        // 2. Instanciamos el DAO correcto
-        AdministradorDAOImpl dao = new AdministradorDAOImpl();
+        // Crear nuevo administrador
+        Administrador administrador = new Administrador();
 
-        // 3. Creamos un usuario con perfil de Administrador
-        Administrador adminPrueba = new Administrador(
-                0,
-                "Chris",
-                "Bumstead",
-                "Cbum",
-                29,
-                87654321,
-                "cbum@gigachad.com",
-                999111222,
-                "olympia2024",
-                "ADMINISTRADOR",
-                "Lima",     // sede
-                5000.0      // sueldo
-        ){
-            @Override
-            public void mostrarDatos() { System.out.println("Admin: " + getNombres()); }
-        };
+        administrador.setNombres("Lucia");
+        administrador.setApellidoPaterno("Ramirez");
+        administrador.setApellidoMaterno("Torres");
+        administrador.setEdad(28);
+        administrador.setDni(45871236);
+        administrador.setEmail("lucia.ramirez@gmail.com");
+        administrador.setTelefono(912345678);
+        administrador.setContrasenia("admin2026");
+        administrador.setRol("Supervisor");
+        administrador.setSede("Arequipa");
+        administrador.setSueldo(4200.50);
+        administrador.setCargo("Coordinadora");
 
-        // 1. TEST SAVE
-        System.out.println("\n[TEST 1] Insertando Administrador en AWS...");
-        dao.save(adminPrueba);
-        int idGenerado = adminPrueba.getIdUsuario();
+        // Guardar
+        administradorDAO.save(administrador);
 
-        if(idGenerado >= 0) {
-            // 2. TEST LOAD
-            System.out.println("\n[TEST 2] Leyendo registro de AWS...");
-            Administrador leido = dao.load(idGenerado);
-            if(leido != null) {
-                System.out.println("Encontrado: " + leido.getNombres() + " - " + leido.getEmail());
+        System.out.println("=== ADMINISTRADORES REGISTRADOS ===");
 
-                // 3. TEST UPDATE
-                System.out.println("\n[TEST 3] Actualizando email del administrador...");
-                leido.setEmail("admin.cbum@gigachadsys.com");
-                dao.update(leido);
+        List<Administrador> administradores = administradorDAO.listAll();
 
-                // 4. TEST REMOVE
-                System.out.println("\n[TEST 4] Eliminando registro de prueba (Limpiando BD)...");
-                dao.remove(adminPrueba);
+        for (Administrador admin : administradores) {
 
-                Administrador comprobacion = dao.load(idGenerado);
-                if(comprobacion != null) {
-                    System.out.println("✅ Prueba Finalizada: Base de datos limpia.");
-                } else {
-                    System.err.println("❌ Error: El administrador no se eliminó correctamente.");
-                }
-            } else {
-                System.err.println("❌ Error: No se pudo leer el administrador recién creado.");
-            }
-        } else {
-            System.err.println("❌ Error: No se generó un ID válido al guardar.");
+            System.out.println(
+                    admin.getIdUsuario() + " | " +
+                            admin.getNombres() + " " +
+                            admin.getApellidoPaterno() + " | " +
+                            admin.getEmail()
+            );
+        }
+
+        // Probar load()
+        System.out.println("\n=== BUSCAR ADMINISTRADOR ===");
+
+        Administrador encontrado =
+                administradorDAO.load(administrador.getIdUsuario());
+
+        if (encontrado != null) {
+
+            System.out.println("Administrador encontrado:");
+            System.out.println(encontrado.getNombres());
+        }
+
+        // Probar update()
+        System.out.println("\n=== ACTUALIZAR ADMINISTRADOR ===");
+
+        administrador.setSueldo(5000.00);
+        administrador.setCargo("Director");
+
+        administradorDAO.update(administrador);
+
+        Administrador actualizado =
+                administradorDAO.load(administrador.getIdUsuario());
+
+        System.out.println(
+                "Nuevo sueldo: " + actualizado.getSueldo()
+        );
+
+        // Probar remove()
+        System.out.println("\n=== ELIMINAR ADMINISTRADOR ===");
+
+        administradorDAO.remove(administrador);
+
+        System.out.println("Lista después de eliminar:");
+
+        administradores = administradorDAO.listAll();
+
+        for (Administrador admin : administradores) {
+
+            System.out.println(
+                    admin.getIdUsuario() + " | " +
+                            admin.getNombres()
+            );
         }
     }
 }

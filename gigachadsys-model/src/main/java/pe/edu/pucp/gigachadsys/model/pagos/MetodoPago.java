@@ -5,6 +5,7 @@ public class MetodoPago {
     private int idMetodoPago;
     private String tipo;
     private String detalle;
+    private boolean activo;
 
     //Constructores
     public MetodoPago() {
@@ -14,6 +15,7 @@ public class MetodoPago {
         this.idMetodoPago = idMetodoPago;
         this.tipo = tipo;
         this.detalle = detalle;
+
     }
 
     //Setters y Getters
@@ -47,6 +49,11 @@ public class MetodoPago {
         return true;
     }
 
-    public void setActive(boolean activo) {
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }

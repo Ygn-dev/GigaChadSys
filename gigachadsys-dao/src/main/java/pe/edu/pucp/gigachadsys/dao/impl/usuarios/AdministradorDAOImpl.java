@@ -15,8 +15,8 @@ public class AdministradorDAOImpl implements AdministradorDAO {
         List<Administrador> list = new ArrayList<>();
 
         //SQL QUERY
-        String sql = "SELECT idUsuario, nombres, apellidoPaterno, apellidoMaterno,edad,DNI,email,telefono,contrasenia,rol,sede,sueldo,cargo from Administrador active id = 1";
-
+        String sql = "SELECT idUsuario, nombres, apellidoPaterno, apellidoMaterno, edad, DNI, email, telefono, contrasenia, rol, Sede, sueldo, cargo " +
+                "FROM Administrador WHERE activo = 1";
         try(Connection connection = DBManager.getInstance().getConnection();
             Statement stm = connection.createStatement();
             ResultSet rs = stm.executeQuery(sql)) {
