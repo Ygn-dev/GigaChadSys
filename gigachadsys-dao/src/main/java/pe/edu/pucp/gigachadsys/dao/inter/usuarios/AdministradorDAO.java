@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface AdministradorDAO extends BaseDAO<Administrador, Integer> {
     List<Administrador> listAll();
+
 }

@@ -1,6 +1,4 @@
-package pe.edu.pucp.gigachadsys.model.reservas;
-
-import pe.edu.pucp.gigachadsys.model.clases.SesionClase;
+package pe.edu.pucp.gigachadsys.model.clases;
 
 import java.sql.Timestamp;
 
