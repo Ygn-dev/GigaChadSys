@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.dao.impl.clases;
 
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
-import pe.edu.pucp.gigachadsys.inter.clases.ReservaDAO;
+import pe.edu.pucp.gigachadsys.dao.inter.clases.ReservaDAO;
 import pe.edu.pucp.gigachadsys.model.reservas.Reserva;
 
 import java.sql.*;

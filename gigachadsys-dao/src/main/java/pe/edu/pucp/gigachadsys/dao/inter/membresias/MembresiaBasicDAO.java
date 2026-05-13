@@ -1,4 +1,4 @@
-package pe.edu.pucp.gigachadsys.inter.membresias;
+package pe.edu.pucp.gigachadsys.dao.inter.membresias;
 
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import pe.edu.pucp.gigachadsys.inter.membresias.MembresiaBlackDAO;
+import pe.edu.pucp.gigachadsys.dao.inter.membresias.MembresiaBlackDAO;
 import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBlack;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 

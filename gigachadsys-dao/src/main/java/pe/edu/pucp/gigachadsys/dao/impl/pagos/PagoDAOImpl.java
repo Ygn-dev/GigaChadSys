@@ -1,6 +1,6 @@
 package pe.edu.pucp.gigachadsys.dao.impl.pagos;
 
-import pe.edu.pucp.gigachadsys.inter.pagos.PagoDAO;
+import pe.edu.pucp.gigachadsys.dao.inter.pagos.PagoDAO;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 import pe.edu.pucp.gigachadsys.model.pagos.Pago;
 

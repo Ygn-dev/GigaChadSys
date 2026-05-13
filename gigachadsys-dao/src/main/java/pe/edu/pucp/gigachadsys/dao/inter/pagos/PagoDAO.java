@@ -1,4 +1,4 @@
-package pe.edu.pucp.gigachadsys.inter.pagos;
+package pe.edu.pucp.gigachadsys.dao.inter.pagos;
 
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;

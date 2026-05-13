@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import pe.edu.pucp.gigachadsys.inter.membresias.MembresiaBasicDAO;
+import pe.edu.pucp.gigachadsys.dao.inter.membresias.MembresiaBasicDAO;
 import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBasic;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 

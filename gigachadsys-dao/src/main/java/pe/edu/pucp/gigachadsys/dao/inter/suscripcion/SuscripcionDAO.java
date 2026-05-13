@@ -1,4 +1,4 @@
-package pe.edu.pucp.gigachadsys.inter.suscripcion;
+package pe.edu.pucp.gigachadsys.dao.inter.suscripcion;
 
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;

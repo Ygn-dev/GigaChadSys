@@ -1,4 +1,4 @@
-package pe.edu.pucp.gigachadsys.inter.usuarios;
+package pe.edu.pucp.gigachadsys.dao.inter.usuarios;
 
 import pe.edu.pucp.gigachadsys.dao.base.BaseDAO;
 import pe.edu.pucp.gigachadsys.model.personas.Administrador;

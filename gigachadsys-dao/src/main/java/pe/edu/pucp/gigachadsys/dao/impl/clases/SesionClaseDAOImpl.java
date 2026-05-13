@@ -1,7 +1,7 @@
 package pe.edu.pucp.gigachadsys.dao.impl.clases;
 
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
-import pe.edu.pucp.gigachadsys.inter.clases.SesionClaseDAO;
+import pe.edu.pucp.gigachadsys.dao.inter.clases.SesionClaseDAO;
 import pe.edu.pucp.gigachadsys.model.clases.SesionClase;
 
 import java.sql.*;
