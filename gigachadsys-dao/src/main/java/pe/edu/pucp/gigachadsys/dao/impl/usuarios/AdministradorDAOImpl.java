@@ -48,33 +48,56 @@ public class AdministradorDAOImpl implements AdministradorDAO {
 
     @Override
     public Administrador load(Integer id) {
-        //SQL QUERY
-        String sql = "SELECT idUsuario, nombres, apellidoPaterno, apellidoMaterno,edad,DNI,email,telefono,contrasenia" +
-                ",rol,sede,sueldo,cargo from Administrador where idUsuario = ?";
+        // SQL QUERY
+        String sql =
+                "SELECT " +
+                        "idUsuario, " +
+                        "nombres, " +
+                        "apellidoPaterno, " +
+                        "apellidoMaterno, " +
+                        "edad, " +
+                        "DNI, " +
+                        "email, " +
+                        "telefono, " +
+                        "contrasenia, " +
+                        "rol, " +
+                        "Sede, " +
+                        "sueldo, " +
+                        "cargo, " +
+                        "activo " +
+                        "FROM Administrador " +
+                        "WHERE idUsuario = ?";
 
-        try(Connection connection = DBManager.getInstance().getConnection();
-            PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstmt = connection.prepareStatement(sql)
+        ) {
+
             pstmt.setInt(1, id);
-            try(ResultSet rs = pstmt.executeQuery()) {
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                Administrador administrador = new Administrador();
+
                 if (rs.next()) {
+                    administrador.setIdUsuario(rs.getInt("idUsuario"));
+                    administrador.setNombres(rs.getString("nombres"));
+                    administrador.setApellidoPaterno(rs.getString("apellidoPaterno"));
+                    administrador.setApellidoMaterno(rs.getString("apellidoMaterno"));
+                    administrador.setEdad(rs.getInt("edad"));
+                    administrador.setDni(rs.getInt("DNI"));
+                    administrador.setEmail(rs.getString("email"));
+                    administrador.setTelefono(rs.getInt("telefono"));
+                    administrador.setContrasenia(rs.getString("contrasenia"));
+                    administrador.setRol(rs.getString("rol"));
+                    administrador.setSede(rs.getString("Sede"));
+                    administrador.setSueldo(rs.getDouble("sueldo"));
+                    administrador.setCargo(rs.getString("cargo"));
+                    administrador.setActivo(rs.getBoolean("activo"));
 
-                    return new Administrador(
-                            rs.getInt("idUsuario"),
-                            rs.getString("nombres"),
-                            rs.getString("apellidoMaterno"),
-                            rs.getString("apellidoPaterno"),
-                            rs.getInt("edad"),
-                            rs.getInt("DNI"),
-                            rs.getString("email"),
-                            rs.getInt("telefono"),
-                            rs.getString("contrasenia"),
-                            rs.getString("rol"),
-                            rs.getString("sede"),
-                            rs.getDouble("sueldo")
-                    );
-
+                    return administrador;
                 }
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -86,25 +109,38 @@ public class AdministradorDAOImpl implements AdministradorDAO {
         administrador.setActive(true);
 
         //SQL QUERY
-        String sql = "INSERT INTO Administrador (idUsuario, nombres, apellidoPaterno, apellidoMaterno, edad, DNI, email"+
-                ", telefono, contrasenia, rol, sede, sueldo, cargo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
+        String sql =
+        "INSERT INTO Administrador (" +
+            "nombres, " +
+            "apellidoPaterno, " +
+            "apellidoMaterno, " +
+            "edad, " +
+            "DNI, " +
+            "email, " +
+            "telefono, " +
+            "contrasenia, " +
+            "rol, " +
+            "Sede, " +
+            "sueldo, " +
+            "cargo, " +
+            "activo" +
+            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setInt(1, administrador.getIdUsuario());
-            pstmt.setString(2, administrador.getNombres());
-            pstmt.setString(3, administrador.getApellidoPaterno());
-            pstmt.setString(4, administrador.getApellidoMaterno());
-            pstmt.setInt(5, administrador.getEdad());
-            pstmt.setInt(6, administrador.getDni());
-            pstmt.setString(7, administrador.getEmail());
-            pstmt.setInt(8, administrador.getTelefono());
-            pstmt.setString(9, administrador.getContrasenia());
-            pstmt.setString(10, administrador.getRol());
-            pstmt.setString(11, administrador.getSede());
-            pstmt.setDouble(12, administrador.getSueldo());
-            pstmt.setString(13, administrador.getCargo());
+            pstmt.setString(1, administrador.getNombres());
+            pstmt.setString(2, administrador.getApellidoPaterno());
+            pstmt.setString(3, administrador.getApellidoMaterno());
+            pstmt.setInt(4, administrador.getEdad());
+            pstmt.setInt(5, administrador.getDni());
+            pstmt.setString(6, administrador.getEmail());
+            pstmt.setInt(7, administrador.getTelefono());
+            pstmt.setString(8, administrador.getContrasenia());
+            pstmt.setString(9, administrador.getRol());
+            pstmt.setString(10, administrador.getSede());
+            pstmt.setDouble(11, administrador.getSueldo());
+            pstmt.setString(12, administrador.getCargo());
+            pstmt.setBoolean(13, administrador.getActivo());
 
             int affectedRows = pstmt.executeUpdate();
 
@@ -116,8 +152,6 @@ public class AdministradorDAOImpl implements AdministradorDAO {
                     }
                 }
             }
-
-
             return administrador;
 
         } catch (SQLException e) {
@@ -128,7 +162,8 @@ public class AdministradorDAOImpl implements AdministradorDAO {
     @Override
     public Administrador update(Administrador administrador) {
 
-        String sql = "UPDATE Administrador SET " +
+        String sql =
+            "UPDATE Administrador SET " +
                 "nombres = ?, " +
                 "apellidoPaterno = ?, " +
                 "apellidoMaterno = ?, " +
@@ -138,10 +173,11 @@ public class AdministradorDAOImpl implements AdministradorDAO {
                 "telefono = ?, " +
                 "contrasenia = ?, " +
                 "rol = ?, " +
-                "sede = ?, " +
+                "Sede = ?, " +
                 "sueldo = ?, " +
-                "cargo = ? " +
-                "WHERE idUsuario = ?";
+                "cargo = ?, " +
+                "activo = ? " +
+            "WHERE idUsuario = ?";
 
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -158,32 +194,41 @@ public class AdministradorDAOImpl implements AdministradorDAO {
             pstmt.setString(10, administrador.getSede());
             pstmt.setDouble(11, administrador.getSueldo());
             pstmt.setString(12, administrador.getCargo());
+            pstmt.setBoolean(13, administrador.getActivo());
 
             // ID para el WHERE
-            pstmt.setInt(13, administrador.getIdUsuario());
+            pstmt.setInt(14, administrador.getIdUsuario());
 
-            pstmt.executeUpdate();
+            int affectedRows = pstmt.executeUpdate();
 
-            return administrador;
+            if (affectedRows > 0) {
+                return administrador;
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        return null;
     }
 
 
     @Override
     public void remove(Administrador administrador) {
-        // TODO: please implement logical removal
-        administrador.setActive(false);
 
-        //SQL QUERY
-        String sql = "UPDATE Administrador SET activo = ? WHERE idUsuario = ?";
+        // Eliminación lógica
+        administrador.setActivo(false);
+
+        // SQL QUERY
+        String sql =
+        "UPDATE Administrador " +
+        "SET activo = ? " +
+        "WHERE idUsuario = ?";
 
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
-            pstmt.setBoolean(1, false);
+            pstmt.setBoolean(1, administrador.getActivo());
             pstmt.setInt(2, administrador.getIdUsuario());
 
             pstmt.executeUpdate();

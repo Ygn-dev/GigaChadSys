@@ -18,7 +18,7 @@ public class Socio extends  Usuario{
     }
 
     //Setters y Getters
-    public boolean isEstadoMembresia() {
+    public boolean getEstadoMembresia() {
         return estadoMembresia;
     }
 

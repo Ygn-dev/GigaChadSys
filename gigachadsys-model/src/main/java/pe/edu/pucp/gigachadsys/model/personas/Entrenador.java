@@ -20,6 +20,8 @@ public class Entrenador extends Usuario{
         this.tiempoTrabajado = tiempoTrabajado;
     }
 
+    public Entrenador() {}
+
 
     //Setters y Getters
     public String getEspecialidad() {
