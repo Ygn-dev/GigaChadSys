@@ -1,0 +1,64 @@
+@inherits LayoutComponentBase
+
+<div class="socio-shell">
+    <aside class="socio-sidebar">
+        <div class="socio-logo">
+            <div class="logo-mark">GC</div>
+            <div>
+                <h2>GIGACHAD</h2>
+                <span>SOCIO</span>
+            </div>
+        </div>
+
+        <nav class="socio-nav">
+            <NavLink href="/socio/inicio" Match="NavLinkMatch.All">
+                <span class="nav-icon">⌂</span> Inicio
+            </NavLink>
+
+            <NavLink href="/socio/membresia">
+                <span class="nav-icon">♛</span> Mi Membresía
+            </NavLink>
+
+            <NavLink href="/socio/reservar">
+                <span class="nav-icon">＋</span> Reservar Clase
+            </NavLink>
+
+            <NavLink href="/socio/reservas">
+                <span class="nav-icon">✓</span> Mis Reservas
+            </NavLink>
+
+            <NavLink href="/socio/pagos">
+                <span class="nav-icon">$</span> Mis Pagos
+            </NavLink>
+
+            <NavLink href="/socio/perfil">
+                <span class="nav-icon">◎</span> Mi Perfil
+            </NavLink>
+        </nav>
+
+        <div class="socio-bottom">
+            <div class="socio-profile">
+                <div class="profile-avatar">LT</div>
+                <div>
+                    <strong>Lucia Torres</strong>
+                    <span class="profile-role">Socio Black</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="socio-content-area">
+        <header class="entrenador-topbar">
+            <div></div>
+            <div class="topbar-actions">
+                <button class="topbar-btn" title="Notificaciones">🔔</button>
+                <button class="topbar-btn" title="Buscar">🔍</button>
+                <a class="topbar-btn topbar-logout" href="/login" title="Salir">⏻ Salir</a>
+            </div>
+        </header>
+
+        <main class="socio-main">
+            @Body
+        </main>
+    </div>
+</div>

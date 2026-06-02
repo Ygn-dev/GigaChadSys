@@ -1,0 +1,167 @@
+@page "/entrenador/horario"
+@using GigaChadSysWeb.Components.Layout
+@layout EntrenadorLayout
+@rendermode InteractiveServer
+
+<section class="horario-page">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <span class="breadcrumb-current">Mi Horario</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-hint">Gestiona tus clases asignadas</span>
+    </nav>
+
+    <div class="horario-header">
+        <h1>Mi Horario</h1>
+        <p class="horario-subtitle">Gestiona tus clases asignadas</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="horario-tabs">
+        <button class="horario-tab @(tabActiva == "activas" ? "tab-active" : "")"
+                @onclick='() => tabActiva = "activas"'>
+            Sesiones Activas (@sesionesActivas.Count)
+        </button>
+        <button class="horario-tab @(tabActiva == "historial" ? "tab-active" : "")"
+                @onclick='() => tabActiva = "historial"'>
+            Historial (@sesionesHistorial.Count)
+        </button>
+    </div>
+
+    <!-- Session List -->
+    <div class="horario-list">
+        @{
+            var listaMostrar = tabActiva == "activas" ? sesionesActivas : sesionesHistorial;
+        }
+
+        @foreach (var sesion in listaMostrar)
+        {
+            <div class="horario-sesion-card">
+                <div class="horario-sesion-left">
+                    <div class="horario-sesion-icon">
+                        <span>📋</span>
+                    </div>
+                    <div class="horario-sesion-info">
+                        <strong>@sesion.NombreClase</strong>
+                        <span class="horario-sesion-cat">@sesion.Categoria</span>
+                    </div>
+                </div>
+
+                <div class="horario-sesion-meta">
+                    <div class="horario-meta-col">
+                        <span class="meta-label">Fecha</span>
+                        <span class="meta-value">@sesion.Fecha.ToString("yyyy-MM-dd")</span>
+                    </div>
+                    <div class="horario-meta-col">
+                        <span class="meta-label">Hora</span>
+                        <span class="meta-value">@sesion.Hora</span>
+                    </div>
+                    <div class="horario-meta-col">
+                        <span class="meta-label">Salón</span>
+                        <span class="meta-value">@sesion.Salon</span>
+                    </div>
+                </div>
+
+                <div class="horario-sesion-right">
+                    <span class="badge badge-@sesion.Estado.ToLower()">@sesion.Estado</span>
+                    <span class="horario-alumnos">@sesion.Inscritos/@sesion.Capacidad alumnos</span>
+                </div>
+
+                <button class="horario-btn-cancel" title="Cancelar sesión" @onclick="() => CancelarSesion(sesion)">
+                    ✕
+                </button>
+            </div>
+        }
+
+        @if (!listaMostrar.Any())
+        {
+            <div class="horario-empty">
+                <p>No hay sesiones en esta categoría.</p>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private string tabActiva = "activas";
+    private List<SesionHorario> sesionesActivas = new();
+    private List<SesionHorario> sesionesHistorial = new();
+
+    protected override void OnInitialized()
+    {
+        // Datos mock - se conectará con BL después
+        sesionesActivas = new List<SesionHorario>
+        {
+            new SesionHorario
+            {
+                Id = 1,
+                NombreClase = "CrossFit Intenso",
+                Categoria = "CrossFit",
+                Fecha = new DateTime(2025, 5, 12),
+                Hora = "07:00",
+                Salon = "Sala Principal",
+                Estado = "Programada",
+                Inscritos = 18,
+                Capacidad = 20
+            },
+            new SesionHorario
+            {
+                Id = 2,
+                NombreClase = "Musculación Avanzada",
+                Categoria = "Musculación",
+                Fecha = new DateTime(2025, 5, 13),
+                Hora = "06:00",
+                Salon = "Sala Musculación",
+                Estado = "Programada",
+                Inscritos = 22,
+                Capacidad = 30
+            },
+            new SesionHorario
+            {
+                Id = 3,
+                NombreClase = "CrossFit Intenso",
+                Categoria = "CrossFit",
+                Fecha = new DateTime(2025, 5, 13),
+                Hora = "07:00",
+                Salon = "Sala Principal",
+                Estado = "Programada",
+                Inscritos = 15,
+                Capacidad = 20
+            }
+        };
+
+        sesionesHistorial = new List<SesionHorario>
+        {
+            new SesionHorario
+            {
+                Id = 4,
+                NombreClase = "CrossFit Básico",
+                Categoria = "CrossFit",
+                Fecha = new DateTime(2025, 5, 10),
+                Hora = "08:00",
+                Salon = "Sala Principal",
+                Estado = "Finalizada",
+                Inscritos = 20,
+                Capacidad = 20
+            }
+        };
+    }
+
+    private void CancelarSesion(SesionHorario sesion)
+    {
+        sesionesActivas.Remove(sesion);
+    }
+
+    private class SesionHorario
+    {
+        public int Id { get; set; }
+        public string NombreClase { get; set; } = "";
+        public string Categoria { get; set; } = "";
+        public DateTime Fecha { get; set; }
+        public string Hora { get; set; } = "";
+        public string Salon { get; set; } = "";
+        public string Estado { get; set; } = "";
+        public int Inscritos { get; set; }
+        public int Capacidad { get; set; }
+    }
+}

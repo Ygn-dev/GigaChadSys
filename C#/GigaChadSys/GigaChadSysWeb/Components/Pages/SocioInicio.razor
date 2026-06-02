@@ -1,0 +1,55 @@
+﻿@page "/socio/inicio"
+@using GigaChadSysWeb.Components.Layout
+@layout SocioLayout
+@rendermode InteractiveServer
+
+<section class="socio-home">
+    <div class="socio-hero">
+        <div>
+            <h1>¡Bienvenida, Lucia!</h1>
+            <p>Desde aquí puedes gestionar tu experiencia en GigaChad.</p>
+        </div>
+    </div>
+
+    <div class="socio-grid">
+        <a class="socio-card" href="/socio/membresia">
+            <div class="socio-icon">♛</div>
+            <h3>Mi Membresía</h3>
+            <p>Consulta los detalles de tu membresía actual, vigencia y beneficios.</p>
+            <span>Ver Membresía</span>
+        </a>
+
+        <a class="socio-card" href="/socio/reservar">
+            <div class="socio-icon">＋</div>
+            <h3>Reservar Clase</h3>
+            <p>Explora las clases disponibles y reserva tu cupo fácilmente.</p>
+            <span>Reservar Ahora</span>
+        </a>
+
+        <a class="socio-card" href="/socio/reservas">
+            <div class="socio-icon">✓</div>
+            <h3>Mis Reservas</h3>
+            <p>Consulta tus reservas confirmadas y tu historial de clases.</p>
+            <span>Ver Reservas</span>
+        </a>
+
+        <a class="socio-card" href="/socio/pagos">
+            <div class="socio-icon">$</div>
+            <h3>Mis Pagos</h3>
+            <p>Revisa tu historial de pagos y comprobantes.</p>
+            <span>Ver Pagos</span>
+        </a>
+
+        <a class="socio-card" href="/socio/perfil">
+            <div class="socio-icon">◎</div>
+            <h3>Mi Perfil</h3>
+            <p>Actualiza tu información personal y configuración de cuenta.</p>
+            <span>Editar Perfil</span>
+        </a>
+
+        <div class="socio-card motivacion-card">
+            <h3>¡Sigue entrenando y alcanza tus metas!</h3>
+            <p>La constancia hoy, son los resultados mañana.</p>
+        </div>
+    </div>
+</section>

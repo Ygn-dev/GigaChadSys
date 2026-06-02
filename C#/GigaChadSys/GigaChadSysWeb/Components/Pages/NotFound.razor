@@ -1,5 +1,21 @@
 ﻿@page "/not-found"
-@layout MainLayout
+@using GigaChadSysWeb.Components.Layout
+@layout AuthLayout
+@rendermode InteractiveServer
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<div class="notfound-page">
+    <div class="notfound-card">
+        <div class="notfound-code">404</div>
+
+        <h1>Ruta no encontrada</h1>
+
+        <p>
+            La página que intentas abrir no existe o todavía no ha sido implementada en GigaChadSys.
+        </p>
+
+        <div class="notfound-actions">
+            <a class="btn-primary-link" href="/login">Volver al inicio</a>
+            <a class="btn-secondary-link" href="javascript:history.back()">Regresar</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,119 @@
+@page "/socio/reservas"
+@using GigaChadSysWeb.Components.Layout
+@layout SocioLayout
+@rendermode InteractiveServer
+
+<section class="reservas-page">
+    <div class="reservas-breadcrumb">Reservar clase / Mis Reservas</div>
+
+    <div class="reservas-header">
+        <h1>Mis Reservas</h1>
+        <p class="reservas-subtitle">Gestiona tus reservas de clases</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="reservas-tabs">
+        <button class="reservas-tab @(tabActiva == "activas" ? "tab-activa" : "")" @onclick='() => tabActiva = "activas"'>
+            Reservas Activas (@reservasActivas.Count)
+        </button>
+        <button class="reservas-tab @(tabActiva == "historial" ? "tab-activa" : "")" @onclick='() => tabActiva = "historial"'>
+            Historial (@historial.Count)
+        </button>
+    </div>
+
+    <!-- Reservas list -->
+    <div class="reservas-list">
+        @{
+            var listaActual = tabActiva == "activas" ? reservasActivas : historial;
+        }
+        @if (listaActual.Count == 0)
+        {
+            <div class="reservas-empty">
+                <p>No hay reservas en esta sección.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var r in listaActual)
+            {
+                <div class="reserva-row">
+                    <div class="reserva-row-icon">
+                        <span>📅</span>
+                    </div>
+
+                    <div class="reserva-row-info">
+                        <strong>@r.NombreClase</strong>
+                        <span>@r.Disciplina</span>
+                    </div>
+
+                    <div class="reserva-row-meta">
+                        <span class="meta-label">Entrenador</span>
+                        <strong>@r.Entrenador</strong>
+                    </div>
+
+                    <div class="reserva-row-meta">
+                        <span class="meta-label">Fecha</span>
+                        <strong>@r.Fecha</strong>
+                    </div>
+
+                    <div class="reserva-row-meta">
+                        <span class="meta-label">Hora</span>
+                        <strong>@r.Hora</strong>
+                    </div>
+
+                    <div class="reserva-row-meta">
+                        <span class="meta-label">Salón</span>
+                        <strong>@r.Salon</strong>
+                    </div>
+
+                    <div class="reserva-row-estado">
+                        <span class="estado-badge estado-@r.Estado.ToLower()">
+                            @r.Estado
+                        </span>
+                    </div>
+
+                    @if (tabActiva == "activas")
+                    {
+                        <button class="btn-cancelar-reserva" @onclick="() => CancelarReserva(r)" title="Cancelar reserva">✕</button>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    private string tabActiva = "activas";
+    private List<Reserva> reservasActivas = new();
+    private List<Reserva> historial = new();
+
+    protected override void OnInitialized()
+    {
+        reservasActivas = new List<Reserva>
+        {
+            new() { NombreClase = "Yoga Matutino", Disciplina = "Yoga", Entrenador = "Pedro Sanchez", Fecha = "2025-05-12", Hora = "08:00", Salon = "Sala Yoga", Estado = "Confirmada" },
+            new() { NombreClase = "Spinning Power", Disciplina = "Spinning", Entrenador = "Laura Gomez", Fecha = "2025-05-12", Hora = "18:30", Salon = "Sala Ciclo", Estado = "Confirmada" }
+        };
+
+        historial = new List<Reserva>
+        {
+            new() { NombreClase = "CrossFit Intenso", Disciplina = "CrossFit", Entrenador = "Marco Ruiz", Fecha = "2025-05-05", Hora = "07:00", Salon = "Sala Principal", Estado = "Completada" }
+        };
+    }
+
+    private void CancelarReserva(Reserva r)
+    {
+        reservasActivas.Remove(r);
+    }
+
+    private class Reserva
+    {
+        public string NombreClase { get; set; } = "";
+        public string Disciplina { get; set; } = "";
+        public string Entrenador { get; set; } = "";
+        public string Fecha { get; set; } = "";
+        public string Hora { get; set; } = "";
+        public string Salon { get; set; } = "";
+        public string Estado { get; set; } = "";
+    }
+}

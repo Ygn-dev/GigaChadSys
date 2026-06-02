@@ -1,0 +1,224 @@
+@page "/socio/membresia"
+@using GigaChadSysWeb.Components.Layout
+@layout SocioLayout
+@rendermode InteractiveServer
+
+<section class="membresia-page">
+    <div class="membresia-header">
+        <h1>Mi Membresía</h1>
+        <p class="membresia-subtitle">@(tieneMembresia ? "Detalles de tu plan y beneficios" : "Consulta tu plan y beneficios del gimnasio")</p>
+    </div>
+
+    @if (!tieneMembresia)
+    {
+        <!-- SIN MEMBRESÍA -->
+        <div class="membresia-alert-card">
+            <div class="membresia-alert-left">
+                <div class="membresia-alert-icon">
+                    <span>👑</span>
+                </div>
+                <div>
+                    <h3>Aún no tienes una membresía activa</h3>
+                    <p>Suscríbete a un plan para comenzar a reservar clases y acceder a los servicios del gimnasio.</p>
+                    <button class="btn-adquirir" @onclick="() => tieneMembresia = true">Adquirir membresía</button>
+                </div>
+            </div>
+            <div class="membresia-alert-right">
+                <div class="membresia-meta-item">
+                    <span class="meta-label">Plan actual</span>
+                    <strong>No disponible</strong>
+                </div>
+                <div class="membresia-meta-item">
+                    <span class="meta-label">Estado</span>
+                    <strong class="estado-sin">Sin membresía</strong>
+                </div>
+                <div class="membresia-meta-item">
+                    <span class="meta-label">Fecha de inicio</span>
+                    <strong>—</strong>
+                </div>
+                <div class="membresia-meta-item">
+                    <span class="meta-label">Fecha de vencimiento</span>
+                    <strong>—</strong>
+                </div>
+                <div class="membresia-meta-item meta-full">
+                    <span class="meta-label">Último pago</span>
+                    <strong>—</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beneficios -->
+        <div class="membresia-beneficios-card">
+            <h3>¿Qué puedes hacer con una membresía?</h3>
+            <div class="beneficios-grid">
+                <div class="beneficio-item">
+                    <div class="beneficio-icon icon-red">🏋️</div>
+                    <div>
+                        <strong>Reservar clases grupales</strong>
+                        <p>Reserva tus clases favoritas y asegura tu cupo.</p>
+                    </div>
+                </div>
+                <div class="beneficio-item">
+                    <div class="beneficio-icon icon-red">🏠</div>
+                    <div>
+                        <strong>Acceso a instalaciones del gimnasio</strong>
+                        <p>Disfruta de todas nuestras áreas y equipos.</p>
+                    </div>
+                </div>
+                <div class="beneficio-item">
+                    <div class="beneficio-icon icon-red">📋</div>
+                    <div>
+                        <strong>Historial de pagos y suscripciones</strong>
+                        <p>Consulta tus pagos y descarga tus comprobantes.</p>
+                    </div>
+                </div>
+                <div class="beneficio-item">
+                    <div class="beneficio-icon icon-red">⭐</div>
+                    <div>
+                        <strong>Beneficios según el plan elegido</strong>
+                        <p>Más ventajas y servicios exclusivos para ti.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- CON MEMBRESÍA -->
+        <div class="membresia-plan-card">
+            <div class="plan-header">
+                <div class="plan-header-left">
+                    <div class="plan-icon-large icon-red">👑</div>
+                    <div>
+                        <span class="plan-label-sm">PLAN ACTUAL</span>
+                        <h3>Membresía @planActual</h3>
+                    </div>
+                </div>
+                <span class="plan-badge-activa">Activa</span>
+            </div>
+
+            <div class="plan-precio">
+                <span class="plan-precio-valor">S/@precioMensual</span>
+                <span class="plan-precio-periodo"> /mes</span>
+            </div>
+
+            <div class="plan-fechas-grid">
+                <div class="plan-fecha-item">
+                    <span class="meta-label">FECHA DE INICIO</span>
+                    <strong>@fechaInicio</strong>
+                </div>
+                <div class="plan-fecha-item">
+                    <span class="meta-label">FECHA DE FIN</span>
+                    <strong>@fechaFin</strong>
+                </div>
+                <div class="plan-fecha-item">
+                    <span class="meta-label">ÚLTIMO PAGO</span>
+                    <strong>@ultimoPago</strong>
+                </div>
+                <div class="plan-fecha-item">
+                    <span class="meta-label">ESTADO DE MEMBRESÍA</span>
+                    <strong class="estado-al-dia">● Activa</strong>
+                </div>
+            </div>
+
+            <h4 class="plan-section-title">Beneficios Incluidos</h4>
+            <div class="plan-beneficios-grid">
+                @foreach (var b in beneficiosIncluidos)
+                {
+                    <div class="plan-beneficio-tag">
+                        <span class="check-green">✓</span> @b
+                    </div>
+                }
+            </div>
+
+            <h4 class="plan-section-title">Características</h4>
+            <div class="plan-beneficios-grid">
+                @foreach (var c in caracteristicas)
+                {
+                    <div class="plan-beneficio-tag tag-rojo">
+                        <span class="check-rojo">◉</span> @c
+                    </div>
+                }
+            </div>
+
+            <button class="btn-renovar" @onclick="() => {}">Renovar Membresía</button>
+        </div>
+    }
+
+    <!-- Planes disponibles / Conoce los planes -->
+    <div class="planes-section">
+        <h3>@(tieneMembresia ? "Conoce los Planes" : "Planes disponibles")</h3>
+        <div class="planes-grid">
+            <!-- Basic -->
+            <div class="plan-card">
+                <div class="plan-card-header">
+                    <div class="plan-card-icon">👑</div>
+                    <div>
+                        <h4>Membresía Basic</h4>
+                        <div class="plan-card-precio">
+                            <span class="plan-card-valor">S/79</span>
+                            <span class="plan-card-periodo"> /mes</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="plan-card-features">
+                    <li><span class="check-green">✓</span> Acceso a sala de musculación</li>
+                    <li><span class="check-green">✓</span> Acceso a cardio</li>
+                    <li><span class="check-green">✓</span> Vestuario incluido</li>
+                </ul>
+                <button class="btn-suscribirme">Suscribirme</button>
+            </div>
+
+            <!-- Black -->
+            <div class="plan-card plan-card-premium">
+                <span class="plan-premium-badge">PREMIUM</span>
+                <div class="plan-card-header">
+                    <div class="plan-card-icon icon-red">👑</div>
+                    <div>
+                        <h4>Membresía Black</h4>
+                        <div class="plan-card-precio">
+                            <span class="plan-card-valor">S/149</span>
+                            <span class="plan-card-periodo"> /mes</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="plan-card-features">
+                    <li><span class="check-green">✓</span> Todo lo de Basic</li>
+                    <li><span class="check-green">✓</span> Clases grupales ilimitadas</li>
+                    <li><span class="check-green">✓</span> Acceso 24/7</li>
+                    <li><span class="check-green">✓</span> Zona de spa</li>
+                </ul>
+                @if (tieneMembresia && planActual == "Black")
+                {
+                    <span class="plan-actual-label">Tu plan actual</span>
+                }
+                else
+                {
+                    <button class="btn-suscribirme btn-suscribirme-premium">Suscribirme</button>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private bool tieneMembresia = true;
+    private string planActual = "Black";
+    private int precioMensual = 149;
+    private string fechaInicio = "2025-02-01";
+    private string fechaFin = "2025-06-01";
+    private string ultimoPago = "2025-05-01";
+
+    private List<string> beneficiosIncluidos = new()
+    {
+        "Todo lo de Basic", "Clases grupales ilimitadas",
+        "Acceso 24/7", "Zona de spa",
+        "Entrenador personal 2x/mes"
+    };
+
+    private List<string> caracteristicas = new()
+    {
+        "Acceso total a horarios", "Reserva de clases preferencial",
+        "Invitados gratuitos (2/mes)"
+    };
+}

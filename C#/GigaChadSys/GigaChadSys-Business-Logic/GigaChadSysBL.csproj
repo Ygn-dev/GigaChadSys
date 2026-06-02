@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>gigachadsys_business_logic</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="AdministradorBL.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gigachadsys-dao\GigaChadSysDAO.csproj" />
+    <ProjectReference Include="..\gigachadsys-db-manager\GigaChadSysDBManager.csproj" />
+    <ProjectReference Include="..\gigachadsys-model\GigaChadSysModel.csproj" />
+  </ItemGroup>
+
+</Project>

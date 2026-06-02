@@ -1,0 +1,143 @@
+@page "/socio/perfil"
+@using GigaChadSysWeb.Components.Layout
+@layout SocioLayout
+@rendermode InteractiveServer
+
+<section class="perfil-page">
+    <div class="perfil-header">
+        <h1>Mi Perfil</h1>
+        <p class="perfil-subtitle">Tu información personal y membresía</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="perfil-card">
+        <div class="perfil-card-left">
+            <div class="perfil-avatar-large">
+                <span>👤</span>
+            </div>
+            <div class="perfil-card-info">
+                <h2>@perfil.NombreCompleto</h2>
+                <p class="perfil-email">@perfil.Correo</p>
+                <div class="perfil-badges">
+                    <span class="perfil-badge badge-activo">
+                        <span class="estado-dot"></span> @perfil.Estado
+                    </span>
+                    <span class="perfil-badge badge-membresia">
+                        ♛ Membresía @perfil.TipoMembresia
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="perfil-card-actions">
+            <button class="btn-perfil-edit" @onclick="ToggleEditar">
+                ✏️ Editar Perfil
+            </button>
+            <button class="btn-perfil-password">
+                ⚙ Cambiar Contraseña
+            </button>
+        </div>
+    </div>
+
+    <!-- Información Personal -->
+    <div class="perfil-info-card">
+        <h3>Información Personal</h3>
+
+        <div class="perfil-info-list">
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>🪪</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">DNI</span>
+                    <strong>@perfil.DNI</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>👤</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Nombre Completo</span>
+                    <strong>@perfil.NombreCompleto</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>📞</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Teléfono</span>
+                    <strong>@perfil.Telefono</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>✉️</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Correo Electrónico</span>
+                    <strong>@perfil.Correo</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>📅</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Fecha de Registro</span>
+                    <strong>@perfil.FechaRegistro.ToString("yyyy-MM-dd")</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>🏋️</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Estado de Membresía</span>
+                    <strong class="estado-al-dia">@perfil.EstadoMembresia</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private PerfilSocio perfil = new();
+
+    protected override void OnInitialized()
+    {
+        perfil = new PerfilSocio
+        {
+            DNI = "40234123",
+            NombreCompleto = "Lucia Torres",
+            Telefono = "987654321",
+            Correo = "lucia@email.com",
+            FechaRegistro = new DateTime(2024, 2, 1),
+            Estado = "Activo",
+            TipoMembresia = "Black",
+            EstadoMembresia = "Activa"
+        };
+    }
+
+    private void ToggleEditar()
+    {
+        // Se conectará con BL después
+    }
+
+    private class PerfilSocio
+    {
+        public string DNI { get; set; } = "";
+        public string NombreCompleto { get; set; } = "";
+        public string Telefono { get; set; } = "";
+        public string Correo { get; set; } = "";
+        public DateTime FechaRegistro { get; set; }
+        public string Estado { get; set; } = "";
+        public string TipoMembresia { get; set; } = "";
+        public string EstadoMembresia { get; set; } = "";
+    }
+}

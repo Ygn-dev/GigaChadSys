@@ -1,3 +1,7 @@
 <Solution>
+  <Project Path="GigaChadSys-Business-Logic/GigaChadSys-Business-Logic.csproj" Id="2691d8e7-4e04-419f-ada5-32c02b46c873" />
+  <Project Path="GigaChadSys-DAO/GigaChadSys-DAO.csproj" Id="4fd4324d-fc73-44d7-95ec-4ca16329ba13" />
+  <Project Path="GigaChadSys-DB-Manager/GigaChadSys-DB-Manager.csproj" Id="89bc56b0-dfff-44e6-a038-058cdf42f8eb" />
+  <Project Path="GigaChadSys-Model/GigaChadSys-Model.csproj" Id="145f8755-b7ce-4664-bad6-4258d4ece2d4" />
   <Project Path="GigaChadSysWeb/GigaChadSysWeb.csproj" />
 </Solution>

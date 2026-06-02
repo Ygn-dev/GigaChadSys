@@ -1,0 +1,69 @@
+@page "/"
+@page "/login"
+@using GigaChadSysWeb.Components.Layout
+@layout AuthLayout
+@rendermode InteractiveServer
+
+<div class="auth-page">
+    <!-- Decorative corner lines -->
+    <div class="auth-corner auth-corner-tl"></div>
+    <div class="auth-corner auth-corner-br"></div>
+
+    <div class="auth-container">
+        <!-- Logo -->
+        <div class="auth-logo">
+            <div class="auth-logo-icon">
+                <span>🏋️</span>
+            </div>
+            <h1 class="auth-brand">
+                <span class="brand-giga">GYGA</span><span class="brand-chad">CHAD</span>
+            </h1>
+            <p class="auth-tagline">ENTRENA · SUPÉRATE · VIVE</p>
+        </div>
+
+        <!-- Title -->
+        <h2 class="auth-title">Iniciar Sesión</h2>
+        <p class="auth-desc">Bienvenido de vuelta a GigaChad</p>
+
+        <!-- Form Card -->
+        <div class="auth-card">
+            <div class="auth-form-group">
+                <label>CORREO ELECTRÓNICO</label>
+                <div class="auth-input-wrapper">
+                    <span class="auth-input-icon">✉️</span>
+                    <input type="email" @bind="correo" placeholder="Ej: juan@email.com" />
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label>CONTRASEÑA</label>
+                <div class="auth-input-wrapper">
+                    <span class="auth-input-icon">🔒</span>
+                    <input type="@(mostrarPass ? "text" : "password")" @bind="password" placeholder="Ingresa tu contraseña" />
+                    <button class="auth-eye-btn" @onclick="() => mostrarPass = !mostrarPass" type="button">
+                        @(mostrarPass ? "🙈" : "👁️")
+                    </button>
+                </div>
+            </div>
+
+            <button class="auth-submit-btn" @onclick="IniciarSesion">Iniciar Sesión</button>
+        </div>
+
+        <!-- Link -->
+        <p class="auth-link-text">
+            ¿No tienes cuenta?
+        </p>
+        <a class="auth-link" href="/registro">Crear cuenta aquí  ›</a>
+    </div>
+</div>
+
+@code {
+    private string correo = "";
+    private string password = "";
+    private bool mostrarPass = false;
+
+    private void IniciarSesion()
+    {
+        // Se conectará con BL después
+    }
+}

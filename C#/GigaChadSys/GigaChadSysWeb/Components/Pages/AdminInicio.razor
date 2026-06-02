@@ -1,0 +1,67 @@
+﻿@page "/admin/inicio"
+@using GigaChadSysWeb.Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="admin-home">
+    <div class="welcome-card">
+        <p class="welcome-label">Panel de administración</p>
+
+        <h1>Bienvenido, Administrador</h1>
+
+        <p>
+            Desde este panel puedes gestionar las operaciones principales del gimnasio GigaChad.
+        </p>
+    </div>
+
+    <div class="admin-grid">
+        <a class="admin-option-card" href="/admin/socios">
+            <h3>Gestionar Socios</h3>
+            <p>Registrar, consultar y actualizar socios del gimnasio.</p>
+        </a>
+
+        <a class="admin-option-card" href="/admin/entrenadores">
+            <h3>Gestionar Entrenadores</h3>
+            <p>Administrar entrenadores, especialidades y estado.</p>
+        </a>
+
+        <a class="admin-option-card" href="/admin/membresias">
+            <h3>Gestionar Membresías</h3>
+            <p>Controlar planes Basic y Black.</p>
+        </a>
+
+        <a class="admin-option-card" href="/admin/clases">
+            <h3>Gestionar Clases</h3>
+            <p>Crear y administrar clases grupales.</p>
+        </a>
+
+        <a class="admin-option-card" href="/admin/sesiones">
+            <h3>Gestionar Sesiones</h3>
+            <p>Programar sesiones con salón y entrenador.</p>
+        </a>
+
+        <a class="admin-option-card" href="/admin/reservas">
+            <h3>Gestionar Reservas</h3>
+            <p>Consultar reservas realizadas por los socios.</p>
+        </a>
+
+        <a class="admin-option-card" href="/admin/pagos">
+            <h3>Gestionar Pagos</h3>
+            <p>Registrar y consultar pagos de membresías.</p>
+        </a>
+
+        <a class="admin-option-card" href="/admin/maquinas">
+            <h3>Gestionar Máquinas</h3>
+            <p>Controlar estado y mantenimiento de máquinas.</p>
+        </a>
+        <a class="admin-option-card" href="/admin/salones">
+            <h3>Gestionar Salones</h3>
+            <p>Administrar salones, aforo y disponibilidad.</p>
+        </a>
+
+        <a class="admin-option-card" href="/admin/reportes">
+            <h3>Ver Reportes</h3>
+            <p>Consultar información general del gimnasio.</p>
+        </a>
+    </div>
+</section>

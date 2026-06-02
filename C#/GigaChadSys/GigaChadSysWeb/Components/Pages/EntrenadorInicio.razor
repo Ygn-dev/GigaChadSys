@@ -1,0 +1,49 @@
+﻿@page "/entrenador/inicio"
+@using GigaChadSysWeb.Components.Layout
+@layout EntrenadorLayout
+@rendermode InteractiveServer
+
+<section class="entrenador-home">
+    <div class="entrenador-hero">
+        <div>
+            <h1>¡Bienvenido, Marco!</h1>
+            <p>Desde aquí puedes gestionar tus sesiones, horarios y alumnos inscritos.</p>
+            <div class="hero-line"></div>
+        </div>
+    </div>
+
+    <div class="entrenador-grid">
+        <a class="entrenador-card" href="/entrenador/sesiones">
+            <div class="entrenador-icon">▣</div>
+            <h3>Mis Sesiones</h3>
+            <p>Consulta las sesiones de clase que tienes asignadas.</p>
+            <span>Ver Sesiones</span>
+        </a>
+
+        <a class="entrenador-card" href="/entrenador/horario">
+            <div class="entrenador-icon">◷</div>
+            <h3>Mi Horario</h3>
+            <p>Revisa tu horario semanal y disponibilidad.</p>
+            <span>Ver Horario</span>
+        </a>
+
+        <a class="entrenador-card" href="/entrenador/alumnos">
+            <div class="entrenador-icon">◎</div>
+            <h3>Alumnos Inscritos</h3>
+            <p>Visualiza los socios inscritos en tus sesiones.</p>
+            <span>Ver Alumnos</span>
+        </a>
+
+        <a class="entrenador-card" href="/entrenador/perfil">
+            <div class="entrenador-icon">○</div>
+            <h3>Mi Perfil</h3>
+            <p>Consulta y actualiza tu información personal y profesional.</p>
+            <span>Editar Perfil</span>
+        </a>
+
+        <div class="entrenador-card entrenador-motivacion-card">
+            <h3>Inspira, guía y transforma.</h3>
+            <p>Cada sesión es una oportunidad para ayudar a tus alumnos a mejorar.</p>
+        </div>
+    </div>
+</section>

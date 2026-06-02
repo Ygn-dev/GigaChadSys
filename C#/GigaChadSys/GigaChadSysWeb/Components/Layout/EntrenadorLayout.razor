@@ -1,0 +1,64 @@
+@inherits LayoutComponentBase
+
+<div class="entrenador-shell">
+    <aside class="entrenador-sidebar">
+        <div class="entrenador-logo">
+            <div class="logo-mark">GC</div>
+            <div>
+                <h2>GIGACHAD</h2>
+                <span>ENTRENADOR</span>
+            </div>
+        </div>
+
+        <nav class="entrenador-nav">
+            <NavLink href="/entrenador/inicio" Match="NavLinkMatch.All">
+                <span class="nav-icon">⌂</span> Inicio
+            </NavLink>
+
+            <NavLink href="/entrenador/sesiones">
+                <span class="nav-icon">▣</span> Mis Sesiones
+            </NavLink>
+
+            <NavLink href="/entrenador/horario">
+                <span class="nav-icon">◷</span> Mi Horario
+            </NavLink>
+
+            <NavLink href="/entrenador/alumnos">
+                <span class="nav-icon">◎</span> Alumnos Inscritos
+            </NavLink>
+
+            <NavLink href="/entrenador/pagos">
+                <span class="nav-icon">⬡</span> Mis Pagos
+            </NavLink>
+
+            <NavLink href="/entrenador/perfil">
+                <span class="nav-icon">○</span> Mi Perfil
+            </NavLink>
+        </nav>
+
+        <div class="entrenador-bottom">
+            <div class="entrenador-profile">
+                <div class="profile-avatar">MR</div>
+                <div>
+                    <strong>Marco Ruiz</strong>
+                    <span class="profile-role">CrossFit y Musculación</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="entrenador-content-area">
+        <header class="entrenador-topbar">
+            <div></div>
+            <div class="topbar-actions">
+                <button class="topbar-btn" title="Notificaciones">🔔</button>
+                <button class="topbar-btn" title="Buscar">🔍</button>
+                <a class="topbar-btn topbar-logout" href="/login" title="Salir">⏻ Salir</a>
+            </div>
+        </header>
+
+        <main class="entrenador-main">
+            @Body
+        </main>
+    </div>
+</div>

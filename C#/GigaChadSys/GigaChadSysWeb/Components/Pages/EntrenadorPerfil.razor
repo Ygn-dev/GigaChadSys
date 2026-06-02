@@ -1,0 +1,151 @@
+@page "/entrenador/perfil"
+@using GigaChadSysWeb.Components.Layout
+@layout EntrenadorLayout
+@rendermode InteractiveServer
+
+<section class="perfil-page">
+    <div class="perfil-header">
+        <h1>Mi Perfil</h1>
+        <p class="perfil-subtitle">Tu información personal y profesional</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="perfil-card">
+        <div class="perfil-card-left">
+            <div class="perfil-avatar-large">
+                <span>👤</span>
+            </div>
+            <div class="perfil-card-info">
+                <h2>@perfil.NombreCompleto</h2>
+                <p class="perfil-email">@perfil.Correo</p>
+                <div class="perfil-badges">
+                    <span class="perfil-badge badge-activo">
+                        <span class="estado-dot"></span> @perfil.Estado
+                    </span>
+                    <span class="perfil-badge badge-especialidad">
+                        💪 @perfil.Especialidad
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="perfil-card-actions">
+            <button class="btn-perfil-edit" @onclick="ToggleEditar">
+                ✏️ Editar Perfil
+            </button>
+            <button class="btn-perfil-password">
+                ⚙ Cambiar Contraseña
+            </button>
+        </div>
+    </div>
+
+    <!-- Información Personal -->
+    <div class="perfil-info-card">
+        <h3>Información Personal</h3>
+
+        <div class="perfil-info-list">
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>🪪</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">DNI</span>
+                    <strong>@perfil.DNI</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>👤</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Nombre Completo</span>
+                    <strong>@perfil.NombreCompleto</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>📞</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Teléfono</span>
+                    <strong>@perfil.Telefono</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>✉️</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Correo Electrónico</span>
+                    <strong>@perfil.Correo</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>💪</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Especialidad</span>
+                    <strong>@perfil.Especialidad</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>📅</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Fecha de Ingreso</span>
+                    <strong>@perfil.FechaIngreso.ToString("yyyy-MM-dd")</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>🏋️</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Estado</span>
+                    <strong class="estado-al-dia">@perfil.Estado</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private PerfilEntrenador perfil = new();
+
+    protected override void OnInitialized()
+    {
+        perfil = new PerfilEntrenador
+        {
+            DNI = "40567890",
+            NombreCompleto = "Marco Ruiz",
+            Telefono = "912345678",
+            Correo = "marco@gigachad.com",
+            Especialidad = "CrossFit y Musculación",
+            FechaIngreso = new DateTime(2023, 6, 15),
+            Estado = "Activo"
+        };
+    }
+
+    private void ToggleEditar()
+    {
+        // Se conectará con BL después
+    }
+
+    private class PerfilEntrenador
+    {
+        public string DNI { get; set; } = "";
+        public string NombreCompleto { get; set; } = "";
+        public string Telefono { get; set; } = "";
+        public string Correo { get; set; } = "";
+        public string Especialidad { get; set; } = "";
+        public DateTime FechaIngreso { get; set; }
+        public string Estado { get; set; } = "";
+    }
+}

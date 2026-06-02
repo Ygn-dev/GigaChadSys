@@ -1,0 +1,189 @@
+@page "/entrenador/sesiones/detalle"
+@page "/entrenador/sesiones/detalle/{SesionId:int}"
+@using GigaChadSysWeb.Components.Layout
+@layout EntrenadorLayout
+@rendermode InteractiveServer
+
+<section class="sesion-detalle">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a href="/entrenador/sesiones">Mis Sesiones</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Detalle</span>
+    </nav>
+
+    <div class="detalle-layout">
+        <!-- Main Content -->
+        <div class="detalle-main">
+            <!-- Session Header Card -->
+            <div class="sesion-header-card">
+                <div class="sesion-header-top">
+                    <div class="sesion-icon-box">
+                        <span>📋</span>
+                    </div>
+                    <div class="sesion-header-info">
+                        <div class="sesion-title-row">
+                            <h1>@sesion.NombreClase</h1>
+                            <span class="badge badge-@sesion.Estado.ToLower()">@sesion.Estado</span>
+                        </div>
+                        <p class="sesion-subtitle">@sesion.Categoria · @sesion.Nivel</p>
+                    </div>
+                </div>
+
+                <!-- Session Metadata -->
+                <div class="sesion-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">FECHA</span>
+                        <span class="meta-value">@sesion.Fecha.ToString("yyyy-MM-dd")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">HORA</span>
+                        <span class="meta-value">@sesion.HoraInicio - @sesion.HoraFin</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">SALÓN</span>
+                        <span class="meta-value">@sesion.Salon</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">DURACIÓN</span>
+                        <span class="meta-value">@sesion.Duracion min</span>
+                    </div>
+                </div>
+
+                <!-- Capacity Bar -->
+                <div class="capacidad-section">
+                    <div class="capacidad-header">
+                        <span class="capacidad-label">CAPACIDAD MÁXIMA</span>
+                        <span class="capacidad-count">@sesion.Ocupados/@sesion.CapacidadMaxima</span>
+                    </div>
+                    <div class="capacidad-bar-track">
+                        <div class="capacidad-bar-fill" style="width: @PorcentajeOcupacion%"></div>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="sesion-stats-row">
+                    <div class="stat-card">
+                        <span class="stat-value stat-ocupados">@sesion.Ocupados</span>
+                        <span class="stat-label">Ocupados</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value stat-disponibles">@Disponibles</span>
+                        <span class="stat-label">Disponibles</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value stat-porcentaje">@PorcentajeOcupacion%</span>
+                        <span class="stat-label">Ocupación</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Card -->
+            <div class="descripcion-card">
+                <h3>Descripción de la Clase</h3>
+                <p>@sesion.Descripcion</p>
+            </div>
+        </div>
+
+        <!-- Right Panel - Alumnos Inscritos -->
+        <aside class="alumnos-panel">
+            <div class="alumnos-header">
+                <h3>Alumnos Inscritos</h3>
+                <span class="alumnos-total">@alumnos.Count total</span>
+            </div>
+
+            <div class="alumnos-list">
+                @foreach (var alumno in alumnos)
+                {
+                    <div class="alumno-item">
+                        <div class="alumno-left">
+                            <div class="alumno-avatar">
+                                <span>👤</span>
+                            </div>
+                            <div class="alumno-info">
+                                <strong>@alumno.Nombre</strong>
+                                <span class="alumno-meta">@alumno.Codigo · @alumno.EstadoMembresia</span>
+                            </div>
+                        </div>
+                        <span class="alumno-badge badge-@alumno.EstadoReserva.ToLower()">@alumno.EstadoReserva</span>
+                    </div>
+                }
+            </div>
+        </aside>
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public int SesionId { get; set; }
+
+    private SesionDetalle sesion = new();
+    private List<AlumnoInscrito> alumnos = new();
+
+    private int Disponibles => sesion.CapacidadMaxima - sesion.Ocupados;
+    private int PorcentajeOcupacion => sesion.CapacidadMaxima > 0
+        ? (int)Math.Round((double)sesion.Ocupados / sesion.CapacidadMaxima * 100)
+        : 0;
+
+    protected override void OnInitialized()
+    {
+        // Datos de ejemplo (mock) - se conectará con BL después
+        sesion = new SesionDetalle
+        {
+            NombreClase = "CrossFit Intenso",
+            Categoria = "CrossFit",
+            Nivel = "Nivel avanzado",
+            Estado = "Programada",
+            Fecha = new DateTime(2025, 5, 12),
+            HoraInicio = "07:00",
+            HoraFin = "08:00",
+            Salon = "Sala Principal",
+            Duracion = 60,
+            CapacidadMaxima = 20,
+            Ocupados = 18,
+            Descripcion = "Entrenamiento funcional de alta intensidad con ejercicios variados"
+        };
+
+        alumnos = new List<AlumnoInscrito>
+        {
+            new AlumnoInscrito
+            {
+                Nombre = "Juan Perez",
+                Codigo = "40123123",
+                EstadoMembresia = "Activo",
+                EstadoReserva = "Confirmada"
+            },
+            new AlumnoInscrito
+            {
+                Nombre = "Fernando Loza",
+                Codigo = "40001678",
+                EstadoMembresia = "Activo",
+                EstadoReserva = "Confirmada"
+            }
+        };
+    }
+
+    private class SesionDetalle
+    {
+        public string NombreClase { get; set; } = "";
+        public string Categoria { get; set; } = "";
+        public string Nivel { get; set; } = "";
+        public string Estado { get; set; } = "";
+        public DateTime Fecha { get; set; }
+        public string HoraInicio { get; set; } = "";
+        public string HoraFin { get; set; } = "";
+        public string Salon { get; set; } = "";
+        public int Duracion { get; set; }
+        public int CapacidadMaxima { get; set; }
+        public int Ocupados { get; set; }
+        public string Descripcion { get; set; } = "";
+    }
+
+    private class AlumnoInscrito
+    {
+        public string Nombre { get; set; } = "";
+        public string Codigo { get; set; } = "";
+        public string EstadoMembresia { get; set; } = "";
+        public string EstadoReserva { get; set; } = "";
+    }
+}

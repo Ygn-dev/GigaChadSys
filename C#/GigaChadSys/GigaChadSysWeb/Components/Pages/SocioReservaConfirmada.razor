@@ -1,0 +1,134 @@
+@page "/socio/reserva-confirmada"
+@using GigaChadSysWeb.Components.Layout
+@layout SocioLayout
+@rendermode InteractiveServer
+
+<section class="confirmada-page">
+    <div class="confirmada-header">
+        <h1>Reserva Confirmada</h1>
+        <p class="confirmada-subtitle">Tu reserva de clase se registró correctamente</p>
+    </div>
+
+    <!-- Success banner -->
+    <div class="confirmada-banner">
+        <div class="confirmada-check">
+            <span>✓</span>
+        </div>
+        <div>
+            <h3>¡Todo listo, Lucia!</h3>
+            <p>Tu lugar en la clase está asegurado.<br/>Te esperamos para que sigas alcanzando tus objetivos.</p>
+        </div>
+    </div>
+
+    <!-- Content grid -->
+    <div class="confirmada-grid">
+        <!-- Detalles -->
+        <div class="confirmada-detalles">
+            <h3>Detalles de la reserva</h3>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">🏋️</span>
+                <span class="detalle-label">Clase</span>
+                <strong>Yoga Matutino</strong>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">🎯</span>
+                <span class="detalle-label">Disciplina</span>
+                <strong class="text-rojo">Yoga</strong>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">📅</span>
+                <span class="detalle-label">Fecha</span>
+                <strong>2025-05-12</strong>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">🕐</span>
+                <span class="detalle-label">Hora</span>
+                <strong>08:00 - 08:45</strong>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">👤</span>
+                <span class="detalle-label">Entrenador</span>
+                <strong>Pedro Sanchez</strong>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">📍</span>
+                <span class="detalle-label">Salón</span>
+                <strong>Sala Yoga</strong>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">🎟️</span>
+                <span class="detalle-label">Cupos restantes</span>
+                <strong class="text-verde">2 cupos</strong>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">✅</span>
+                <span class="detalle-label">Estado de reserva</span>
+                <span class="estado-badge estado-confirmada">✓ Confirmada</span>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">♛</span>
+                <span class="detalle-label">Membresía utilizada</span>
+                <strong>Membresía Black</strong>
+            </div>
+
+            <div class="detalle-row">
+                <span class="detalle-icon">👤</span>
+                <span class="detalle-label">Socio</span>
+                <strong>Lucia Torres</strong>
+            </div>
+        </div>
+
+        <!-- Próximos pasos -->
+        <div class="confirmada-pasos">
+            <h3>Próximos pasos</h3>
+
+            <div class="paso-item">
+                <div class="paso-icon icon-red">⏰</div>
+                <div>
+                    <strong>Llega 10 minutos antes</strong>
+                    <p>Te recomendamos llegar con anticipación para prepararte y disfrutar al máximo tu clase.</p>
+                </div>
+            </div>
+
+            <div class="paso-item">
+                <div class="paso-icon icon-red">🎒</div>
+                <div>
+                    <strong>Trae lo necesario</strong>
+                    <p>No olvides tu toalla, botella de agua y toda la energía para dar lo mejor de ti.</p>
+                </div>
+            </div>
+
+            <div class="paso-item">
+                <div class="paso-icon icon-red">📋</div>
+                <div>
+                    <strong>Revisa tus reservas</strong>
+                    <p>Puedes ver los detalles de esta y todas tus reservas en la sección Mis Reservas.</p>
+                </div>
+            </div>
+
+            <div class="paso-nota">
+                <span>ℹ️</span>
+                <p>Si no puedes asistir, recuerda cancelar tu reserva con anticipación para liberar tu cupo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom actions -->
+    <div class="confirmada-actions">
+        <a href="/socio/reservas" class="btn-confirmada-primary">Ver Mis Reservas</a>
+        <a href="/socio/reservar" class="btn-confirmada-secondary">Explorar Más Clases</a>
+    </div>
+</section>
+
+@code {
+    // Los datos vendrán por parámetro o BL después
+}

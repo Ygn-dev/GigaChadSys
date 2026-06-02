@@ -1,0 +1,151 @@
+@page "/admin/perfil"
+@using GigaChadSysWeb.Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="perfil-page">
+    <div class="perfil-header">
+        <h1>Mi Perfil</h1>
+        <p class="perfil-subtitle">Tu información de administrador</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="perfil-card">
+        <div class="perfil-card-left">
+            <div class="perfil-avatar-large">
+                <span>👤</span>
+            </div>
+            <div class="perfil-card-info">
+                <h2>@perfil.NombreCompleto</h2>
+                <p class="perfil-email">@perfil.Correo</p>
+                <div class="perfil-badges">
+                    <span class="perfil-badge badge-activo">
+                        <span class="estado-dot"></span> @perfil.Estado
+                    </span>
+                    <span class="perfil-badge badge-admin-role">
+                        🛡️ Administrador
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="perfil-card-actions">
+            <button class="btn-perfil-edit" @onclick="ToggleEditar">
+                ✏️ Editar Perfil
+            </button>
+            <button class="btn-perfil-password">
+                ⚙ Cambiar Contraseña
+            </button>
+        </div>
+    </div>
+
+    <!-- Información Personal -->
+    <div class="perfil-info-card">
+        <h3>Información Personal</h3>
+
+        <div class="perfil-info-list">
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>🪪</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">DNI</span>
+                    <strong>@perfil.DNI</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>👤</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Nombre Completo</span>
+                    <strong>@perfil.NombreCompleto</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>📞</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Teléfono</span>
+                    <strong>@perfil.Telefono</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>✉️</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Correo Electrónico</span>
+                    <strong>@perfil.Correo</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>🛡️</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Rol</span>
+                    <strong>@perfil.Rol</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>📅</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Fecha de Registro</span>
+                    <strong>@perfil.FechaRegistro.ToString("yyyy-MM-dd")</strong>
+                </div>
+            </div>
+
+            <div class="perfil-info-row">
+                <div class="perfil-info-icon">
+                    <span>🏋️</span>
+                </div>
+                <div>
+                    <span class="perfil-info-label">Estado</span>
+                    <strong class="estado-al-dia">@perfil.Estado</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private PerfilAdmin perfil = new();
+
+    protected override void OnInitialized()
+    {
+        perfil = new PerfilAdmin
+        {
+            DNI = "40000001",
+            NombreCompleto = "Administrador Principal",
+            Telefono = "900000001",
+            Correo = "admin@gigachad.com",
+            Rol = "Administrador General",
+            FechaRegistro = new DateTime(2023, 1, 1),
+            Estado = "Activo"
+        };
+    }
+
+    private void ToggleEditar()
+    {
+        // Se conectará con BL después
+    }
+
+    private class PerfilAdmin
+    {
+        public string DNI { get; set; } = "";
+        public string NombreCompleto { get; set; } = "";
+        public string Telefono { get; set; } = "";
+        public string Correo { get; set; } = "";
+        public string Rol { get; set; } = "";
+        public DateTime FechaRegistro { get; set; }
+        public string Estado { get; set; } = "";
+    }
+}
