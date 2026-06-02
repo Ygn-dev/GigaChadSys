@@ -37,3 +37,68 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Visual Studio
+.vs/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# .NET
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+*.tmp
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+project.lock.json
+project.assets.json
+
+# ASP.NET / Blazor
+appsettings.Development.json
+appsettings.Local.json
+
+# Blazor WebAssembly publish/output
+wwwroot/_framework/
+dist/
+publish/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
