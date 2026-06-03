@@ -7,4 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GigaChadSys-DAO\GigaChadSys-DAO.csproj" />
+    <ProjectReference Include="..\GigaChadSys-DB-Manager\GigaChadSys-DB-Manager.csproj" />
+    <ProjectReference Include="..\GigaChadSys-Model\GigaChadSys-Model.csproj" />
+  </ItemGroup>
+
 </Project>

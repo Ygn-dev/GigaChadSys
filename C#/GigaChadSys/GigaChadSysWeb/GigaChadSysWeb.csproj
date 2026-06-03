@@ -11,4 +11,11 @@
     <Folder Include="wwwroot\img\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GigaChadSys-Business-Logic\GigaChadSys-Business-Logic.csproj" />
+    <ProjectReference Include="..\GigaChadSys-DAO\GigaChadSys-DAO.csproj" />
+    <ProjectReference Include="..\GigaChadSys-DB-Manager\GigaChadSys-DB-Manager.csproj" />
+    <ProjectReference Include="..\GigaChadSys-Model\GigaChadSys-Model.csproj" />
+  </ItemGroup>
+
 </Project>

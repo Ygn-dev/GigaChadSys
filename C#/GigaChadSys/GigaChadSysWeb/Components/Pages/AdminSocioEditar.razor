@@ -1,0 +1,374 @@
+@page "/admin/socios/editar/{Id:int}"
+@page "/admin/socios/editar"
+@using GigaChadSysWeb.Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="socio-form-page">
+
+    <!-- Breadcrumb -->
+    <nav class="sf-breadcrumb">
+        <a href="/admin/socios">Socios</a>
+        <span class="sf-bc-sep">›</span>
+        <span class="sf-bc-current">Editar</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="sf-page-header">
+        <div>
+            <h1>Editar Socio</h1>
+            <p class="sf-page-subtitle">Actualiza los datos del socio y su membresía</p>
+        </div>
+    </div>
+
+    <div class="sf-edit-layout">
+
+        <!-- ── Columna izquierda: Formulario ── -->
+        <div class="sf-form-col">
+
+            <!-- Sección 1: Información Personal -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-red">👤</div>
+                    <div>
+                        <h3>Información Personal</h3>
+                        <span>Datos básicos del socio</span>
+                    </div>
+                </div>
+
+                <div class="sf-form-grid">
+                    <div class="sf-form-group">
+                        <label>DNI <span class="sf-req">*</span></label>
+                        <input type="text" @bind="form.Dni" placeholder="40234123" maxlength="8"
+                               class="@(errores.ContainsKey("dni") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("dni"))
+                        {
+                            <span class="sf-error-msg">@errores["dni"]</span>
+                        }
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Nombres <span class="sf-req">*</span></label>
+                        <input type="text" @bind="form.Nombres" placeholder="Lucia Maria"
+                               class="@(errores.ContainsKey("nombres") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("nombres"))
+                        {
+                            <span class="sf-error-msg">@errores["nombres"]</span>
+                        }
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Apellidos <span class="sf-req">*</span></label>
+                        <input type="text" @bind="form.Apellidos" placeholder="Torres García"
+                               class="@(errores.ContainsKey("apellidos") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("apellidos"))
+                        {
+                            <span class="sf-error-msg">@errores["apellidos"]</span>
+                        }
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Fecha de nacimiento <span class="sf-req">*</span></label>
+                        <input type="date" @bind="form.FechaNacimiento" />
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Teléfono <span class="sf-req">*</span></label>
+                        <input type="text" @bind="form.Telefono" placeholder="987654321" maxlength="9"
+                               class="@(errores.ContainsKey("telefono") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("telefono"))
+                        {
+                            <span class="sf-error-msg">@errores["telefono"]</span>
+                        }
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Correo electrónico <span class="sf-req">*</span></label>
+                        <input type="email" @bind="form.Email" placeholder="lucia@email.com"
+                               class="@(errores.ContainsKey("email") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("email"))
+                        {
+                            <span class="sf-error-msg">@errores["email"]</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 2: Cuenta de Acceso -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-blue">🔒</div>
+                    <div>
+                        <h3>Cuenta de Acceso</h3>
+                        <span>Credenciales para el sistema</span>
+                    </div>
+                </div>
+
+                <div class="sf-form-grid">
+                    <div class="sf-form-group sf-form-full">
+                        <label>Correo electrónico <span class="sf-req">*</span></label>
+                        <input type="email" @bind="form.Email" placeholder="lucia@email.com" />
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Contraseña</label>
+                        <div class="sf-input-pass">
+                            <input type="@(verPass ? "text" : "password")" @bind="form.Contrasenia"
+                                   placeholder="••••••••" />
+                            <button type="button" class="sf-eye-btn" @onclick="() => verPass = !verPass">
+                                @(verPass ? "🙈" : "👁️")
+                            </button>
+                        </div>
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Confirmar contraseña</label>
+                        <div class="sf-input-pass">
+                            <input type="@(verConfirm ? "text" : "password")" @bind="form.ConfirmarContrasenia"
+                                   placeholder="••••••••"
+                                   class="@(errores.ContainsKey("confirmar") ? "sf-input-error" : "")" />
+                            <button type="button" class="sf-eye-btn" @onclick="() => verConfirm = !verConfirm">
+                                @(verConfirm ? "🙈" : "👁️")
+                            </button>
+                        </div>
+                        @if (errores.ContainsKey("confirmar"))
+                        {
+                            <span class="sf-error-msg">@errores["confirmar"]</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 3: Membresía -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-yellow">♛</div>
+                    <div>
+                        <h3>Membresía del Socio</h3>
+                        <span>Gestiona la membresía y el estado del socio</span>
+                    </div>
+                </div>
+
+                <!-- Plan selector -->
+                <p class="sf-sublabel">Plan de membresía</p>
+                <div class="sf-plan-grid">
+                    <div class="sf-plan-card @(form.PlanSeleccionado == "basic" ? "sf-plan-selected" : "")"
+                         @onclick='() => form.PlanSeleccionado = "basic"'>
+                        <div class="sf-plan-radio @(form.PlanSeleccionado == "basic" ? "sf-radio-sel" : "")"></div>
+                        <div class="sf-plan-body">
+                            <h4>Membresía Basic</h4>
+                            <div class="sf-plan-precio">
+                                <span class="sf-precio-val">S/ 79</span>
+                                <span class="sf-precio-per">/ mes</span>
+                            </div>
+                            <ul class="sf-plan-features">
+                                <li><span class="sf-chk">✓</span> Acceso a sala de musculación</li>
+                                <li><span class="sf-chk">✓</span> Acceso a cardio</li>
+                                <li><span class="sf-chk">✓</span> Vestuario incluido</li>
+                                <li><span class="sf-chk">✓</span> App móvil</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="sf-plan-card sf-plan-premium @(form.PlanSeleccionado == "black" ? "sf-plan-selected sf-plan-premium-sel" : "")"
+                         @onclick='() => form.PlanSeleccionado = "black"'>
+                        <div class="sf-plan-radio @(form.PlanSeleccionado == "black" ? "sf-radio-sel sf-radio-red" : "")"></div>
+                        <div class="sf-plan-body">
+                            <span class="sf-plan-badge-premium">PREMIUM</span>
+                            <h4>Membresía Black</h4>
+                            <div class="sf-plan-precio">
+                                <span class="sf-precio-val">S/ 149</span>
+                                <span class="sf-precio-per">/ mes</span>
+                            </div>
+                            <ul class="sf-plan-features">
+                                <li><span class="sf-chk">✓</span> Todo lo de Basic</li>
+                                <li><span class="sf-chk">✓</span> Clases grupales ilimitadas</li>
+                                <li><span class="sf-chk">✓</span> Acceso 24/7</li>
+                                <li><span class="sf-chk">✓</span> Zona de spa</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fechas de membresía -->
+                <div class="sf-form-grid sf-mt-16">
+                    <div class="sf-form-group">
+                        <label>Fecha de Inicio <span class="sf-req">*</span></label>
+                        <input type="date" @bind="form.FechaInicio" />
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Fecha de Vencimiento <span class="sf-req">*</span></label>
+                        <input type="date" @bind="form.FechaVencimiento" />
+                    </div>
+                    <div class="sf-form-group">
+                        <label>Estado de membresía</label>
+                        <select @bind="form.EstadoMembresia">
+                            <option value="Activa">Activa</option>
+                            <option value="Suspendida">Suspendida</option>
+                            <option value="Vencida">Vencida</option>
+                        </select>
+                    </div>
+                    <div class="sf-form-group">
+                        <!-- spacer -->
+                    </div>
+                    <div class="sf-form-group sf-form-full">
+                        <label>Motivo / Observación</label>
+                        <textarea @bind="form.Motivo" rows="3" placeholder="Corrección administrativa…"></textarea>
+                    </div>
+                </div>
+
+                <!-- Quitar membresía -->
+                <button class="sf-btn-quitar" type="button" @onclick="QuitarMembresia">
+                    ⊖ Quitar membresía
+                </button>
+            </div>
+
+            <!-- Acciones -->
+            <div class="sf-form-actions">
+                <button class="sf-btn-primary" @onclick="GuardarCambios">
+                    <span>💾</span> Guardar cambios
+                </button>
+                <a class="sf-btn-secondary" href="/admin/socios">Cancelar</a>
+                <span class="sf-back-link">
+                    <a href="/admin/socios">← Volver al listado</a>
+                </span>
+            </div>
+
+        </div>
+
+        <!-- ── Columna derecha: Resumen ── -->
+        <aside class="sf-resumen-col">
+
+            <div class="sf-resumen-card">
+                <h4>Resumen</h4>
+                <div class="sf-resumen-rows">
+                    <div class="sf-resumen-row">
+                        <span>Socio</span>
+                        <strong>@($"{form.Nombres} {form.Apellidos}".Trim() is { Length: > 0 } n ? n : "—")</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>DNI</span>
+                        <strong>@(string.IsNullOrEmpty(form.Dni) ? "—" : form.Dni)</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Plan actual</span>
+                        <strong>@(form.PlanSeleccionado == "black" ? "Membresía Black" : "Membresía Basic")</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Estado nuevo</span>
+                        <strong class="@(form.EstadoMembresia == "Activa" ? "rsm-activo" : "rsm-inactivo")">
+                            @form.EstadoMembresia
+                        </strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Vencimiento</span>
+                        <strong>@(form.FechaVencimiento.HasValue ? form.FechaVencimiento.Value.ToString("yyyy-MM-dd") : "—")</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Motivo</span>
+                        <strong>@(string.IsNullOrEmpty(form.Motivo) ? "—" : form.Motivo)</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nota administrativa -->
+            <div class="sf-admin-nota">
+                <span class="sf-nota-icon">⚠️</span>
+                <p>Desde aquí puedes modificar, suspender o retirar la membresía del socio por motivos administrativos y disciplinarios.</p>
+            </div>
+
+        </aside>
+    </div>
+
+</section>
+
+<!-- Toast -->
+@if (mostrarToast)
+{
+    <div class="socios-toast socios-toast-show">
+        <span>✅</span>
+        <span>@mensajeToast</span>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private bool verPass = false;
+    private bool verConfirm = false;
+    private bool mostrarToast = false;
+    private string mensajeToast = "";
+    private Dictionary<string, string> errores = new();
+
+    private FormEditarSocio form = new();
+
+    protected override void OnInitialized()
+    {
+        // Datos de ejemplo (mock) - se conectará con BL después
+        form = new FormEditarSocio
+        {
+            Dni = "40234123",
+            Nombres = "Lucia Maria",
+            Apellidos = "Torres García",
+            FechaNacimiento = new DateTime(1998, 5, 14),
+            Telefono = "987654321",
+            Email = "lucia@email.com",
+            PlanSeleccionado = "black",
+            FechaInicio = new DateTime(2025, 2, 1),
+            FechaVencimiento = new DateTime(2025, 8, 1),
+            EstadoMembresia = "Activa",
+            Motivo = "Corrección administrativa"
+        };
+    }
+
+    private async void GuardarCambios()
+    {
+        errores.Clear();
+
+        if (string.IsNullOrWhiteSpace(form.Dni) || form.Dni.Length != 8)
+            errores["dni"] = "El DNI debe tener 8 dígitos.";
+
+        if (string.IsNullOrWhiteSpace(form.Nombres))
+            errores["nombres"] = "El nombre es obligatorio.";
+
+        if (string.IsNullOrWhiteSpace(form.Apellidos))
+            errores["apellidos"] = "Los apellidos son obligatorios.";
+
+        if (string.IsNullOrWhiteSpace(form.Email))
+            errores["email"] = "El correo es obligatorio.";
+
+        if (!string.IsNullOrWhiteSpace(form.Contrasenia) &&
+            form.Contrasenia != form.ConfirmarContrasenia)
+            errores["confirmar"] = "Las contraseñas no coinciden.";
+
+        if (errores.Any())
+        {
+            StateHasChanged();
+            return;
+        }
+
+        // Aquí se conectará con BL
+        mensajeToast = "Cambios guardados correctamente.";
+        mostrarToast = true;
+        StateHasChanged();
+        await Task.Delay(2800);
+        mostrarToast = false;
+        StateHasChanged();
+    }
+
+    private void QuitarMembresia()
+    {
+        form.PlanSeleccionado = "";
+        form.EstadoMembresia = "Vencida";
+    }
+
+    private class FormEditarSocio
+    {
+        public string Dni { get; set; } = "";
+        public string Nombres { get; set; } = "";
+        public string Apellidos { get; set; } = "";
+        public DateTime? FechaNacimiento { get; set; }
+        public string Telefono { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Contrasenia { get; set; } = "";
+        public string ConfirmarContrasenia { get; set; } = "";
+        public string PlanSeleccionado { get; set; } = "basic";
+        public DateTime? FechaInicio { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public string EstadoMembresia { get; set; } = "Activa";
+        public string Motivo { get; set; } = "";
+    }
+}
