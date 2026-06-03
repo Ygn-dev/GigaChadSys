@@ -1,0 +1,179 @@
+﻿@page "/entrenador/sesiones"
+@layout EntrenadorLayout
+
+<section class="sesion-detalle">
+
+    <nav class="breadcrumb-nav">
+        <NavLink href="/entrenador/sesiones">Mis Sesiones</NavLink>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Detalle</span>
+    </nav>
+
+    <div class="detalle-layout">
+
+        <div>
+            <section class="sesion-header-card">
+
+                <div class="sesion-header-top">
+                    <div class="sesion-icon-box">
+                        ▣
+                    </div>
+
+                    <div>
+                        <div class="sesion-title-row">
+                            <h1>@sesion.Nombre</h1>
+                            <span class="badge badge-programada">@sesion.Estado</span>
+                        </div>
+
+                        <p class="sesion-subtitle">
+                            @sesion.Categoria · @sesion.Nivel
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sesion-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Fecha</span>
+                        <span class="meta-value">@sesion.Fecha</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Hora</span>
+                        <span class="meta-value">@sesion.Hora</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Salón</span>
+                        <span class="meta-value">@sesion.Salon</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Duración</span>
+                        <span class="meta-value">@sesion.Duracion</span>
+                    </div>
+                </div>
+
+                <div class="capacidad-section">
+                    <div class="capacidad-header">
+                        <span class="capacidad-label">Capacidad máxima</span>
+                        <span class="capacidad-count">
+                            @sesion.Ocupados / @sesion.Capacidad
+                        </span>
+                    </div>
+
+                    <div class="capacidad-bar-track">
+                        <div class="capacidad-bar-fill"
+                             style="width:@PorcentajeOcupacion%;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sesion-stats-row">
+                    <div class="stat-card">
+                        <span class="stat-value stat-disponibles">@sesion.Ocupados</span>
+                        <span class="stat-label">Ocupados</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <span class="stat-value stat-ocupados">@Disponibles</span>
+                        <span class="stat-label">Disponibles</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <span class="stat-value stat-porcentaje">@PorcentajeOcupacion%</span>
+                        <span class="stat-label">Ocupación</span>
+                    </div>
+                </div>
+
+            </section>
+
+            <section class="descripcion-card">
+                <h3>Descripcion de la Clase</h3>
+                <p>@sesion.Descripcion</p>
+            </section>
+        </div>
+
+        <aside class="alumnos-panel">
+            <div class="alumnos-header">
+                <h3>Alumnos Inscritos</h3>
+                <span class="alumnos-total">@Alumnos.Count total</span>
+            </div>
+
+            <div class="alumnos-list">
+                @foreach (var alumno in Alumnos)
+                {
+                    <div class="alumno-item">
+                        <div class="alumno-left">
+                            <div class="alumno-avatar">
+                                ⊙
+                            </div>
+
+                            <div class="alumno-info">
+                                <strong>@alumno.Nombre</strong>
+                                <span class="alumno-meta">
+                                    @alumno.Dni · @alumno.EstadoSocio
+                                </span>
+                            </div>
+                        </div>
+
+                        <span class="badge badge-confirmada alumno-badge">
+                            @alumno.EstadoReserva
+                        </span>
+                    </div>
+                }
+            </div>
+        </aside>
+
+    </div>
+
+</section>
+
+@code {
+    private SesionDetalle sesion = new(
+        Nombre: "CrossFit Intenso",
+        Categoria: "CrossFit",
+        Nivel: "Nivel avanzado",
+        Estado: "Programada",
+        Fecha: "2025-05-12",
+        Hora: "07:00 - 08:00",
+        Salon: "Sala Principal",
+        Duracion: "60 min",
+        Capacidad: 20,
+        Ocupados: 18,
+        Descripcion: "Entrenamiento funcional de alta intensidad con ejercicios variados"
+    );
+
+    private List<AlumnoInscrito> Alumnos = new()
+    {
+        new AlumnoInscrito("Juan Perez", "40123123", "Activo", "Confirmada"),
+        new AlumnoInscrito("Fernando Loza", "40901678", "Activo", "Confirmada")
+    };
+
+    private int Disponibles => sesion.Capacidad - sesion.Ocupados;
+
+    private int PorcentajeOcupacion =>
+        sesion.Capacidad <= 0
+            ? 0
+            : (int)Math.Round((double)sesion.Ocupados / sesion.Capacidad * 100);
+
+    private record SesionDetalle(
+        string Nombre,
+        string Categoria,
+        string Nivel,
+        string Estado,
+        string Fecha,
+        string Hora,
+        string Salon,
+        string Duracion,
+        int Capacidad,
+        int Ocupados,
+        string Descripcion
+    );
+
+    private record AlumnoInscrito(
+        string Nombre,
+        string Dni,
+        string EstadoSocio,
+        string EstadoReserva
+    );
+}

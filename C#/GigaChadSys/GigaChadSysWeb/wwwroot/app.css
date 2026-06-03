@@ -10359,3 +10359,22 @@ h1:focus {
         color: white;
         text-decoration: none;
     }
+
+
+.sesion-detalle {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-top: 18px;
+}
+
+.alumnos-panel {
+    min-height: 420px;
+}
+
+.capacidad-count {
+    font-weight: 800;
+}
+
+.descripcion-card h3 {
+    margin-top: 0;
+}
