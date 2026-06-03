@@ -9837,3 +9837,525 @@ h1:focus {
     min-width: 28px;
     text-align: center;
 }
+/* ===== SOCIO PAGOS ===== */
+
+.socio-payments-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+}
+
+.socio-payments-header {
+    margin-bottom: 28px;
+}
+
+    .socio-payments-header h1 {
+        color: #F5F5F5;
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+
+    .socio-payments-header p {
+        color: #B0B0B0;
+        margin: 0;
+        font-size: 16px;
+    }
+
+.socio-payments-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.socio-payment-stat-card {
+    background: #161616;
+    border: 1px solid #2A2A2A;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.socio-payment-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+    .socio-payment-icon.success {
+        background: rgba(0, 200, 83, 0.15);
+        color: #00C853;
+    }
+
+    .socio-payment-icon.warning {
+        background: rgba(255, 193, 7, 0.15);
+        color: #FFC107;
+    }
+
+    .socio-payment-icon.danger {
+        background: rgba(229, 57, 53, 0.15);
+        color: #FF5252;
+    }
+
+    .socio-payment-icon.red {
+        background: rgba(229, 57, 53, 0.15);
+        color: #E53935;
+    }
+
+.socio-payment-stat-card span {
+    display: block;
+    color: #B0B0B0;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 16px;
+}
+
+.socio-payment-stat-card strong {
+    display: block;
+    color: #F5F5F5;
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.socio-payment-stat-card p {
+    color: #B0B0B0;
+    margin: 0;
+    font-size: 14px;
+}
+
+.socio-payments-table-card {
+    background: #161616;
+    border: 1px solid #2A2A2A;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+    .socio-payments-table-card h2 {
+        color: #F5F5F5;
+        font-size: 20px;
+        padding: 24px 28px;
+        margin: 0;
+        border-bottom: 1px solid #2A2A2A;
+    }
+
+.socio-payments-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.socio-payments-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .socio-payments-table th {
+        color: #B0B0B0;
+        text-align: left;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-size: 12px;
+        padding: 20px 28px;
+        border-bottom: 1px solid #242424;
+    }
+
+    .socio-payments-table td {
+        color: #F5F5F5;
+        padding: 22px 28px;
+        border-bottom: 1px solid #242424;
+        vertical-align: middle;
+    }
+
+    .socio-payments-table tr:last-child td {
+        border-bottom: none;
+    }
+
+.payment-muted {
+    color: #B0B0B0;
+}
+
+.socio-payment-status {
+    display: inline-block;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+    .socio-payment-status.paid {
+        background: rgba(0, 200, 83, 0.15);
+        color: #00C853;
+    }
+
+    .socio-payment-status.pending {
+        background: rgba(255, 193, 7, 0.15);
+        color: #FFC107;
+    }
+
+    .socio-payment-status.expired {
+        background: rgba(229, 57, 53, 0.15);
+        color: #FF5252;
+    }
+
+.socio-pay-button {
+    background: transparent;
+    border: 1px solid #E53935;
+    color: #FF5252;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .socio-pay-button:hover {
+        background: #E53935;
+        color: white;
+    }
+
+.socio-payment-message {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    font-weight: 700;
+}
+
+    .socio-payment-message.success {
+        background: rgba(0, 200, 83, 0.15);
+        border: 1px solid rgba(0, 200, 83, 0.45);
+        color: #00C853;
+    }
+/* ===== SOCIO REALIZAR PAGO ===== */
+
+.socio-pay-process-page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+}
+
+.pay-breadcrumb {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: #B0B0B0;
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+    .pay-breadcrumb a {
+        color: #B0B0B0;
+        text-decoration: none;
+    }
+
+        .pay-breadcrumb a:hover {
+            color: #FF5252;
+        }
+
+    .pay-breadcrumb strong {
+        color: #E53935;
+    }
+
+.pay-process-header {
+    margin-bottom: 26px;
+}
+
+    .pay-process-header h1 {
+        color: #F5F5F5;
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+
+    .pay-process-header p {
+        color: #B0B0B0;
+        margin: 0;
+    }
+
+.pay-process-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 24px;
+    align-items: start;
+}
+
+.pay-process-main {
+    min-width: 0;
+}
+
+.pay-detail-card,
+.pay-method-card,
+.pay-summary-card,
+.pending-alert-card {
+    background: #161616;
+    border: 1px solid #2A2A2A;
+    border-radius: 16px;
+}
+
+.pay-detail-card,
+.pay-method-card {
+    padding: 26px;
+    margin-bottom: 18px;
+}
+
+    .pay-detail-card h2,
+    .pay-method-card h2,
+    .pay-summary-card h2 {
+        color: #F5F5F5;
+        font-size: 19px;
+        margin-bottom: 22px;
+    }
+
+.pay-detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 13px 0;
+    border-bottom: 1px solid #242424;
+}
+
+    .pay-detail-row span {
+        color: #B0B0B0;
+    }
+
+    .pay-detail-row strong {
+        color: #F5F5F5;
+        text-align: right;
+    }
+
+    .pay-detail-row.total {
+        border-bottom: none;
+        padding-top: 18px;
+    }
+
+        .pay-detail-row.total span {
+            color: #F5F5F5;
+            font-weight: 800;
+        }
+
+        .pay-detail-row.total strong {
+            font-size: 28px;
+        }
+
+.pay-status {
+    display: inline-block;
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+    .pay-status.pending {
+        background: rgba(255, 193, 7, 0.15);
+        color: #FFC107 !important;
+    }
+
+    .pay-status.expired {
+        background: rgba(229, 57, 53, 0.15);
+        color: #FF5252 !important;
+    }
+
+.pay-method-options {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.pay-method-option {
+    width: 150px;
+    height: 100px;
+    background: #101010;
+    border: 1px solid #2A2A2A;
+    color: #F5F5F5;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .pay-method-option:hover,
+    .pay-method-option.selected {
+        border-color: #E53935;
+        background: rgba(229, 57, 53, 0.08);
+    }
+
+.pay-card-icon {
+    font-size: 30px;
+    color: #B0B0B0;
+}
+
+.pay-method-option strong {
+    font-size: 14px;
+}
+
+.pay-note {
+    color: #B0B0B0;
+    font-size: 13px;
+    margin: 0;
+}
+
+.pay-process-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.confirm-pay-button {
+    background: #E53935;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+    .confirm-pay-button:hover {
+        background: #FF5252;
+    }
+
+.cancel-pay-button {
+    background: #202020;
+    color: #F5F5F5;
+    border: 1px solid #2A2A2A;
+    padding: 14px 26px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+    .cancel-pay-button:hover {
+        border-color: #FF5252;
+        color: #F5F5F5;
+    }
+
+.back-pay-link {
+    color: #E53935;
+    text-decoration: none;
+    font-weight: 800;
+    padding: 14px 16px;
+}
+
+    .back-pay-link:hover {
+        color: #FF5252;
+    }
+
+.pay-summary-side {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.pay-summary-card {
+    padding: 26px;
+}
+
+.summary-pay-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 15px 0;
+    border-bottom: 1px solid #242424;
+}
+
+    .summary-pay-row span {
+        color: #B0B0B0;
+    }
+
+    .summary-pay-row strong {
+        color: #F5F5F5;
+        text-align: right;
+    }
+
+.summary-pay-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+}
+
+    .summary-pay-total span {
+        color: #F5F5F5;
+        font-weight: 800;
+    }
+
+    .summary-pay-total strong {
+        color: #F5F5F5;
+        font-size: 34px;
+    }
+
+.pending-alert-card {
+    border-color: rgba(255, 193, 7, 0.35);
+    background: rgba(255, 193, 7, 0.06);
+    padding: 24px;
+    display: flex;
+    gap: 18px;
+}
+
+.pending-alert-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 2px solid #FFC107;
+    color: #FFC107;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.pending-alert-card h3 {
+    color: #FFC107;
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+.pending-alert-card p {
+    color: #F5F5F5;
+    line-height: 1.55;
+    margin: 0;
+    font-size: 14px;
+}
+
+.pay-process-message {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    font-weight: 700;
+}
+
+    .pay-process-message.success {
+        background: rgba(0, 200, 83, 0.15);
+        border: 1px solid rgba(0, 200, 83, 0.45);
+        color: #00C853;
+    }
+.socio-pay-button {
+    display: inline-block;
+    background: transparent;
+    border: 1px solid #E53935;
+    color: #FF5252;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+}
+
+    .socio-pay-button:hover {
+        background: #E53935;
+        color: white;
+        text-decoration: none;
+    }

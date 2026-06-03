@@ -1,0 +1,205 @@
+﻿@page "/socio/pagos/realizar/{CodigoPago}"
+@layout SocioLayout
+@rendermode InteractiveServer
+
+<section class="socio-pay-process-page">
+
+    <div class="pay-breadcrumb">
+        <a href="/socio/pagos">Mis Pagos</a>
+        <span>/</span>
+        <strong>Realizar Pago</strong>
+    </div>
+
+    <div class="pay-process-header">
+        <h1>Realizar Pago</h1>
+        <p>Completa el pago pendiente de tu membresía.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="@ClaseMensaje">
+            @Mensaje
+        </div>
+    }
+
+    <div class="pay-process-layout">
+
+        <div class="pay-process-main">
+
+            <div class="pay-detail-card">
+                <h2>Detalle del Pago</h2>
+
+                <div class="pay-detail-row">
+                    <span>Concepto</span>
+                    <strong>@Concepto</strong>
+                </div>
+
+                <div class="pay-detail-row">
+                    <span>Tipo</span>
+                    <strong>▭ Membresía</strong>
+                </div>
+
+                <div class="pay-detail-row">
+                    <span>Socio</span>
+                    <strong>Lucía Torres</strong>
+                </div>
+
+                <div class="pay-detail-row">
+                    <span>Membresía</span>
+                    <strong>Black</strong>
+                </div>
+
+                <div class="pay-detail-row">
+                    <span>Fecha de vencimiento</span>
+                    <strong>@FechaVencimiento</strong>
+                </div>
+
+                <div class="pay-detail-row">
+                    <span>Estado</span>
+                    <strong class="@ClaseEstado">@EstadoTexto</strong>
+                </div>
+
+                <div class="pay-detail-row total">
+                    <span>Monto a pagar</span>
+                    <strong>S/149</strong>
+                </div>
+            </div>
+
+            <div class="pay-method-card">
+                <h2>Método de Pago</h2>
+
+                <div class="pay-method-options">
+                    <button type="button"
+                            class="@ClaseDebito"
+                            @onclick="SeleccionarDebito">
+                        <span class="pay-card-icon">▭</span>
+                        <strong>Tarjeta Débito</strong>
+                    </button>
+
+                    <button type="button"
+                            class="@ClaseCredito"
+                            @onclick="SeleccionarCredito">
+                        <span class="pay-card-icon">▭</span>
+                        <strong>Tarjeta Crédito</strong>
+                    </button>
+                </div>
+
+                <p class="pay-note">
+                    ⓘ Los datos del pago fueron cargados automáticamente según tu cuota pendiente.
+                </p>
+            </div>
+
+            <div class="pay-process-actions">
+                <button type="button"
+                        class="confirm-pay-button"
+                        @onclick="ConfirmarPago">
+                    ▭ Confirmar Pago
+                </button>
+
+                <a class="cancel-pay-button" href="/socio/pagos">
+                    × Cancelar
+                </a>
+
+                <a class="back-pay-link" href="/socio/pagos">
+                    ← Volver a Mis Pagos
+                </a>
+            </div>
+
+        </div>
+
+        <aside class="pay-summary-side">
+            <div class="pay-summary-card">
+                <h2>Resumen</h2>
+
+                <div class="summary-pay-row">
+                    <span>Concepto</span>
+                    <strong>@Concepto</strong>
+                </div>
+
+                <div class="summary-pay-row">
+                    <span>Periodo</span>
+                    <strong>@Periodo</strong>
+                </div>
+
+                <div class="summary-pay-row">
+                    <span>Monto</span>
+                    <strong>S/149</strong>
+                </div>
+
+                <div class="summary-pay-row">
+                    <span>Estado actual</span>
+                    <strong class="@ClaseEstado">@EstadoTexto</strong>
+                </div>
+
+                <div class="summary-pay-total">
+                    <span>Total a pagar</span>
+                    <strong>S/149</strong>
+                </div>
+            </div>
+
+            <div class="pending-alert-card">
+                <div class="pending-alert-icon">◷</div>
+
+                <div>
+                    <h3>@TituloAlerta</h3>
+                    <p>
+                        Tu cuota de @Periodo se encuentra @EstadoTexto.ToLower().
+                        Realiza el pago para mantener tu membresía activa y seguir disfrutando
+                        de todos los beneficios.
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+</section>
+
+@code {
+    [Parameter]
+    public string CodigoPago { get; set; } = "junio";
+
+    private string MetodoSeleccionado { get; set; } = "Debito";
+    private string Mensaje { get; set; } = "";
+    private string ClaseMensaje { get; set; } = "";
+
+    private string Concepto =>
+        CodigoPago == "julio" ? "Membresía Black - Julio" : "Membresía Black - Junio";
+
+    private string Periodo =>
+        CodigoPago == "julio" ? "Julio 2025" : "Junio 2025";
+
+    private string FechaVencimiento =>
+        CodigoPago == "julio" ? "2025-07-01" : "2025-06-01";
+
+    private string EstadoTexto =>
+        CodigoPago == "julio" ? "Vencido" : "Pendiente";
+
+    private string TituloAlerta =>
+        CodigoPago == "julio" ? "Pago vencido detectado" : "Pago pendiente detectado";
+
+    private string ClaseEstado =>
+        CodigoPago == "julio" ? "pay-status expired" : "pay-status pending";
+
+    private string ClaseDebito =>
+        MetodoSeleccionado == "Debito" ? "pay-method-option selected" : "pay-method-option";
+
+    private string ClaseCredito =>
+        MetodoSeleccionado == "Credito" ? "pay-method-option selected" : "pay-method-option";
+
+    private void SeleccionarDebito()
+    {
+        MetodoSeleccionado = "Debito";
+    }
+
+    private void SeleccionarCredito()
+    {
+        MetodoSeleccionado = "Credito";
+    }
+
+    private void ConfirmarPago()
+    {
+        Mensaje = $"Pago confirmado correctamente con tarjeta {MetodoSeleccionado}. Por ahora es una simulación visual.";
+        ClaseMensaje = "pay-process-message success";
+    }
+}

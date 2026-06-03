@@ -1,0 +1,200 @@
+﻿@page "/socio/pagos"
+@layout SocioLayout
+@rendermode InteractiveServer
+
+<section class="socio-payments-page">
+
+    <div class="socio-payments-header">
+        <h1>Mis Pagos</h1>
+        <p>Historial completo de tus pagos</p>
+    </div>
+
+    <div class="socio-payments-stats">
+        <div class="socio-payment-stat-card">
+            <div class="socio-payment-icon success">✓</div>
+
+            <div>
+                <span>Total pagado</span>
+                <strong>S/298</strong>
+                <p>2 pagos realizados</p>
+            </div>
+        </div>
+
+        <div class="socio-payment-stat-card">
+            <div class="socio-payment-icon warning">◷</div>
+
+            <div>
+                <span>Pendiente</span>
+                <strong>S/149</strong>
+                <p>1 pago pendiente</p>
+            </div>
+        </div>
+
+        <div class="socio-payment-stat-card">
+            <div class="socio-payment-icon danger">!</div>
+
+            <div>
+                <span>Vencido</span>
+                <strong>S/149</strong>
+                <p>1 pago vencido</p>
+            </div>
+        </div>
+
+        <div class="socio-payment-stat-card">
+            <div class="socio-payment-icon red">S/</div>
+
+            <div>
+                <span>Monto promedio</span>
+                <strong>S/149</strong>
+                <p>Por pago</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="socio-payments-table-card">
+        <h2>Historial de Pagos</h2>
+
+        <div class="socio-payments-table-wrapper">
+            <table class="socio-payments-table">
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Tipo</th>
+                        <th>Método</th>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var pago in Pagos)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@pago.Concepto</strong>
+                            </td>
+
+                            <td>
+                                <span class="payment-muted">▣ @pago.Tipo</span>
+                            </td>
+
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(pago.Metodo))
+                                {
+                                    <span class="payment-muted">-</span>
+                                }
+                                else
+                                {
+                                    <span class="payment-muted">▭ @pago.Metodo</span>
+                                }
+                            </td>
+
+                            <td>
+                                <strong>S/@pago.Monto</strong>
+                            </td>
+
+                            <td>
+                                <span class="payment-muted">@pago.Fecha</span>
+                            </td>
+
+                            <td>
+                                <span class="@ObtenerClaseEstado(pago.Estado)">
+                                    @pago.Estado
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (pago.Estado == "pendiente" || pago.Estado == "vencido")
+                                {
+                                    <a class="socio-pay-button"
+                                       href="@($"/socio/pagos/realizar/{pago.Codigo}")">
+                                        Realizar Pago
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="payment-muted">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+@code {
+    private List<PagoSocioVista> Pagos { get; set; } = new()
+    {
+        new PagoSocioVista
+        {
+            Codigo = "abril",
+            Concepto = "Membresía Black - Abril",
+            Tipo = "Membresía",
+            Metodo = "Crédito",
+            Monto = "149",
+            Fecha = "2025-04-01",
+            Estado = "pagado"
+        },
+        new PagoSocioVista
+        {
+            Codigo = "mayo",
+            Concepto = "Membresía Black - Mayo",
+            Tipo = "Membresía",
+            Metodo = "Crédito",
+            Monto = "149",
+            Fecha = "2025-05-01",
+            Estado = "pagado"
+        },
+        new PagoSocioVista
+        {
+            Codigo = "junio",
+            Concepto = "Membresía Black - Junio",
+            Tipo = "Membresía",
+            Metodo = "Pendiente",
+            Monto = "149",
+            Fecha = "2025-06-01",
+            Estado = "pendiente"
+        },
+        new PagoSocioVista
+        {
+            Codigo = "julio",
+            Concepto = "Membresía Black - Julio",
+            Tipo = "Membresía",
+            Metodo = "",
+            Monto = "149",
+            Fecha = "2025-07-01",
+            Estado = "vencido"
+        }
+    };
+
+    private string ObtenerClaseEstado(string estado)
+    {
+        if (estado == "pagado")
+        {
+            return "socio-payment-status paid";
+        }
+
+        if (estado == "pendiente")
+        {
+            return "socio-payment-status pending";
+        }
+
+        return "socio-payment-status expired";
+    }
+
+    private class PagoSocioVista
+    {
+        public string Codigo { get; set; } = "";
+        public string Concepto { get; set; } = "";
+        public string Tipo { get; set; } = "";
+        public string Metodo { get; set; } = "";
+        public string Monto { get; set; } = "";
+        public string Fecha { get; set; } = "";
+        public string Estado { get; set; } = "";
+    }
+}
