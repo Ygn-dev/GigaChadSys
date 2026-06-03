@@ -1,0 +1,407 @@
+﻿@page "/admin/entrenadores/editar/{DniParametro}"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="trainer-edit-page">
+
+    <div class="trainer-breadcrumb">
+        <a href="/admin/inicio">Inicio</a>
+        <span>/</span>
+        <a href="/admin/entrenadores">Entrenadores</a>
+        <span>/</span>
+        <strong>Editar</strong>
+    </div>
+
+    <div class="trainer-form-title">
+        <h1>Editar Entrenador</h1>
+        <p>Actualiza los datos personales y profesionales del entrenador.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    {
+        <div class="@ClaseMensajeFormulario">
+            @MensajeFormulario
+        </div>
+    }
+
+    <div class="trainer-edit-layout">
+
+        <div class="trainer-edit-main">
+
+            <div class="trainer-section">
+                <h2>Información Personal</h2>
+
+                <div class="trainer-grid">
+                    <div class="trainer-field">
+                        <label>DNI <span>*</span></label>
+                        <input type="text"
+                               maxlength="8"
+                               value="@DniValor"
+                               @oninput="CambiarDni" />
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Fecha de nacimiento <span>*</span></label>
+                        <input type="date"
+                               value="@FechaNacimientoValor"
+                               @onchange="CambiarFechaNacimiento" />
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Nombres <span>*</span></label>
+                        <input type="text"
+                               value="@NombresValor"
+                               @oninput="CambiarNombres" />
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Apellidos <span>*</span></label>
+                        <input type="text"
+                               value="@ApellidosValor"
+                               @oninput="CambiarApellidos" />
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Teléfono <span>*</span></label>
+                        <input type="text"
+                               maxlength="9"
+                               value="@TelefonoValor"
+                               @oninput="CambiarTelefono" />
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Correo electrónico <span>*</span></label>
+                        <input type="email"
+                               value="@CorreoValor"
+                               @oninput="CambiarCorreo" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="trainer-section">
+                <h2>Información Profesional</h2>
+
+                <div class="trainer-grid">
+                    <div class="trainer-field">
+                        <label>Especialidad <span>*</span></label>
+                        <select value="@EspecialidadValor" @onchange="CambiarEspecialidad">
+                            <option value="">Seleccione una especialidad</option>
+                            <option value="CrossFit y Musculación">CrossFit y Musculación</option>
+                            <option value="Yoga y Pilates">Yoga y Pilates</option>
+                            <option value="Spinning y Cardio">Spinning y Cardio</option>
+                            <option value="Boxeo y MMA">Boxeo y MMA</option>
+                            <option value="Zumba y Baile">Zumba y Baile</option>
+                        </select>
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Sueldo mensual <span>*</span></label>
+                        <input type="text"
+                               value="@SueldoMensualValor"
+                               @oninput="CambiarSueldoMensual" />
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Horario disponible <span>*</span></label>
+                        <input type="text"
+                               value="@HorarioDisponibleValor"
+                               @oninput="CambiarHorarioDisponible" />
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Tiempo de trabajo <span>*</span></label>
+                        <select value="@TiempoTrabajoValor" @onchange="CambiarTiempoTrabajo">
+                            <option value="">Seleccione tiempo de trabajo</option>
+                            <option value="Tiempo completo">Tiempo completo</option>
+                            <option value="Medio tiempo">Medio tiempo</option>
+                            <option value="Por horas">Por horas</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trainer-section">
+                <h2>Cuenta de Acceso</h2>
+
+                <div class="trainer-grid">
+                    <div class="trainer-field">
+                        <label>Correo de acceso <span>*</span></label>
+                        <input type="email"
+                               value="@CorreoValor"
+                               @oninput="CambiarCorreo" />
+                    </div>
+
+                    <div class="trainer-field">
+                        <label>Nueva contraseña</label>
+                        <input type="password"
+                               placeholder="Dejar vacío si no se cambia"
+                               value="@NuevaContraseniaValor"
+                               @oninput="CambiarNuevaContrasenia" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="trainer-section">
+                <h2>Estado</h2>
+
+                <div class="trainer-radio-row">
+                    <label>
+                        <input type="radio"
+                               name="estadoEntrenadorEditar"
+                               checked="@EntrenadorActivo"
+                               @onclick="ActivarEntrenador" />
+                        Activo
+                    </label>
+
+                    <label>
+                        <input type="radio"
+                               name="estadoEntrenadorEditar"
+                               checked="@(!EntrenadorActivo)"
+                               @onclick="DesactivarEntrenador" />
+                        Inactivo
+                    </label>
+                </div>
+            </div>
+
+            <div class="trainer-actions">
+                <button type="button"
+                        class="trainer-save-button"
+                        @onclick="GuardarCambios">
+                    ✓ Guardar cambios
+                </button>
+
+                <a class="trainer-cancel-button" href="/admin/entrenadores">
+                    Cancelar
+                </a>
+
+                <a class="trainer-return-link" href="/admin/entrenadores">
+                    ← Volver al listado
+                </a>
+            </div>
+        </div>
+
+        <aside class="trainer-summary-card">
+            <h2>Resumen</h2>
+
+            <div class="summary-row">
+                <span>Entrenador:</span>
+                <strong>@NombresValor @ApellidosValor</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>DNI:</span>
+                <strong>@DniValor</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Especialidad:</span>
+                <strong>@EspecialidadValor</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Horario:</span>
+                <strong>@HorarioDisponibleValor</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Estado nuevo:</span>
+                @if (EntrenadorActivo)
+                {
+                    <strong class="summary-status active">Activo</strong>
+                }
+                else
+                {
+                    <strong class="summary-status inactive">Inactivo</strong>
+                }
+            </div>
+
+            <div class="summary-warning">
+                Desde aquí puedes modificar los datos del entrenador por motivos administrativos.
+            </div>
+        </aside>
+
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public string DniParametro { get; set; } = "";
+
+    private string DniValor { get; set; } = "";
+    private string FechaNacimientoValor { get; set; } = "";
+    private string NombresValor { get; set; } = "";
+    private string ApellidosValor { get; set; } = "";
+    private string TelefonoValor { get; set; } = "";
+    private string CorreoValor { get; set; } = "";
+
+    private string EspecialidadValor { get; set; } = "";
+    private string SueldoMensualValor { get; set; } = "";
+    private string HorarioDisponibleValor { get; set; } = "";
+    private string TiempoTrabajoValor { get; set; } = "";
+
+    private string NuevaContraseniaValor { get; set; } = "";
+    private bool EntrenadorActivo { get; set; } = true;
+
+    private string MensajeFormulario { get; set; } = "";
+    private string ClaseMensajeFormulario { get; set; } = "";
+
+    protected override void OnParametersSet()
+    {
+        CargarDatosEntrenador();
+    }
+
+    private void CargarDatosEntrenador()
+    {
+        if (DniParametro == "40567234")
+        {
+            DniValor = "40567234";
+            FechaNacimientoValor = "1992-05-12";
+            NombresValor = "Pedro";
+            ApellidosValor = "Sánchez";
+            TelefonoValor = "998877666";
+            CorreoValor = "pedro@email.com";
+            EspecialidadValor = "Yoga y Pilates";
+            SueldoMensualValor = "2800.00";
+            HorarioDisponibleValor = "Lunes a Viernes 16:00 - 21:00";
+            TiempoTrabajoValor = "Medio tiempo";
+            EntrenadorActivo = true;
+        }
+        else if (DniParametro == "40678345")
+        {
+            DniValor = "40678345";
+            FechaNacimientoValor = "1994-08-20";
+            NombresValor = "Laura";
+            ApellidosValor = "Gómez";
+            TelefonoValor = "997766555";
+            CorreoValor = "laura@email.com";
+            EspecialidadValor = "Spinning y Cardio";
+            SueldoMensualValor = "3000.00";
+            HorarioDisponibleValor = "Martes a Domingo 07:00 - 13:00";
+            TiempoTrabajoValor = "Tiempo completo";
+            EntrenadorActivo = true;
+        }
+        else if (DniParametro == "40789456")
+        {
+            DniValor = "40789456";
+            FechaNacimientoValor = "1990-11-03";
+            NombresValor = "Andrés";
+            ApellidosValor = "Quispe";
+            TelefonoValor = "996655444";
+            CorreoValor = "andres@email.com";
+            EspecialidadValor = "Boxeo y MMA";
+            SueldoMensualValor = "3200.00";
+            HorarioDisponibleValor = "Lunes a Sábado 18:00 - 22:00";
+            TiempoTrabajoValor = "Tiempo completo";
+            EntrenadorActivo = true;
+        }
+        else if (DniParametro == "40890567")
+        {
+            DniValor = "40890567";
+            FechaNacimientoValor = "1995-03-18";
+            NombresValor = "Diana";
+            ApellidosValor = "Rojas";
+            TelefonoValor = "995544333";
+            CorreoValor = "diana@email.com";
+            EspecialidadValor = "Zumba y Baile";
+            SueldoMensualValor = "2400.00";
+            HorarioDisponibleValor = "Lunes a Viernes 17:00 - 20:00";
+            TiempoTrabajoValor = "Por horas";
+            EntrenadorActivo = false;
+        }
+        else
+        {
+            DniValor = "40123123";
+            FechaNacimientoValor = "1991-01-20";
+            NombresValor = "Marco";
+            ApellidosValor = "Ruiz";
+            TelefonoValor = "999888777";
+            CorreoValor = "marco@email.com";
+            EspecialidadValor = "CrossFit y Musculación";
+            SueldoMensualValor = "3500.00";
+            HorarioDisponibleValor = "Lunes a Sábado 06:00 - 14:00";
+            TiempoTrabajoValor = "Tiempo completo";
+            EntrenadorActivo = true;
+        }
+    }
+
+    private void CambiarDni(ChangeEventArgs e) => DniValor = e.Value?.ToString() ?? "";
+    private void CambiarFechaNacimiento(ChangeEventArgs e) => FechaNacimientoValor = e.Value?.ToString() ?? "";
+    private void CambiarNombres(ChangeEventArgs e) => NombresValor = e.Value?.ToString() ?? "";
+    private void CambiarApellidos(ChangeEventArgs e) => ApellidosValor = e.Value?.ToString() ?? "";
+    private void CambiarTelefono(ChangeEventArgs e) => TelefonoValor = e.Value?.ToString() ?? "";
+    private void CambiarCorreo(ChangeEventArgs e) => CorreoValor = e.Value?.ToString() ?? "";
+    private void CambiarEspecialidad(ChangeEventArgs e) => EspecialidadValor = e.Value?.ToString() ?? "";
+    private void CambiarSueldoMensual(ChangeEventArgs e) => SueldoMensualValor = e.Value?.ToString() ?? "";
+    private void CambiarHorarioDisponible(ChangeEventArgs e) => HorarioDisponibleValor = e.Value?.ToString() ?? "";
+    private void CambiarTiempoTrabajo(ChangeEventArgs e) => TiempoTrabajoValor = e.Value?.ToString() ?? "";
+    private void CambiarNuevaContrasenia(ChangeEventArgs e) => NuevaContraseniaValor = e.Value?.ToString() ?? "";
+
+    private void ActivarEntrenador()
+    {
+        EntrenadorActivo = true;
+    }
+
+    private void DesactivarEntrenador()
+    {
+        EntrenadorActivo = false;
+    }
+
+    private void GuardarCambios()
+    {
+        if (string.IsNullOrWhiteSpace(DniValor))
+        {
+            MostrarError("El DNI es obligatorio.");
+            return;
+        }
+
+        if (DniValor.Length != 8)
+        {
+            MostrarError("El DNI debe tener 8 dígitos.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NombresValor))
+        {
+            MostrarError("Los nombres son obligatorios.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ApellidosValor))
+        {
+            MostrarError("Los apellidos son obligatorios.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CorreoValor))
+        {
+            MostrarError("El correo electrónico es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(EspecialidadValor))
+        {
+            MostrarError("Debe seleccionar una especialidad.");
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(NuevaContraseniaValor) && NuevaContraseniaValor.Length < 6)
+        {
+            MostrarError("La nueva contraseña debe tener mínimo 6 caracteres.");
+            return;
+        }
+
+        MostrarExito("Cambios guardados correctamente. Por ahora es una simulación visual sin base de datos.");
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message error";
+    }
+
+    private void MostrarExito(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message success";
+    }
+}
