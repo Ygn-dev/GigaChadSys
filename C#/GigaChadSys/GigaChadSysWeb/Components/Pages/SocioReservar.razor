@@ -1,24 +1,28 @@
 @page "/socio/reservar"
-@using GigaChadSysWeb.Components.Layout
 @layout SocioLayout
 @rendermode InteractiveServer
 
 <section class="reservar-page">
+
     <div class="reservar-top">
         <div>
             <h1>Reservar Clase</h1>
             <p class="reservar-subtitle">Encuentra y reserva tu siguiente sesión</p>
         </div>
-        <a href="/socio/reservas" class="btn-ver-reservas">📋 Ver Mis Reservas</a>
+
+        <a href="/socio/reservas" class="btn-ver-reservas">
+            📋 Ver Mis Reservas
+        </a>
     </div>
 
-    <!-- Filtros -->
     <div class="filtros-card">
         <h4>Filtros</h4>
+
         <div class="filtros-grid">
             <div class="filtro-group">
                 <label>DISCIPLINA</label>
-                <select @bind="filtroDisciplina">
+
+                <select value="@FiltroDisciplina" @onchange="CambiarDisciplina">
                     <option value="">Todas las disciplinas</option>
                     <option value="CrossFit">CrossFit</option>
                     <option value="Yoga">Yoga</option>
@@ -27,30 +31,51 @@
                     <option value="Pilates">Pilates</option>
                 </select>
             </div>
+
             <div class="filtro-group">
                 <label>FECHA</label>
-                <input type="date" @bind="filtroFecha" />
+
+                <input type="date"
+                       value="@FiltroFecha"
+                       @onchange="CambiarFecha" />
             </div>
+
             <div class="filtro-group">
                 <label>HORARIO</label>
-                <input type="time" @bind="filtroHora" />
+
+                <input type="time"
+                       value="@FiltroHora"
+                       @onchange="CambiarHora" />
             </div>
         </div>
-        <button class="btn-limpiar" @onclick="LimpiarFiltros">⟳ Limpiar filtros</button>
+
+        <button type="button"
+                class="btn-limpiar"
+                @onclick="LimpiarFiltros">
+            ⟳ Limpiar filtros
+        </button>
     </div>
 
-    <!-- Grid de clases -->
     <div class="clases-grid">
-        @foreach (var clase in clasesFiltradas)
+        @foreach (var clase in ClasesFiltradas)
         {
             <div class="clase-card">
+
                 <div class="clase-card-top">
-                    <span class="clase-disciplina">@clase.Disciplina.ToUpper()</span>
-                    <span class="clase-cupos @(clase.CuposDisponibles <= 3 ? "cupos-pocos" : "")">@clase.CuposDisponibles cupos</span>
+                    <span class="clase-disciplina">
+                        @clase.Disciplina.ToUpper()
+                    </span>
+
+                    <span class="@ObtenerClaseCupos(clase.CuposDisponibles)">
+                        @clase.CuposDisponibles cupos
+                    </span>
                 </div>
 
                 <h3>@clase.Nombre</h3>
-                <p class="clase-desc">@clase.Descripcion</p>
+
+                <p class="clase-desc">
+                    @clase.Descripcion
+                </p>
 
                 <div class="clase-detalles">
                     <span>📅 @clase.Fecha</span>
@@ -65,54 +90,210 @@
                         <span>Ocupación</span>
                         <span>@clase.Inscritos/@clase.Capacidad</span>
                     </div>
+
                     <div class="ocupacion-bar">
-                        <div class="ocupacion-fill @(clase.PorcentajeOcupacion > 80 ? "fill-rojo" : clase.PorcentajeOcupacion > 60 ? "fill-amarillo" : "fill-verde")" 
-                             style="width: @clase.PorcentajeOcupacion%"></div>
+                        <div class="@ObtenerClaseOcupacion(clase.PorcentajeOcupacion)"
+                             style="@($"width: {clase.PorcentajeOcupacion}%")">
+                        </div>
                     </div>
                 </div>
 
-                <button class="btn-reservar-clase" @onclick="() => ReservarClase(clase)">Reservar</button>
+                <a class="reserve-class-button"
+                   href="@($"/socio/reservar/confirmada/{clase.Codigo}")">
+                    Reservar
+                </a>
+
             </div>
         }
     </div>
+
 </section>
 
 @code {
-    private string filtroDisciplina = "";
-    private DateTime? filtroFecha;
-    private TimeOnly? filtroHora;
-    private List<ClaseDisponible> clases = new();
+    private string FiltroDisciplina { get; set; } = "";
+    private string FiltroFecha { get; set; } = "";
+    private string FiltroHora { get; set; } = "";
 
-    private IEnumerable<ClaseDisponible> clasesFiltradas => clases
-        .Where(c => string.IsNullOrEmpty(filtroDisciplina) || c.Disciplina == filtroDisciplina);
+    private List<ClaseDisponible> Clases { get; set; } = new();
+
+    private IEnumerable<ClaseDisponible> ClasesFiltradas
+    {
+        get
+        {
+            IEnumerable<ClaseDisponible> resultado = Clases;
+
+            if (!string.IsNullOrWhiteSpace(FiltroDisciplina))
+            {
+                resultado = resultado.Where(c => c.Disciplina == FiltroDisciplina);
+            }
+
+            if (!string.IsNullOrWhiteSpace(FiltroFecha))
+            {
+                resultado = resultado.Where(c => c.Fecha == FiltroFecha);
+            }
+
+            if (!string.IsNullOrWhiteSpace(FiltroHora))
+            {
+                resultado = resultado.Where(c => c.Horario.StartsWith(FiltroHora));
+            }
+
+            return resultado;
+        }
+    }
 
     protected override void OnInitialized()
     {
-        clases = new List<ClaseDisponible>
+        Clases = new List<ClaseDisponible>
         {
-            new() { Nombre = "CrossFit Intenso", Disciplina = "CrossFit", Descripcion = "Entrenamiento funcional de alta intensidad con ejercicios variados.", Fecha = "2025-05-12", Horario = "07:00 - 08:00", Entrenador = "Marco Ruiz", Salon = "Sala Principal", Capacidad = 20, Inscritos = 18, Nivel = "avanzado", Duracion = 60, CuposDisponibles = 2 },
-            new() { Nombre = "Yoga Matutino", Disciplina = "Yoga", Descripcion = "Sesión de yoga para mejorar flexibilidad y reducir estrés.", Fecha = "2025-05-12", Horario = "08:00 - 08:45", Entrenador = "Pedro Sanchez", Salon = "Sala Yoga", Capacidad = 15, Inscritos = 12, Nivel = "principiante", Duracion = 45, CuposDisponibles = 3 },
-            new() { Nombre = "Spinning Power", Disciplina = "Spinning", Descripcion = "Clase de ciclismo indoor con música motivadora.", Fecha = "2025-05-12", Horario = "18:30 - 19:15", Entrenador = "Laura Gomez", Salon = "Sala Ciclo", Capacidad = 25, Inscritos = 22, Nivel = "intermedio", Duracion = 45, CuposDisponibles = 3 },
-            new() { Nombre = "Boxeo Amateur", Disciplina = "Boxeo", Descripcion = "Técnicas básicas de boxeo y acondicionamiento físico.", Fecha = "2025-05-12", Horario = "19:00 - 20:00", Entrenador = "Carlos Diaz", Salon = "Sala Box", Capacidad = 15, Inscritos = 13, Nivel = "principiante", Duracion = 60, CuposDisponibles = 2 },
-            new() { Nombre = "CrossFit Intenso", Disciplina = "CrossFit", Descripcion = "Entrenamiento funcional de alta intensidad con ejercicios variados.", Fecha = "2025-05-13", Horario = "07:00 - 08:00", Entrenador = "Marco Ruiz", Salon = "Sala Principal", Capacidad = 20, Inscritos = 15, Nivel = "avanzado", Duracion = 60, CuposDisponibles = 5 },
-            new() { Nombre = "Pilates Core", Disciplina = "Pilates", Descripcion = "Fortalecimiento del core y control postural.", Fecha = "2025-05-13", Horario = "18:00 - 18:50", Entrenador = "Ana Flores", Salon = "Sala Yoga", Capacidad = 12, Inscritos = 11, Nivel = "intermedio", Duracion = 50, CuposDisponibles = 1 }
+            new ClaseDisponible
+            {
+                Codigo = "crossfit-intenso",
+                Nombre = "CrossFit Intenso",
+                Disciplina = "CrossFit",
+                Descripcion = "Entrenamiento funcional de alta intensidad con ejercicios variados.",
+                Fecha = "2025-05-12",
+                Horario = "07:00 - 08:00",
+                Entrenador = "Marco Ruiz",
+                Salon = "Sala Principal",
+                Capacidad = 20,
+                Inscritos = 18,
+                Nivel = "avanzado",
+                Duracion = 60,
+                CuposDisponibles = 2
+            },
+            new ClaseDisponible
+            {
+                Codigo = "yoga-matutino",
+                Nombre = "Yoga Matutino",
+                Disciplina = "Yoga",
+                Descripcion = "Sesión de yoga para mejorar flexibilidad y reducir estrés.",
+                Fecha = "2025-05-12",
+                Horario = "08:00 - 08:45",
+                Entrenador = "Pedro Sanchez",
+                Salon = "Sala Yoga",
+                Capacidad = 15,
+                Inscritos = 12,
+                Nivel = "principiante",
+                Duracion = 45,
+                CuposDisponibles = 3
+            },
+            new ClaseDisponible
+            {
+                Codigo = "spinning-power",
+                Nombre = "Spinning Power",
+                Disciplina = "Spinning",
+                Descripcion = "Clase de ciclismo indoor con música motivadora.",
+                Fecha = "2025-05-12",
+                Horario = "18:30 - 19:15",
+                Entrenador = "Laura Gomez",
+                Salon = "Sala Ciclo",
+                Capacidad = 25,
+                Inscritos = 22,
+                Nivel = "intermedio",
+                Duracion = 45,
+                CuposDisponibles = 3
+            },
+            new ClaseDisponible
+            {
+                Codigo = "boxeo-amateur",
+                Nombre = "Boxeo Amateur",
+                Disciplina = "Boxeo",
+                Descripcion = "Técnicas básicas de boxeo y acondicionamiento físico.",
+                Fecha = "2025-05-12",
+                Horario = "19:00 - 20:00",
+                Entrenador = "Carlos Diaz",
+                Salon = "Sala Box",
+                Capacidad = 15,
+                Inscritos = 13,
+                Nivel = "principiante",
+                Duracion = 60,
+                CuposDisponibles = 2
+            },
+            new ClaseDisponible
+            {
+                Codigo = "crossfit-intenso-2",
+                Nombre = "CrossFit Intenso",
+                Disciplina = "CrossFit",
+                Descripcion = "Entrenamiento funcional de alta intensidad con ejercicios variados.",
+                Fecha = "2025-05-13",
+                Horario = "07:00 - 08:00",
+                Entrenador = "Marco Ruiz",
+                Salon = "Sala Principal",
+                Capacidad = 20,
+                Inscritos = 15,
+                Nivel = "avanzado",
+                Duracion = 60,
+                CuposDisponibles = 5
+            },
+            new ClaseDisponible
+            {
+                Codigo = "pilates-core",
+                Nombre = "Pilates Core",
+                Disciplina = "Pilates",
+                Descripcion = "Fortalecimiento del core y control postural.",
+                Fecha = "2025-05-13",
+                Horario = "18:00 - 18:50",
+                Entrenador = "Ana Flores",
+                Salon = "Sala Yoga",
+                Capacidad = 12,
+                Inscritos = 11,
+                Nivel = "intermedio",
+                Duracion = 50,
+                CuposDisponibles = 1
+            }
         };
+    }
+
+    private void CambiarDisciplina(ChangeEventArgs e)
+    {
+        FiltroDisciplina = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarFecha(ChangeEventArgs e)
+    {
+        FiltroFecha = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarHora(ChangeEventArgs e)
+    {
+        FiltroHora = e.Value?.ToString() ?? "";
     }
 
     private void LimpiarFiltros()
     {
-        filtroDisciplina = "";
-        filtroFecha = null;
-        filtroHora = null;
+        FiltroDisciplina = "";
+        FiltroFecha = "";
+        FiltroHora = "";
     }
 
-    private void ReservarClase(ClaseDisponible clase)
+    private string ObtenerClaseCupos(int cupos)
     {
-        // Se conectará con BL después
+        if (cupos <= 3)
+        {
+            return "clase-cupos cupos-pocos";
+        }
+
+        return "clase-cupos";
+    }
+
+    private string ObtenerClaseOcupacion(int porcentaje)
+    {
+        if (porcentaje > 80)
+        {
+            return "ocupacion-fill fill-rojo";
+        }
+
+        if (porcentaje > 60)
+        {
+            return "ocupacion-fill fill-amarillo";
+        }
+
+        return "ocupacion-fill fill-verde";
     }
 
     private class ClaseDisponible
     {
+        public string Codigo { get; set; } = "";
         public string Nombre { get; set; } = "";
         public string Disciplina { get; set; } = "";
         public string Descripcion { get; set; } = "";
@@ -125,6 +306,18 @@
         public string Nivel { get; set; } = "";
         public int Duracion { get; set; }
         public int CuposDisponibles { get; set; }
-        public int PorcentajeOcupacion => Capacidad > 0 ? (Inscritos * 100 / Capacidad) : 0;
+
+        public int PorcentajeOcupacion
+        {
+            get
+            {
+                if (Capacidad <= 0)
+                {
+                    return 0;
+                }
+
+                return Inscritos * 100 / Capacidad;
+            }
+        }
     }
 }
