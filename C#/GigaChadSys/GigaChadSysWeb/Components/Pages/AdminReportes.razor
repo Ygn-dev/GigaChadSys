@@ -1,6 +1,9 @@
 ﻿@page "/admin/reportes"
 @layout AdminLayout
 @rendermode InteractiveServer
+@using System.Globalization
+@using System.Linq
+@using Microsoft.AspNetCore.Components
 
 <section class="reports-page">
 
@@ -122,7 +125,7 @@
                 <div>
                     <span>Total recaudado</span>
                     <strong class="green-money">S/ @TotalRecaudado</strong>
-                    <p>@CantidadTransacciones transacciones</p>
+                    <p>@TotalTransacciones transacciones</p>
                 </div>
 
                 <div class="revenue-kpi-icon green">↗</div>
@@ -173,35 +176,33 @@
                         </linearGradient>
                     </defs>
 
-                    <polygon points="80,150 280,130 500,115 700,125 920,70 920,250 80,250"
-                             fill="url(#redArea)" />
+                    <polygon points="@ChartAreaPoints" fill="url(#redArea)" />
 
-                    <polyline points="80,150 280,130 500,115 700,125 920,70"
+                    <polyline points="@ChartLinePoints"
                               fill="none"
                               stroke="#E53935"
                               stroke-width="5"
                               stroke-linecap="round"
                               stroke-linejoin="round" />
 
-                    <circle cx="80" cy="150" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
-                    <circle cx="280" cy="130" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
-                    <circle cx="500" cy="115" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
-                    <circle cx="700" cy="125" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
-                    <circle cx="920" cy="70" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
+                    @foreach (var punto in PuntosGrafico)
+                    {
+                        <circle cx="@punto.X"
+                                cy="@punto.Y"
+                                r="7"
+                                fill="#F5F5F5"
+                                stroke="#E53935"
+                                stroke-width="4" />
+
+                        @((MarkupString)$"<text x='{punto.X}' y='{punto.LabelY}' text-anchor='middle' class='chart-value-label'>{punto.Valor}</text>")
+                    }
                 </svg>
 
-                <span class="point-label p1">580</span>
-                <span class="point-label p2">650</span>
-                <span class="point-label p3">720</span>
-                <span class="point-label p4">680</span>
-                <span class="point-label p5">982</span>
-
                 <div class="chart-months">
-                    <span>Ene</span>
-                    <span>Feb</span>
-                    <span>Mar</span>
-                    <span>Abr</span>
-                    <span>May</span>
+                    @foreach (var punto in PuntosGrafico)
+                    {
+                        <span>@punto.Mes</span>
+                    }
                 </div>
             </div>
         </div>
@@ -211,9 +212,9 @@
                 <h2>Métodos de Pago Utilizados</h2>
 
                 <div class="donut-layout">
-                    <div class="donut-card payment-donut">
+                    <div class="donut-card payment-donut" style="@MetodoPagoDonutStyle">
                         <div class="donut-center">
-                            <strong>8</strong>
+                            <strong>@TotalTransacciones</strong>
                             <span>Transacciones</span>
                         </div>
                     </div>
@@ -221,20 +222,20 @@
                     <div class="donut-list">
                         <div class="donut-row">
                             <span><i class="dot red"></i>Efectivo</span>
-                            <strong>5 (62.5%)</strong>
+                            <strong>@PagosEfectivo (@Porcentaje(PagosEfectivo, TotalTransaccionesEntero))</strong>
                         </div>
 
                         <div class="donut-row">
                             <span><i class="dot blue"></i>Tarjeta Débito</span>
-                            <strong>2 (25.0%)</strong>
+                            <strong>@PagosDebito (@Porcentaje(PagosDebito, TotalTransaccionesEntero))</strong>
                         </div>
 
                         <div class="donut-row">
                             <span><i class="dot green"></i>Tarjeta Crédito</span>
-                            <strong>1 (12.5%)</strong>
+                            <strong>@PagosCredito (@Porcentaje(PagosCredito, TotalTransaccionesEntero))</strong>
                         </div>
 
-                        <p class="donut-total">Total: 8 transacciones</p>
+                        <p class="donut-total">Total: @TotalTransacciones transacciones</p>
                     </div>
                 </div>
             </div>
@@ -243,9 +244,9 @@
                 <h2>Estado de Pagos</h2>
 
                 <div class="donut-layout">
-                    <div class="donut-card status-donut">
+                    <div class="donut-card status-donut" style="@EstadoPagoDonutStyle">
                         <div class="donut-center">
-                            <strong>8</strong>
+                            <strong>@TotalPagosEstado</strong>
                             <span>Total</span>
                         </div>
                     </div>
@@ -253,17 +254,17 @@
                     <div class="donut-list">
                         <div class="donut-row">
                             <span><i class="dot green"></i>Pagos Pagados</span>
-                            <strong>7 (87.5%)</strong>
+                            <strong>@PagosPagados (@Porcentaje(PagosPagados, TotalPagosEstado))</strong>
                         </div>
 
                         <div class="donut-row">
                             <span><i class="dot orange"></i>Pagos Pendientes</span>
-                            <strong>1 (12.5%)</strong>
+                            <strong>@PagosPendientes (@Porcentaje(PagosPendientes, TotalPagosEstado))</strong>
                         </div>
 
                         <div class="pending-box">
                             <span>Pendiente por cobrar</span>
-                            <strong>S/ 79.00 ›</strong>
+                            <strong>S/ @TotalPendiente ›</strong>
                         </div>
                     </div>
                 </div>
@@ -292,31 +293,6 @@
     private string ClasePeriodoAnio =>
         PeriodoActual == "Anio" ? "revenue-period-button active" : "revenue-period-button";
 
-    private string TotalRecaudado =>
-        PeriodoActual == "Mes" ? "982.00" :
-        PeriodoActual == "Trimestre" ? "2,350.00" :
-        "8,920.00";
-
-    private string TotalPendiente =>
-        PeriodoActual == "Mes" ? "79.00" :
-        PeriodoActual == "Trimestre" ? "228.00" :
-        "605.00";
-
-    private string PromedioPago =>
-        PeriodoActual == "Mes" ? "122.75" :
-        PeriodoActual == "Trimestre" ? "130.55" :
-        "127.42";
-
-    private string CantidadTransacciones =>
-        PeriodoActual == "Mes" ? "8" :
-        PeriodoActual == "Trimestre" ? "18" :
-        "70";
-
-    private string PagosPendientes =>
-        PeriodoActual == "Mes" ? "1" :
-        PeriodoActual == "Trimestre" ? "3" :
-        "7";
-
     private void MostrarReporteSocios()
     {
         ReporteActual = "Socios";
@@ -342,6 +318,160 @@
         PeriodoActual = "Anio";
     }
 
+    private decimal TotalRecaudadoNumero =>
+        PeriodoActual == "Mes" ? 982.00m :
+        PeriodoActual == "Trimestre" ? 2350.00m :
+        8920.00m;
+
+    private decimal TotalPendienteNumero =>
+        PeriodoActual == "Mes" ? 79.00m :
+        PeriodoActual == "Trimestre" ? 237.00m :
+        553.00m;
+
+    private int TotalTransaccionesEntero =>
+        PeriodoActual == "Mes" ? 8 :
+        PeriodoActual == "Trimestre" ? 18 :
+        70;
+
+    private int PagosPendientes =>
+        PeriodoActual == "Mes" ? 1 :
+        PeriodoActual == "Trimestre" ? 3 :
+        7;
+
+    private int PagosPagados =>
+        TotalTransaccionesEntero - PagosPendientes;
+
+    private int TotalPagosEstado =>
+        PagosPagados + PagosPendientes;
+
+    private string TotalRecaudado =>
+        TotalRecaudadoNumero.ToString("0.00", CultureInfo.InvariantCulture);
+
+    private string TotalPendiente =>
+        TotalPendienteNumero.ToString("0.00", CultureInfo.InvariantCulture);
+
+    private string PromedioPago =>
+        (TotalRecaudadoNumero / TotalTransaccionesEntero).ToString("0.00", CultureInfo.InvariantCulture);
+
+    private string TotalTransacciones =>
+        TotalTransaccionesEntero.ToString();
+
+    private int PagosEfectivo =>
+        PeriodoActual == "Mes" ? 5 :
+        PeriodoActual == "Trimestre" ? 12 :
+        42;
+
+    private int PagosDebito =>
+        PeriodoActual == "Mes" ? 2 :
+        PeriodoActual == "Trimestre" ? 4 :
+        18;
+
+    private int PagosCredito =>
+        PeriodoActual == "Mes" ? 1 :
+        PeriodoActual == "Trimestre" ? 2 :
+        10;
+
+    private string MetodoPagoDonutStyle
+    {
+        get
+        {
+            int efectivoGrados = CalcularGrados(PagosEfectivo, TotalTransaccionesEntero);
+            int debitoGrados = CalcularGrados(PagosDebito, TotalTransaccionesEntero);
+            int finDebito = efectivoGrados + debitoGrados;
+
+            return $"background: conic-gradient(#E53935 0deg {efectivoGrados}deg, #1976D2 {efectivoGrados}deg {finDebito}deg, #4CAF50 {finDebito}deg 360deg);";
+        }
+    }
+
+    private string EstadoPagoDonutStyle
+    {
+        get
+        {
+            int pagadosGrados = CalcularGrados(PagosPagados, TotalPagosEstado);
+
+            return $"background: conic-gradient(#4CAF50 0deg {pagadosGrados}deg, #FF9800 {pagadosGrados}deg 360deg);";
+        }
+    }
+
+    private int CalcularGrados(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return 0;
+        }
+
+        return Convert.ToInt32(Math.Round(360.0 * cantidad / total));
+    }
+
+    private string Porcentaje(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return "0.0%";
+        }
+
+        double porcentaje = 100.0 * cantidad / total;
+        return porcentaje.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private List<PuntoGrafico> PuntosGrafico
+    {
+        get
+        {
+            if (PeriodoActual == "Trimestre")
+            {
+                return new List<PuntoGrafico>
+                {
+                    new PuntoGrafico { Mes = "Mar", Valor = "720", X = "80", Y = "115", LabelY = "95" },
+                    new PuntoGrafico { Mes = "Abr", Valor = "680", X = "500", Y = "125", LabelY = "105" },
+                    new PuntoGrafico { Mes = "May", Valor = "982", X = "920", Y = "70", LabelY = "50" }
+                };
+            }
+
+            if (PeriodoActual == "Anio")
+            {
+                return new List<PuntoGrafico>
+                {
+                    new PuntoGrafico { Mes = "Jun", Valor = "520", X = "80", Y = "165", LabelY = "145" },
+                    new PuntoGrafico { Mes = "Jul", Valor = "610", X = "156", Y = "148", LabelY = "128" },
+                    new PuntoGrafico { Mes = "Ago", Valor = "690", X = "232", Y = "132", LabelY = "112" },
+                    new PuntoGrafico { Mes = "Sep", Valor = "740", X = "308", Y = "120", LabelY = "100" },
+                    new PuntoGrafico { Mes = "Oct", Valor = "810", X = "384", Y = "108", LabelY = "88" },
+                    new PuntoGrafico { Mes = "Nov", Valor = "760", X = "460", Y = "118", LabelY = "98" },
+                    new PuntoGrafico { Mes = "Dic", Valor = "900", X = "536", Y = "90", LabelY = "70" },
+                    new PuntoGrafico { Mes = "Ene", Valor = "580", X = "612", Y = "155", LabelY = "135" },
+                    new PuntoGrafico { Mes = "Feb", Valor = "650", X = "688", Y = "140", LabelY = "120" },
+                    new PuntoGrafico { Mes = "Mar", Valor = "720", X = "764", Y = "128", LabelY = "108" },
+                    new PuntoGrafico { Mes = "Abr", Valor = "680", X = "840", Y = "136", LabelY = "116" },
+                    new PuntoGrafico { Mes = "May", Valor = "982", X = "920", Y = "70", LabelY = "50" }
+                };
+            }
+
+            return new List<PuntoGrafico>
+            {
+                new PuntoGrafico { Mes = "Ene", Valor = "580", X = "80", Y = "150", LabelY = "130" },
+                new PuntoGrafico { Mes = "Feb", Valor = "650", X = "280", Y = "130", LabelY = "110" },
+                new PuntoGrafico { Mes = "Mar", Valor = "720", X = "500", Y = "115", LabelY = "95" },
+                new PuntoGrafico { Mes = "Abr", Valor = "680", X = "700", Y = "125", LabelY = "105" },
+                new PuntoGrafico { Mes = "May", Valor = "982", X = "920", Y = "70", LabelY = "50" }
+            };
+        }
+    }
+
+    private string ChartLinePoints =>
+        string.Join(" ", PuntosGrafico.Select(p => $"{p.X},{p.Y}"));
+
+    private string ChartAreaPoints
+    {
+        get
+        {
+            var primero = PuntosGrafico.First();
+            var ultimo = PuntosGrafico.Last();
+
+            return $"{ChartLinePoints} {ultimo.X},250 {primero.X},250";
+        }
+    }
+
     private List<SocioReporte> Socios { get; set; } = new()
     {
         new SocioReporte { Nombre = "Lucia Torres", Membresia = "Membresía Black", Activo = true },
@@ -352,6 +482,15 @@
         new SocioReporte { Nombre = "Roberto Diaz", Membresia = "Membresía Basic", Activo = true },
         new SocioReporte { Nombre = "Camila Flores", Membresia = "Membresía Basic", Activo = false }
     };
+
+    private class PuntoGrafico
+    {
+        public string Mes { get; set; } = "";
+        public string Valor { get; set; } = "";
+        public string X { get; set; } = "";
+        public string Y { get; set; } = "";
+        public string LabelY { get; set; } = "";
+    }
 
     private class SocioReporte
     {
