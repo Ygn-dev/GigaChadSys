@@ -1,0 +1,235 @@
+@page "/admin/reservas/nueva"
+@using Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="admin-list-page">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-nav">
+        <a href="/admin/inicio">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/admin/reservas">Reservas</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Nueva Reserva</span>
+    </div>
+
+    <!-- Page Header -->
+    <div style="margin-bottom:28px;">
+        <h1 style="font-size:26px;font-weight:800;color:#F5F5F5;margin:0 0 6px;">
+            Registrar Nueva Reserva
+        </h1>
+        <p style="color:#B0B0B0;font-size:14px;margin:0;">
+            Reserve un cupo para un socio en una sesión programada
+        </p>
+    </div>
+
+    <!-- Two-column layout -->
+    <div class="nr-layout">
+
+        <!-- LEFT: Form sections -->
+        <div class="nr-form-col">
+
+            <!-- Selección de Socio -->
+            <div class="sf-section-card">
+                <div class="sf-section-head">
+                    <span class="sf-section-icon">👤</span>
+                    <span>Selección de Socio</span>
+                </div>
+                <div class="sf-form-group">
+                    <label class="sf-label">Socio <span style="color:#E53935">*</span></label>
+                    <select class="sf-select" @bind="SocioSeleccionado">
+                        <option value="">Seleccione un socio</option>
+                        @foreach (var s in Socios)
+                        {
+                            <option value="@s.Id">@s.Nombre — DNI: @s.Dni</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Selección de Sesión -->
+            <div class="sf-section-card">
+                <div class="sf-section-head">
+                    <span class="sf-section-icon">📅</span>
+                    <span>Selección de Sesión</span>
+                </div>
+                <div class="sf-form-group">
+                    <label class="sf-label">Sesión disponible <span style="color:#E53935">*</span></label>
+                    <select class="sf-select" @bind="SesionSeleccionada">
+                        <option value="">Seleccione una sesión</option>
+                        @foreach (var s in Sesiones)
+                        {
+                            <option value="@s.Id">
+                                @s.Clase — @s.Fecha  @s.Horario  (@s.CuposLibres cupos libres)
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Estado de la Reserva -->
+            <div class="sf-section-card">
+                <div class="sf-section-head">
+                    <span class="sf-section-icon">👁</span>
+                    <span>Estado de la Reserva</span>
+                </div>
+                <div class="sf-estado-row">
+                    <button class="sf-estado-btn @(EstadoReserva == "Confirmada" ? "sf-estado-activo" : "")"
+                            @onclick='() => EstadoReserva = "Confirmada"'>
+                        <span class="sf-estado-dot @(EstadoReserva == "Confirmada" ? "dot-green" : "")"></span>
+                        Confirmada
+                    </button>
+                    <button class="sf-estado-btn @(EstadoReserva == "Pendiente" ? "sf-estado-pendiente-sel" : "")"
+                            @onclick='() => EstadoReserva = "Pendiente"'>
+                        <span class="sf-estado-dot @(EstadoReserva == "Pendiente" ? "dot-yellow" : "")"></span>
+                        Pendiente
+                    </button>
+                    <button class="sf-estado-btn @(EstadoReserva == "Cancelada" ? "sf-estado-inactivo" : "")"
+                            @onclick='() => EstadoReserva = "Cancelada"'>
+                        <span class="sf-estado-dot @(EstadoReserva == "Cancelada" ? "dot-red" : "")"></span>
+                        Cancelada
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="sf-form-actions">
+                <button class="sf-btn-primary" @onclick="RegistrarReserva">
+                    ✔ Registrar Reserva
+                </button>
+                <button class="sf-btn-secondary" @onclick="LimpiarFormulario">
+                    ✕ Cancelar
+                </button>
+                <div class="sf-back-link">
+                    <a href="/admin/reservas">← Volver al listado</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Vista Previa -->
+        <div class="nr-preview-col">
+            <div class="sf-resumen-card">
+                <div class="sf-section-head" style="margin-bottom:18px;">
+                    <span class="sf-section-icon">📅</span>
+                    <span>Vista Previa</span>
+                </div>
+
+                @if (string.IsNullOrEmpty(SocioSeleccionado) || string.IsNullOrEmpty(SesionSeleccionada))
+                {
+                    <div class="nr-preview-empty">
+                        <span class="nr-preview-empty-icon">📅</span>
+                        <p>Complete el formulario para ver la vista previa de la reserva.</p>
+                    </div>
+                }
+                else
+                {
+                    var socio  = Socios.FirstOrDefault(s => s.Id == SocioSeleccionado);
+                    var sesion = Sesiones.FirstOrDefault(s => s.Id == SesionSeleccionada);
+
+                    if (socio != null && sesion != null)
+                    {
+                        <div class="sf-resumen-rows">
+                            <div class="sf-resumen-row">
+                                <span>SOCIO</span>
+                                <strong>@socio.Nombre</strong>
+                            </div>
+                            <div class="sf-resumen-row">
+                                <span>DNI</span>
+                                <strong>@socio.Dni</strong>
+                            </div>
+                            <div class="sf-resumen-row">
+                                <span>CLASE</span>
+                                <strong>@sesion.Clase</strong>
+                            </div>
+                            <div class="sf-resumen-row">
+                                <span>ENTRENADOR</span>
+                                <strong>@sesion.Entrenador</strong>
+                            </div>
+                            <div class="sf-resumen-row">
+                                <span>FECHA</span>
+                                <strong>@sesion.Fecha</strong>
+                            </div>
+                            <div class="sf-resumen-row">
+                                <span>HORARIO</span>
+                                <strong>@sesion.Horario</strong>
+                            </div>
+                            <div class="sf-resumen-row">
+                                <span>CUPOS LIBRES</span>
+                                <strong class="@(sesion.CuposLibres <= 2 ? "rsm-inactivo" : "rsm-activo")">
+                                    @sesion.CuposLibres disponibles
+                                </strong>
+                            </div>
+                            <div class="sf-resumen-row">
+                                <span>ESTADO</span>
+                                <span class="reserva-estado-badge reserva-estado-@EstadoReserva.ToLower()">
+                                    <span class="reserva-estado-dot"></span>
+                                    @EstadoReserva
+                                </span>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+@if (MostrarToast)
+{
+    <div class="socios-toast socios-toast-show">
+        <span>✅</span> Reserva registrada correctamente
+    </div>
+}
+
+@code {
+    private string SocioSeleccionado  = "";
+    private string SesionSeleccionada = "";
+    private string EstadoReserva      = "Confirmada";
+    private bool   MostrarToast       = false;
+
+    private async Task RegistrarReserva()
+    {
+        if (string.IsNullOrEmpty(SocioSeleccionado) || string.IsNullOrEmpty(SesionSeleccionada))
+            return;
+
+        MostrarToast = true;
+        StateHasChanged();
+        await Task.Delay(2800);
+        MostrarToast = false;
+        LimpiarFormulario();
+    }
+
+    private void LimpiarFormulario()
+    {
+        SocioSeleccionado  = "";
+        SesionSeleccionada = "";
+        EstadoReserva      = "Confirmada";
+    }
+
+    private List<SocioOption> Socios = new()
+    {
+        new("1", "Maria Gonzalez",   "40123897"),
+        new("2", "Laura Martinez",   "42890123"),
+        new("3", "Diego Fernandez",  "37890123"),
+        new("4", "Carlos Rodriguez", "38456721"),
+        new("5", "Juan Perez",       "35678912"),
+        new("6", "Camila Torres",    "44567890"),
+    };
+
+    private List<SesionOption> Sesiones = new()
+    {
+        new("1", "CrossFit Intenso",     "Marco Ruiz",    "2026-06-10", "07:00 - 08:00", 8),
+        new("2", "Yoga Matutino",        "Pedro Sanchez", "2026-06-10", "08:00 - 09:00", 7),
+        new("3", "Spinning Power",       "Laura Gomez",   "2026-06-10", "18:30 - 19:30", 7),
+        new("4", "Boxeo Amateur",        "Andres Quispe", "2026-06-11", "19:00 - 20:00", 2),
+        new("5", "Musculacion Avanzada", "Marco Ruiz",    "2026-06-11", "06:00 - 07:15", 8),
+        new("6", "Pilates Core",         "Pedro Sanchez", "2026-06-12", "16:00 - 17:00", 7),
+    };
+
+    private record SocioOption(string Id, string Nombre, string Dni);
+    private record SesionOption(string Id, string Clase, string Entrenador, string Fecha, string Horario, int CuposLibres);
+}
