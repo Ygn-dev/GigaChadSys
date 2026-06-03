@@ -12495,33 +12495,3 @@ h1:focus {
         color: white !important;
         text-decoration: none !important;
     }
-/* ===== SIDEBAR LOGO REAL - ADMIN ===== */
-
-.admin-logo {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    padding: 24px 18px 26px 18px !important;
-    border-bottom: 1px solid #242424 !important;
-    text-align: center !important;
-}
-
-.sidebar-logo-img {
-    width: 165px;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-    display: block;
-    filter: drop-shadow(0 0 12px rgba(229, 57, 53, 0.18));
-}
-
-.sidebar-role-text {
-    color: #E53935;
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    margin-top: 2px;
-}
