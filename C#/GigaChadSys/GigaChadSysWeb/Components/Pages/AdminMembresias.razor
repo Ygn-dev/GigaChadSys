@@ -1,0 +1,113 @@
+﻿@page "/admin/membresias"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="membership-page">
+
+    <div class="membership-header">
+        <h1>Planes de Membresía</h1>
+        <p>Gestiona los planes disponibles para los socios.</p>
+    </div>
+
+    <div class="membership-grid">
+
+        <div class="membership-card">
+            <div class="membership-top">
+                <div class="membership-title-block">
+                    <div class="membership-icon">◎</div>
+                    <div>
+                        <h2>Membresía Basic</h2>
+                        <span class="membership-status">Activa</span>
+                    </div>
+                </div>
+
+                <div class="membership-price">
+                    <strong>S/ 79</strong>
+                    <span>/mes</span>
+                </div>
+            </div>
+
+            <div class="membership-section">
+                <h3>Beneficios</h3>
+
+                <ul>
+                    <li>Acceso a sala de musculación</li>
+                    <li>Acceso a cardio</li>
+                    <li>Vestuario incluido</li>
+                    <li>App móvil</li>
+                </ul>
+            </div>
+
+            <div class="membership-section">
+                <h3>Características</h3>
+
+                <div class="membership-tags">
+                    <span>Sin clases grupales</span>
+                    <span>Acceso limitado a horario diurno</span>
+                    <span>Sin zona de spa</span>
+                </div>
+            </div>
+
+            <div class="membership-actions">
+                <a class="membership-button-secondary" href="/admin/membresias/basic/editar">
+                    ✎ Editar Plan
+                </a>
+
+                <a class="membership-button-primary" href="/admin/suscripciones/nuevo/basic">
+                    ♙ Suscribir Socio
+                </a>
+            </div>
+        </div>
+
+        <div class="membership-card">
+            <div class="membership-top">
+                <div class="membership-title-block">
+                    <div class="membership-icon black">♛</div>
+                    <div>
+                        <h2>Membresía Black</h2>
+                        <span class="membership-status">Activa</span>
+                    </div>
+                </div>
+
+                <div class="membership-price">
+                    <strong>S/ 149</strong>
+                    <span>/mes</span>
+                </div>
+            </div>
+
+            <div class="membership-section">
+                <h3>Beneficios</h3>
+
+                <ul>
+                    <li>Todo lo de Basic</li>
+                    <li>Clases grupales ilimitadas</li>
+                    <li>Acceso 24/7</li>
+                    <li>Zona de spa</li>
+                    <li>Entrenador personal 2x/mes</li>
+                </ul>
+            </div>
+
+            <div class="membership-section">
+                <h3>Características</h3>
+
+                <div class="membership-tags">
+                    <span>Acceso total a horarios</span>
+                    <span>Reserva de clases preferencial</span>
+                    <span>Invitados gratuitos 2/mes</span>
+                </div>
+            </div>
+
+            <div class="membership-actions">
+                <a class="membership-button-secondary" href="/admin/membresias/black/editar">
+                    ✎ Editar Plan
+                </a>
+
+                <a class="membership-button-primary" href="/admin/suscripciones/nuevo/black">
+                    ♙ Suscribir Socio
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</section>

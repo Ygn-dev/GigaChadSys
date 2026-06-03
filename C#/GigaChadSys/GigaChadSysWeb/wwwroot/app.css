@@ -6737,7 +6737,367 @@ h1:focus {
         border: 1px solid rgba(0, 200, 83, 0.45);
         color: #00C853;
     }
-	
+.subscribe-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+}
+
+.subscribe-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #B0B0B0;
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+    .subscribe-breadcrumb a {
+        color: #B0B0B0;
+        text-decoration: none;
+    }
+
+        .subscribe-breadcrumb a:hover {
+            color: #FF5252;
+        }
+
+    .subscribe-breadcrumb strong {
+        color: #F5F5F5;
+    }
+
+.subscribe-title {
+    margin-bottom: 28px;
+}
+
+    .subscribe-title h1 {
+        color: #F5F5F5;
+        font-size: 30px;
+        margin-bottom: 6px;
+    }
+
+    .subscribe-title p {
+        color: #B0B0B0;
+        margin: 0;
+    }
+
+.subscribe-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 28px;
+    align-items: start;
+}
+
+.subscribe-section {
+    background: #161616;
+    border: 1px solid #2A2A2A;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 22px;
+}
+
+    .subscribe-section h2 {
+        color: #F5F5F5;
+        font-size: 18px;
+        margin-bottom: 22px;
+    }
+
+.subscribe-search {
+    width: 100%;
+    background: #0D0D0D;
+    border: 1px solid #242424;
+    color: #F5F5F5;
+    border-radius: 8px;
+    padding: 14px;
+    outline: none;
+}
+
+    .subscribe-search:focus {
+        border-color: #E53935;
+    }
+
+.subscribe-member-list {
+    margin-top: 16px;
+    display: grid;
+    gap: 10px;
+}
+
+.subscribe-member-card {
+    width: 100%;
+    background: #202020;
+    border: 1px solid #2A2A2A;
+    border-radius: 10px;
+    color: #F5F5F5;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .subscribe-member-card:hover {
+        border-color: #FF5252;
+    }
+
+    .subscribe-member-card.selected {
+        border-color: #E53935;
+        background: rgba(229, 57, 53, 0.12);
+    }
+
+    .subscribe-member-card strong {
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .subscribe-member-card span {
+        color: #B0B0B0;
+        font-size: 13px;
+    }
+
+    .subscribe-member-card small {
+        color: #B0B0B0;
+    }
+
+.subscribe-plan-card {
+    background: #0D0D0D;
+    border: 1px solid #242424;
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.subscribe-plan-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.subscribe-plan-name {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.subscribe-plan-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: rgba(229, 57, 53, 0.16);
+    color: #E53935;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.subscribe-plan-name h3 {
+    color: #F5F5F5;
+    margin: 0 0 8px 0;
+}
+
+.subscribe-plan-name span {
+    background: rgba(0, 200, 83, 0.15);
+    color: #00C853;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.subscribe-plan-price {
+    text-align: right;
+}
+
+    .subscribe-plan-price strong {
+        display: block;
+        color: #E53935;
+        font-size: 28px;
+    }
+
+    .subscribe-plan-price span {
+        color: #B0B0B0;
+    }
+
+.subscribe-plan-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+    .subscribe-plan-info h4 {
+        color: #B0B0B0;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+    }
+
+    .subscribe-plan-info p {
+        color: #F5F5F5;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+.subscribe-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+}
+
+.subscribe-field label {
+    display: block;
+    color: #F5F5F5;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.subscribe-field input {
+    width: 100%;
+    background: #0D0D0D;
+    border: 1px solid #242424;
+    color: #F5F5F5;
+    border-radius: 8px;
+    padding: 13px 14px;
+    outline: none;
+}
+
+    .subscribe-field input:focus {
+        border-color: #E53935;
+    }
+
+.subscribe-status-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.subscribe-status-button {
+    background: #202020;
+    color: #B0B0B0;
+    border: 1px solid #2A2A2A;
+    border-radius: 10px;
+    padding: 12px 22px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+    .subscribe-status-button.active {
+        background: rgba(0, 200, 83, 0.15);
+        color: #00C853;
+        border-color: rgba(0, 200, 83, 0.35);
+    }
+
+.subscribe-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.subscribe-save-button {
+    background: #E53935;
+    color: white;
+    border: none;
+    padding: 13px 22px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+    .subscribe-save-button:hover {
+        background: #FF5252;
+    }
+
+.subscribe-cancel-button {
+    background: #202020;
+    color: #F5F5F5;
+    border: 1px solid #2A2A2A;
+    padding: 13px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.subscribe-return-link {
+    color: #B0B0B0;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+    .subscribe-return-link:hover {
+        color: #FF5252;
+    }
+
+.subscribe-summary {
+    background: #161616;
+    border: 1px solid #2A2A2A;
+    border-radius: 16px;
+    padding: 24px;
+    position: sticky;
+    top: 30px;
+}
+
+    .subscribe-summary h2 {
+        color: #F5F5F5;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+.subscribe-summary-row {
+    border-bottom: 1px solid #242424;
+    padding: 16px 0;
+}
+
+    .subscribe-summary-row span {
+        color: #B0B0B0;
+        display: block;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .subscribe-summary-row strong {
+        color: #F5F5F5;
+        display: block;
+    }
+
+    .subscribe-summary-row .muted {
+        color: #B0B0B0;
+        font-style: italic;
+    }
+
+    .subscribe-summary-row .price {
+        color: #E53935;
+        font-size: 22px;
+    }
+
+.summary-active {
+    color: #00C853 !important;
+}
+
+.summary-inactive {
+    color: #FF5252 !important;
+}
+
+.subscribe-message {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    font-weight: 700;
+}
+
+    .subscribe-message.error {
+        background: rgba(229, 57, 53, 0.15);
+        border: 1px solid rgba(229, 57, 53, 0.45);
+        color: #FF5252;
+    }
+
+    .subscribe-message.success {
+        background: rgba(0, 200, 83, 0.15);
+        border: 1px solid rgba(0, 200, 83, 0.45);
+        color: #00C853;
+    }
 
 /* ============================================================
    GESTIÓN DE RESERVAS  (GestionReservas.razor)
@@ -6758,12 +7118,12 @@ h1:focus {
     flex-wrap: wrap;
 }
 
-.gr-header h1 {
-    font-size: 30px;
-    font-weight: 800;
-    color: #F5F5F5;
-    margin: 0 0 6px;
-}
+    .gr-header h1 {
+        font-size: 30px;
+        font-weight: 800;
+        color: #F5F5F5;
+        margin: 0 0 6px;
+    }
 
 .gr-subtitle {
     color: #B0B0B0;
@@ -6977,9 +7337,17 @@ h1:focus {
     transition: width 0.4s ease;
 }
 
-.gr-bar-green  { background: #66BB6A; }
-.gr-bar-yellow { background: #FFD54F; }
-.gr-bar-red    { background: #E53935; }
+.gr-bar-green {
+    background: #66BB6A;
+}
+
+.gr-bar-yellow {
+    background: #FFD54F;
+}
+
+.gr-bar-red {
+    background: #E53935;
+}
 
 /* ── Estado badges ── */
 .gr-estado-badge {
@@ -7007,7 +7375,9 @@ h1:focus {
     border: 1px solid rgba(76, 175, 80, 0.25);
 }
 
-    .gr-estado-confirmada .gr-estado-dot { background: #66BB6A; }
+    .gr-estado-confirmada .gr-estado-dot {
+        background: #66BB6A;
+    }
 
 .gr-estado-pendiente {
     color: #FFD54F;
@@ -7015,7 +7385,9 @@ h1:focus {
     border: 1px solid rgba(255, 193, 7, 0.25);
 }
 
-    .gr-estado-pendiente .gr-estado-dot { background: #FFD54F; }
+    .gr-estado-pendiente .gr-estado-dot {
+        background: #FFD54F;
+    }
 
 .gr-estado-asistió,
 .gr-estado-asistio {
@@ -7025,7 +7397,9 @@ h1:focus {
 }
 
     .gr-estado-asistió .gr-estado-dot,
-    .gr-estado-asistio .gr-estado-dot { background: #42A5F5; }
+    .gr-estado-asistio .gr-estado-dot {
+        background: #42A5F5;
+    }
 
 .gr-estado-cancelada {
     color: #EF5350;
@@ -7033,7 +7407,9 @@ h1:focus {
     border: 1px solid rgba(229, 57, 53, 0.25);
 }
 
-    .gr-estado-cancelada .gr-estado-dot { background: #EF5350; }
+    .gr-estado-cancelada .gr-estado-dot {
+        background: #EF5350;
+    }
 
 /* ── Action buttons ── */
 .gr-acciones {
@@ -7238,9 +7614,18 @@ h1:focus {
     flex-shrink: 0;
 }
 
-.nr-dot-red     { background: #E53935; }
-.nr-dot-gray    { background: #888; }
-.nr-dot-outline { border: 2px solid #555; background: transparent; }
+.nr-dot-red {
+    background: #E53935;
+}
+
+.nr-dot-gray {
+    background: #888;
+}
+
+.nr-dot-outline {
+    border: 2px solid #555;
+    background: transparent;
+}
 
 /* ── Action buttons ── */
 .nr-actions {
@@ -7377,8 +7762,13 @@ h1:focus {
     word-break: break-word;
 }
 
-.nr-cupos-ok  { color: #66BB6A !important; }
-.nr-cupos-low { color: #FFD54F !important; }
+.nr-cupos-ok {
+    color: #66BB6A !important;
+}
+
+.nr-cupos-low {
+    color: #FFD54F !important;
+}
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
@@ -7468,9 +7858,17 @@ h1:focus {
     transition: width 0.4s ease;
 }
 
-.reserva-bar-green  { background: #66BB6A; }
-.reserva-bar-yellow { background: #FFD54F; }
-.reserva-bar-red    { background: #E53935; }
+.reserva-bar-green {
+    background: #66BB6A;
+}
+
+.reserva-bar-yellow {
+    background: #FFD54F;
+}
+
+.reserva-bar-red {
+    background: #E53935;
+}
 
 /* ── Estado badges ── */
 .reserva-estado-badge {
@@ -7499,8 +7897,11 @@ h1:focus {
     background: rgba(76, 175, 80, 0.12);
     border: 1px solid rgba(76, 175, 80, 0.25);
 }
-.reserva-estado-confirmadas .reserva-estado-dot,
-.reserva-estado-confirmada  .reserva-estado-dot { background: #66BB6A; }
+
+    .reserva-estado-confirmadas .reserva-estado-dot,
+    .reserva-estado-confirmada .reserva-estado-dot {
+        background: #66BB6A;
+    }
 
 /* Pendiente / Pendientes */
 .reserva-estado-pendientes,
@@ -7509,8 +7910,11 @@ h1:focus {
     background: rgba(255, 193, 7, 0.12);
     border: 1px solid rgba(255, 193, 7, 0.25);
 }
-.reserva-estado-pendientes .reserva-estado-dot,
-.reserva-estado-pendiente  .reserva-estado-dot { background: #FFD54F; }
+
+    .reserva-estado-pendientes .reserva-estado-dot,
+    .reserva-estado-pendiente .reserva-estado-dot {
+        background: #FFD54F;
+    }
 
 /* Asistió */
 .reserva-estado-asistio {
@@ -7518,7 +7922,10 @@ h1:focus {
     background: rgba(66, 165, 245, 0.12);
     border: 1px solid rgba(66, 165, 245, 0.25);
 }
-.reserva-estado-asistio .reserva-estado-dot { background: #42A5F5; }
+
+    .reserva-estado-asistio .reserva-estado-dot {
+        background: #42A5F5;
+    }
 
 /* Cancelada / Canceladas */
 .reserva-estado-canceladas,
@@ -7527,8 +7934,11 @@ h1:focus {
     background: rgba(229, 57, 53, 0.12);
     border: 1px solid rgba(229, 57, 53, 0.25);
 }
-.reserva-estado-canceladas .reserva-estado-dot,
-.reserva-estado-cancelada  .reserva-estado-dot { background: #EF5350; }
+
+    .reserva-estado-canceladas .reserva-estado-dot,
+    .reserva-estado-cancelada .reserva-estado-dot {
+        background: #EF5350;
+    }
 
 /* ── Nueva Reserva: layout dos columnas ── */
 .nr-layout {
@@ -7595,8 +8005,14 @@ h1:focus {
     width: 100%;
 }
 
-    .sf-select:focus { border-color: #E53935; }
-    .sf-select option { background: #1C1C1C; color: #F5F5F5; }
+    .sf-select:focus {
+        border-color: #E53935;
+    }
+
+    .sf-select option {
+        background: #1C1C1C;
+        color: #F5F5F5;
+    }
 
 /* ── Estado pendiente seleccionado ── */
 .sf-estado-pendiente-sel {
@@ -7605,7 +8021,9 @@ h1:focus {
     color: #FFD54F !important;
 }
 
-.dot-yellow { background: #FFD54F; }
+.dot-yellow {
+    background: #FFD54F;
+}
 
 /* ── Preview empty state ── */
 .nr-preview-col {
@@ -7639,6 +8057,7 @@ h1:focus {
     .nr-layout {
         grid-template-columns: 1fr;
     }
+
     .nr-preview-col {
         position: static;
     }

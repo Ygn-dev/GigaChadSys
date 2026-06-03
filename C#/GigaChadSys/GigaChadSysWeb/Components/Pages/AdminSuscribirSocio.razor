@@ -1,0 +1,385 @@
+﻿@page "/admin/suscripciones/nuevo/{PlanTipo}"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="subscribe-page">
+
+    <div class="subscribe-breadcrumb">
+        <a href="/admin/inicio">Inicio</a>
+        <span>/</span>
+        <a href="/admin/membresias">Membresías</a>
+        <span>/</span>
+        <strong>Suscribir Socio</strong>
+    </div>
+
+    <div class="subscribe-title">
+        <h1>Suscribir Socio a @NombrePlan</h1>
+        <p>Selecciona un socio y registra su suscripción al plan.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    {
+        <div class="@ClaseMensajeFormulario">
+            @MensajeFormulario
+        </div>
+    }
+
+    <div class="subscribe-layout">
+
+        <div class="subscribe-main">
+
+            <div class="subscribe-section">
+                <h2>Selección de Socio</h2>
+
+                <input class="subscribe-search"
+                       type="text"
+                       placeholder="Buscar por DNI, nombre o correo..."
+                       value="@TextoBusqueda"
+                       @oninput="CambiarBusqueda" />
+
+                <div class="subscribe-member-list">
+                    @foreach (var socio in SociosFiltrados)
+                    {
+                        <button type="button"
+                                class="@ObtenerClaseSocio(socio.Dni)"
+                                @onclick="() => SeleccionarSocio(socio)">
+                            <div>
+                                <strong>@socio.NombreCompleto</strong>
+                                <span>@socio.Dni · @socio.Email</span>
+                            </div>
+
+                            <small>@socio.EstadoMembresia</small>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="subscribe-section">
+                <h2>Plan Seleccionado</h2>
+
+                <div class="subscribe-plan-card">
+                    <div class="subscribe-plan-top">
+                        <div class="subscribe-plan-name">
+                            <div class="subscribe-plan-icon">@IconoPlan</div>
+
+                            <div>
+                                <h3>@NombrePlan</h3>
+                                <span>Activa</span>
+                            </div>
+                        </div>
+
+                        <div class="subscribe-plan-price">
+                            <strong>S/ @PrecioPlan</strong>
+                            <span>/mes</span>
+                        </div>
+                    </div>
+
+                    <div class="subscribe-plan-info">
+                        <div>
+                            <h4>Beneficios</h4>
+
+                            @foreach (var beneficio in BeneficiosPlan)
+                            {
+                                <p>✓ @beneficio</p>
+                            }
+                        </div>
+
+                        <div>
+                            <h4>Características</h4>
+
+                            @foreach (var caracteristica in CaracteristicasPlan)
+                            {
+                                <p>☆ @caracteristica</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subscribe-section">
+                <h2>Datos de Suscripción</h2>
+
+                <div class="subscribe-grid">
+                    <div class="subscribe-field">
+                        <label>Fecha de inicio</label>
+                        <input type="date"
+                               value="@FechaInicio"
+                               @onchange="CambiarFechaInicio" />
+                    </div>
+
+                    <div class="subscribe-field">
+                        <label>Fecha de vencimiento</label>
+                        <input type="date"
+                               value="@FechaVencimiento"
+                               @onchange="CambiarFechaVencimiento" />
+                    </div>
+                </div>
+
+                <div class="subscribe-status-row">
+                    <button type="button"
+                            class="@ClaseEstadoActiva"
+                            @onclick="ActivarSuscripcion">
+                        Activa
+                    </button>
+
+                    <button type="button"
+                            class="@ClaseEstadoInactiva"
+                            @onclick="DesactivarSuscripcion">
+                        Inactiva
+                    </button>
+                </div>
+            </div>
+
+            <div class="subscribe-actions">
+                <button type="button"
+                        class="subscribe-save-button"
+                        @onclick="RegistrarSuscripcion">
+                    Registrar Suscripción
+                </button>
+
+                <a class="subscribe-cancel-button" href="/admin/membresias">
+                    Cancelar
+                </a>
+
+                <a class="subscribe-return-link" href="/admin/membresias">
+                    ← Volver a Membresías
+                </a>
+            </div>
+
+        </div>
+
+        <aside class="subscribe-summary">
+            <h2>Resumen de Suscripción</h2>
+
+            <div class="subscribe-summary-row">
+                <span>Socio seleccionado</span>
+
+                @if (SocioSeleccionado == null)
+                {
+                    <strong class="muted">Ningún socio seleccionado</strong>
+                }
+                else
+                {
+                    <strong>@SocioSeleccionado.NombreCompleto</strong>
+                }
+            </div>
+
+            <div class="subscribe-summary-row">
+                <span>Plan</span>
+                <strong>@NombrePlan</strong>
+            </div>
+
+            <div class="subscribe-summary-row">
+                <span>Precio mensual</span>
+                <strong class="price">S/ @PrecioPlan</strong>
+            </div>
+
+            <div class="subscribe-summary-row">
+                <span>Fechas</span>
+                <strong>Inicio: @FechaInicio</strong>
+                <strong>Vencimiento: @FechaVencimiento</strong>
+            </div>
+
+            <div class="subscribe-summary-row">
+                <span>Estado</span>
+
+                @if (SuscripcionActiva)
+                {
+                    <strong class="summary-active">Activa</strong>
+                }
+                else
+                {
+                    <strong class="summary-inactive">Inactiva</strong>
+                }
+            </div>
+        </aside>
+
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public string PlanTipo { get; set; } = "basic";
+
+    private string TextoBusqueda { get; set; } = "";
+    private string FechaInicio { get; set; } = "2026-05-10";
+    private string FechaVencimiento { get; set; } = "2026-06-10";
+    private bool SuscripcionActiva { get; set; } = true;
+
+    private string MensajeFormulario { get; set; } = "";
+    private string ClaseMensajeFormulario { get; set; } = "";
+
+    private SocioVista? SocioSeleccionado { get; set; }
+
+    private string NombrePlan => PlanTipo.ToLower() == "black" ? "Membresía Black" : "Membresía Basic";
+    private string PrecioPlan => PlanTipo.ToLower() == "black" ? "149" : "79";
+    private string IconoPlan => PlanTipo.ToLower() == "black" ? "♛" : "◎";
+
+    private string ClaseEstadoActiva => SuscripcionActiva ? "subscribe-status-button active" : "subscribe-status-button";
+    private string ClaseEstadoInactiva => !SuscripcionActiva ? "subscribe-status-button active" : "subscribe-status-button";
+
+    private List<string> BeneficiosPlan => PlanTipo.ToLower() == "black"
+        ? new List<string>
+        {
+            "Todo lo de Basic",
+            "Clases grupales ilimitadas",
+            "Acceso 24/7",
+            "Zona de spa",
+            "Entrenador personal 2x/mes"
+        }
+        : new List<string>
+        {
+            "Acceso a sala de musculación",
+            "Acceso a cardio",
+            "Vestuario incluido",
+            "App móvil"
+        };
+
+    private List<string> CaracteristicasPlan => PlanTipo.ToLower() == "black"
+        ? new List<string>
+        {
+            "Acceso total a horarios",
+            "Reserva de clases preferencial",
+            "Invitados gratuitos 2/mes"
+        }
+        : new List<string>
+        {
+            "Sin clases grupales",
+            "Acceso limitado a horario diurno",
+            "Sin zona de spa"
+        };
+
+    private List<SocioVista> Socios { get; set; } = new()
+    {
+        new SocioVista
+        {
+            Dni = "40234123",
+            NombreCompleto = "Lucía Torres",
+            Email = "lucia@email.com",
+            EstadoMembresia = "Sin membresía"
+        },
+        new SocioVista
+        {
+            Dni = "40123888",
+            NombreCompleto = "Juan Pérez",
+            Email = "juan@email.com",
+            EstadoMembresia = "Sin membresía"
+        },
+        new SocioVista
+        {
+            Dni = "40987654",
+            NombreCompleto = "Sofía Méndez",
+            Email = "sofia@email.com",
+            EstadoMembresia = "Membresía vencida"
+        },
+        new SocioVista
+        {
+            Dni = "40777111",
+            NombreCompleto = "Ana García",
+            Email = "ana@email.com",
+            EstadoMembresia = "Sin membresía"
+        }
+    };
+
+    private IEnumerable<SocioVista> SociosFiltrados
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(TextoBusqueda))
+            {
+                return Socios.Take(3);
+            }
+
+            return Socios.Where(s =>
+                s.Dni.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                s.NombreCompleto.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                s.Email.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+    }
+
+    private void CambiarBusqueda(ChangeEventArgs e)
+    {
+        TextoBusqueda = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarFechaInicio(ChangeEventArgs e)
+    {
+        FechaInicio = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarFechaVencimiento(ChangeEventArgs e)
+    {
+        FechaVencimiento = e.Value?.ToString() ?? "";
+    }
+
+    private void SeleccionarSocio(SocioVista socio)
+    {
+        SocioSeleccionado = socio;
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+    }
+
+    private string ObtenerClaseSocio(string dni)
+    {
+        if (SocioSeleccionado != null && SocioSeleccionado.Dni == dni)
+        {
+            return "subscribe-member-card selected";
+        }
+
+        return "subscribe-member-card";
+    }
+
+    private void ActivarSuscripcion()
+    {
+        SuscripcionActiva = true;
+    }
+
+    private void DesactivarSuscripcion()
+    {
+        SuscripcionActiva = false;
+    }
+
+    private void RegistrarSuscripcion()
+    {
+        if (SocioSeleccionado == null)
+        {
+            MostrarError("Debes seleccionar un socio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(FechaInicio))
+        {
+            MostrarError("La fecha de inicio es obligatoria.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(FechaVencimiento))
+        {
+            MostrarError("La fecha de vencimiento es obligatoria.");
+            return;
+        }
+
+        MostrarExito("Suscripción registrada correctamente. Por ahora es una simulación visual sin base de datos.");
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "subscribe-message error";
+    }
+
+    private void MostrarExito(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "subscribe-message success";
+    }
+
+    private class SocioVista
+    {
+        public string Dni { get; set; } = "";
+        public string NombreCompleto { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string EstadoMembresia { get; set; } = "";
+    }
+}
