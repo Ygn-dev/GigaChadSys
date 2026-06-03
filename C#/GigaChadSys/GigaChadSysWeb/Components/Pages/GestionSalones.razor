@@ -1,0 +1,176 @@
+﻿@page "/admin/salones"
+@layout AdminLayout
+
+<section class="salones-page">
+
+    <div class="salones-header">
+        <div>
+            <h1>Gestion de Salones</h1>
+            <p>Administra los salones y espacios del gimnasio</p>
+        </div>
+
+        <NavLink href="/admin/salones/nuevo" class="salones-new-btn">
+            <span>+</span>
+            Nuevo Salon
+        </NavLink>
+    </div>
+
+    <div class="salones-toolbar">
+        <div class="salones-search">
+            <span>⌕</span>
+            <input type="text"
+                   placeholder="Buscar salon..."
+                   @bind="searchText"
+                   @bind:event="oninput" />
+        </div>
+    </div>
+
+    <div class="salones-grid">
+        @foreach (var salon in SalonesFiltrados)
+        {
+            <article class="salon-card">
+                <div class="salon-card-top">
+                    <div class="salon-icon">
+                        ⊞
+                    </div>
+
+                    <span class="salon-status @GetSalonEstadoClass(salon.Estado)">
+                        @salon.Estado
+                    </span>
+                </div>
+
+                <div class="salon-info">
+                    <h3>@salon.Nombre</h3>
+
+                    <p>
+                        <span class="salon-info-icon">♙</span>
+                        Capacidad máxima:
+                        <strong>@salon.Capacidad</strong>
+                        personas
+                    </p>
+                </div>
+
+                <div class="salon-actions">
+                    <button type="button"
+                            class="salon-btn salon-btn-view"
+                            @onclick="() => AbrirDetalleSalon(salon)">
+                        <span>⊙</span>
+                        Ver
+                    </button>
+
+                    <NavLink href="@($"/admin/salones/editar/{salon.Id}")"
+                             class="salon-btn salon-btn-edit">
+                        <span>∠</span>
+                        Editar
+                    </NavLink>
+                </div>
+            </article>
+        }
+    </div>
+
+    @if (salonSeleccionado is not null)
+    {
+        <div class="salon-modal-overlay" @onclick="CerrarDetalleSalon">
+            <div class="salon-modal" @onclick:stopPropagation="true">
+
+                <div class="salon-modal-header">
+                    <h2>Detalle de Salon</h2>
+
+                    <button type="button"
+                            class="salon-modal-close"
+                            @onclick="CerrarDetalleSalon">
+                        ×
+                    </button>
+                </div>
+
+                <div class="salon-modal-main">
+                    <div class="salon-modal-icon">
+                        ⊞
+                    </div>
+
+                    <div>
+                        <h3>@salonSeleccionado.Nombre</h3>
+                        <p>Espacio del gimnasio</p>
+                    </div>
+                </div>
+
+                <div class="salon-modal-info-grid">
+                    <div class="salon-modal-info">
+                        <span>Estado</span>
+                        <strong class="@GetSalonEstadoClass(salonSeleccionado.Estado)">
+                            @salonSeleccionado.Estado
+                        </strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Capacidad maxima</span>
+                        <strong>@salonSeleccionado.Capacidad personas</strong>
+                    </div>
+                </div>
+
+                <div class="salon-modal-actions">
+                    <button type="button" class="salon-modal-edit">
+                        <span>∠</span>
+                        Editar Salon
+                    </button>
+
+                    <button type="button"
+                            class="salon-modal-cancel"
+                            @onclick="CerrarDetalleSalon">
+                        Cerrar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    }
+
+</section>
+
+@code {
+    private string searchText = string.Empty;
+
+    private SalonItem? salonSeleccionado;
+
+    private List<SalonItem> Salones = new()
+    {
+        new SalonItem(1, "Sala Principal", 50),
+        new SalonItem(2, "Sala Yoga", 20),
+        new SalonItem(3, "Sala Ciclo", 30),
+        new SalonItem(4, "Ring Boxeo", 15),
+        new SalonItem(5, "Sala Musculacion", 40)
+    };
+
+    private IEnumerable<SalonItem> SalonesFiltrados =>
+        string.IsNullOrWhiteSpace(searchText)
+            ? Salones
+            : Salones.Where(s =>
+                s.Nombre.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+
+    private void AbrirDetalleSalon(SalonItem salon)
+    {
+        salonSeleccionado = salon;
+    }
+
+    private void CerrarDetalleSalon()
+    {
+        salonSeleccionado = null;
+    }
+
+    private string GetSalonEstadoClass(string estado)
+    {
+        return estado.ToLower() switch
+        {
+            "activo" => "salon-estado-activo",
+            "inactivo" => "salon-estado-inactivo",
+            _ => ""
+        };
+    }
+
+    private record SalonItem(
+        int Id,
+        string Nombre,
+        int Capacidad,
+        string Estado = "Activo"
+    );
+}

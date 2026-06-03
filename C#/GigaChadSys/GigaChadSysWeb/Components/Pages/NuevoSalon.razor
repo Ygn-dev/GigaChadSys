@@ -1,0 +1,186 @@
+﻿@page "/admin/salones/nuevo"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+@inject NavigationManager Navigation
+
+<section class="salon-form-page">
+
+    <nav class="salon-form-breadcrumb">
+        <NavLink href="/admin/inicio">Inicio</NavLink>
+        <span>/</span>
+        <NavLink href="/admin/salones">Salones</NavLink>
+        <span>/</span>
+        <strong>Nuevo Salón</strong>
+    </nav>
+
+    <header class="salon-form-header">
+        <h1>Registrar Nuevo Salón</h1>
+        <p>
+            <span>•</span>
+            Complete la información del espacio disponible para las sesiones de clase
+        </p>
+    </header>
+
+    <div class="salon-form-layout">
+
+        <section class="salon-form-card">
+            <div class="salon-card-title">
+                <div class="salon-card-title-icon">⊞</div>
+
+                <div>
+                    <h2>Información del Salón</h2>
+                    <p>Complete los datos del nuevo salón</p>
+                </div>
+            </div>
+
+            <div class="salon-form-group">
+                <label>Nombre del salón <span>*</span></label>
+
+                <input class="form-input"
+                       type="text"
+                       placeholder="Ej: Sala Principal, Sala Yoga, Sala Ciclo..."
+                       @bind="nombreSalon"
+                       @bind:event="oninput" />
+
+                <small>El nombre debe ser único</small>
+            </div>
+
+            <div class="salon-form-group">
+                <label>Capacidad máxima <span>*</span></label>
+
+                <input class="form-input"
+                       type="number"
+                       min="1"
+                       placeholder="Ej: 30"
+                       @bind="capacidad"
+                       @bind:event="oninput" />
+
+                <small>Ingrese el número máximo de personas que puede contener el salón</small>
+            </div>
+
+            <div class="salon-form-group">
+                <label>Estado <span>*</span></label>
+
+                <div class="salon-status-options">
+                    <label class="salon-status-option @(estado == "Activo" ? "active" : "")">
+                        <input type="radio"
+                               name="estadoSalon"
+                               value="Activo"
+                               checked="@(estado == "Activo")"
+                               @onchange="@(() => estado = "Activo")" />
+
+                        <div>
+                            <strong>Activo</strong>
+                            <p>El salón estará disponible</p>
+                        </div>
+                    </label>
+
+                    <label class="salon-status-option @(estado == "Inactivo" ? "active" : "")">
+                        <input type="radio"
+                               name="estadoSalon"
+                               value="Inactivo"
+                               checked="@(estado == "Inactivo")"
+                               @onchange="@(() => estado = "Inactivo")" />
+
+                        <div>
+                            <strong>Inactivo</strong>
+                            <p>El salón no estará disponible</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <p class="salon-required-text">
+                Los campos marcados con * son obligatorios
+            </p>
+        </section>
+
+        <aside class="salon-preview-panel">
+            <div class="salon-card-title">
+                <div class="salon-card-title-icon preview-icon">⊙</div>
+
+                <div>
+                    <h2>Vista Previa</h2>
+                    <p>Así se verá el salón en el sistema</p>
+                </div>
+            </div>
+
+            <div class="salon-preview-card">
+                <div class="salon-preview-top">
+                    <div class="salon-preview-icon">⊞</div>
+
+                    <span class="salon-preview-status @(estado == "Activo" ? "activo" : "inactivo")">
+                        @estado
+                    </span>
+                </div>
+
+                <h3>@NombrePreview</h3>
+
+                <p>
+                    <span>♙</span>
+                    Capacidad máxima:
+                    <strong>@CapacidadPreview</strong>
+                    personas
+                </p>
+            </div>
+        </aside>
+
+    </div>
+
+    <div class="salon-form-actions">
+        <NavLink href="/admin/salones" class="salon-back-btn">
+            <span>←</span>
+            Volver al listado
+        </NavLink>
+
+        <div class="salon-action-right">
+            <button type="button"
+                    class="salon-cancel-btn"
+                    @onclick="Cancelar">
+                Cancelar
+            </button>
+
+            <button type="button"
+                    class="salon-save-btn"
+                    @onclick="RegistrarSalon">
+                <span>▣</span>
+                Registrar Salón
+            </button>
+        </div>
+    </div>
+
+</section>
+
+@code {
+    private string nombreSalon = string.Empty;
+    private int? capacidad;
+    private string estado = "Activo";
+
+    private string NombrePreview =>
+        string.IsNullOrWhiteSpace(nombreSalon)
+            ? "Nombre del Salón"
+            : nombreSalon;
+
+    private string CapacidadPreview =>
+        capacidad is null or <= 0
+            ? "--"
+            : capacidad.Value.ToString();
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/admin/salones");
+    }
+
+    private void RegistrarSalon()
+    {
+        if (string.IsNullOrWhiteSpace(nombreSalon) || capacidad is null or <= 0)
+        {
+            return;
+        }
+
+        // Por ahora solo volvemos al listado.
+        // Luego aquí conectamos con servicio, API o base de datos.
+        Navigation.NavigateTo("/admin/salones");
+    }
+}
