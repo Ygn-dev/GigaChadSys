@@ -1,0 +1,385 @@
+﻿@page "/admin/membresias/black/editar"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="plan-edit-page">
+
+    <div class="plan-breadcrumb">
+        <a href="/admin/inicio">Inicio</a>
+        <span>›</span>
+        <a href="/admin/membresias">Membresías</a>
+        <span>›</span>
+        <span>Membresía Black</span>
+        <span>›</span>
+        <strong>Editar Plan</strong>
+    </div>
+
+    <div class="plan-edit-title">
+        <h1>Editar Membresía Black</h1>
+        <p>Actualiza la información del plan Black.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    {
+        <div class="@ClaseMensajeFormulario">
+            @MensajeFormulario
+        </div>
+    }
+
+    <div class="plan-edit-layout">
+
+        <div class="plan-edit-main">
+
+            <div class="plan-section">
+                <h2>Información del Plan</h2>
+
+                <div class="plan-grid">
+                    <div class="plan-field">
+                        <label>Nombre del plan</label>
+                        <input type="text"
+                               value="@NombrePlanValor"
+                               @oninput="CambiarNombrePlan" />
+                    </div>
+
+                    <div class="plan-field">
+                        <label>Precio mensual (S/)</label>
+                        <input type="text"
+                               value="@PrecioMensualValor"
+                               @oninput="CambiarPrecioMensual" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="plan-section">
+                <h2>Beneficios</h2>
+
+                <div class="plan-add-row">
+                    <input type="text"
+                           placeholder="Agregar un beneficio..."
+                           value="@NuevoBeneficioValor"
+                           @oninput="CambiarNuevoBeneficio" />
+
+                    <button type="button" @onclick="AgregarBeneficio">
+                        + Agregar
+                    </button>
+                </div>
+
+                <div class="plan-tags">
+                    @foreach (var beneficio in Beneficios)
+                    {
+                        <span>
+                            ✓ @beneficio
+                            <button type="button" @onclick="() => QuitarBeneficio(beneficio)">×</button>
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="plan-section">
+                <h2>Características</h2>
+
+                <div class="plan-add-row">
+                    <input type="text"
+                           placeholder="Agregar una característica..."
+                           value="@NuevaCaracteristicaValor"
+                           @oninput="CambiarNuevaCaracteristica" />
+
+                    <button type="button" @onclick="AgregarCaracteristica">
+                        + Agregar
+                    </button>
+                </div>
+
+                <div class="plan-tags secondary">
+                    @foreach (var caracteristica in Caracteristicas)
+                    {
+                        <span>
+                            ◎ @caracteristica
+                            <button type="button" @onclick="() => QuitarCaracteristica(caracteristica)">×</button>
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="plan-section">
+                <h2>Estado del Plan</h2>
+
+                <div class="plan-status-options">
+                    <label class="@ClaseOpcionActiva">
+                        <input type="radio"
+                               name="estadoPlanBlack"
+                               checked="@PlanActivo"
+                               @onclick="ActivarPlan" />
+
+                        <div>
+                            <strong>Activa</strong>
+                            <p>El plan está disponible para nuevas suscripciones.</p>
+                        </div>
+                    </label>
+
+                    <label class="@ClaseOpcionInactiva">
+                        <input type="radio"
+                               name="estadoPlanBlack"
+                               checked="@(!PlanActivo)"
+                               @onclick="DesactivarPlan" />
+
+                        <div>
+                            <strong>Inactiva</strong>
+                            <p>El plan no estará disponible para nuevas suscripciones.</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="plan-actions">
+                <button type="button" class="plan-save-button" @onclick="GuardarCambios">
+                    Guardar Cambios
+                </button>
+
+                <a class="plan-cancel-button" href="/admin/membresias">
+                    Cancelar
+                </a>
+
+                <a class="plan-return-link" href="/admin/membresias">
+                    ← Volver a Membresías
+                </a>
+            </div>
+
+        </div>
+
+        <aside class="plan-preview">
+
+            <div class="plan-preview-section-title">
+                <h2>Vista Previa</h2>
+            </div>
+
+            <div class="plan-preview-card">
+                <div class="plan-preview-top">
+                    <div class="plan-preview-name">
+                        <div class="plan-preview-icon">♛</div>
+
+                        <div>
+                            <h3>@NombrePlanValor</h3>
+
+                            @if (PlanActivo)
+                            {
+                                <span class="plan-preview-status">Activa</span>
+                            }
+                            else
+                            {
+                                <span class="plan-preview-status inactive">Inactiva</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="plan-preview-price">
+                        <strong>S/ @PrecioMensualValor</strong>
+                        <span>/mes</span>
+                    </div>
+                </div>
+
+                <div class="plan-preview-block">
+                    <h4>Beneficios</h4>
+
+                    @foreach (var beneficio in Beneficios)
+                    {
+                        <p>✓ @beneficio</p>
+                    }
+                </div>
+
+                <div class="plan-preview-block">
+                    <h4>Características</h4>
+
+                    <div class="plan-preview-tags">
+                        @foreach (var caracteristica in Caracteristicas)
+                        {
+                            <span>@caracteristica</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="plan-summary-box">
+                <span>Socios activos con este plan</span>
+                <strong>@SociosActivos</strong>
+                <p>suscripciones activas</p>
+            </div>
+
+            <div class="plan-summary-box">
+                <span>Ingreso mensual estimado</span>
+                <strong>S/ @IngresoMensualEstimado</strong>
+                <p>basado en suscripciones activas</p>
+            </div>
+
+        </aside>
+
+    </div>
+</section>
+
+@code {
+    private string NombrePlanValor { get; set; } = "Membresía Black";
+    private string PrecioMensualValor { get; set; } = "149";
+
+    private string NuevoBeneficioValor { get; set; } = "";
+    private string NuevaCaracteristicaValor { get; set; } = "";
+
+    private bool PlanActivo { get; set; } = true;
+
+    private string MensajeFormulario { get; set; } = "";
+    private string ClaseMensajeFormulario { get; set; } = "";
+
+    private int SociosActivos { get; set; } = 18;
+
+    private string ClaseOpcionActiva =>
+        PlanActivo ? "plan-status-option active-option" : "plan-status-option";
+
+    private string ClaseOpcionInactiva =>
+        !PlanActivo ? "plan-status-option active-option" : "plan-status-option";
+
+    private List<string> Beneficios { get; set; } = new()
+    {
+        "Todo lo de Basic",
+        "Clases grupales ilimitadas",
+        "Acceso 24/7",
+        "Zona de spa",
+        "Entrenador personal 2x/mes"
+    };
+
+    private List<string> Caracteristicas { get; set; } = new()
+    {
+        "Acceso total a horarios",
+        "Reserva de clases preferencial",
+        "Invitados gratuitos (2/mes)"
+    };
+
+    private string IngresoMensualEstimado
+    {
+        get
+        {
+            if (decimal.TryParse(PrecioMensualValor, out decimal precio))
+            {
+                return (precio * SociosActivos).ToString("0");
+            }
+
+            return "0";
+        }
+    }
+
+    private void CambiarNombrePlan(ChangeEventArgs e)
+    {
+        NombrePlanValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarPrecioMensual(ChangeEventArgs e)
+    {
+        PrecioMensualValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarNuevoBeneficio(ChangeEventArgs e)
+    {
+        NuevoBeneficioValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarNuevaCaracteristica(ChangeEventArgs e)
+    {
+        NuevaCaracteristicaValor = e.Value?.ToString() ?? "";
+    }
+
+    private void AgregarBeneficio()
+    {
+        if (string.IsNullOrWhiteSpace(NuevoBeneficioValor))
+        {
+            MostrarError("Escribe un beneficio antes de agregarlo.");
+            return;
+        }
+
+        Beneficios.Add(NuevoBeneficioValor.Trim());
+        NuevoBeneficioValor = "";
+        LimpiarMensaje();
+    }
+
+    private void QuitarBeneficio(string beneficio)
+    {
+        Beneficios.Remove(beneficio);
+    }
+
+    private void AgregarCaracteristica()
+    {
+        if (string.IsNullOrWhiteSpace(NuevaCaracteristicaValor))
+        {
+            MostrarError("Escribe una característica antes de agregarla.");
+            return;
+        }
+
+        Caracteristicas.Add(NuevaCaracteristicaValor.Trim());
+        NuevaCaracteristicaValor = "";
+        LimpiarMensaje();
+    }
+
+    private void QuitarCaracteristica(string caracteristica)
+    {
+        Caracteristicas.Remove(caracteristica);
+    }
+
+    private void ActivarPlan()
+    {
+        PlanActivo = true;
+    }
+
+    private void DesactivarPlan()
+    {
+        PlanActivo = false;
+    }
+
+    private void GuardarCambios()
+    {
+        if (string.IsNullOrWhiteSpace(NombrePlanValor))
+        {
+            MostrarError("El nombre del plan es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(PrecioMensualValor))
+        {
+            MostrarError("El precio mensual es obligatorio.");
+            return;
+        }
+
+        if (!decimal.TryParse(PrecioMensualValor, out decimal precio))
+        {
+            MostrarError("El precio mensual debe ser un número válido.");
+            return;
+        }
+
+        if (precio <= 0)
+        {
+            MostrarError("El precio mensual debe ser mayor a cero.");
+            return;
+        }
+
+        if (Beneficios.Count == 0)
+        {
+            MostrarError("El plan debe tener al menos un beneficio.");
+            return;
+        }
+
+        MostrarExito("Cambios guardados correctamente. Por ahora es una simulación visual sin base de datos.");
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "plan-message error";
+    }
+
+    private void MostrarExito(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "plan-message success";
+    }
+
+    private void LimpiarMensaje()
+    {
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+    }
+}
