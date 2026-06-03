@@ -1,0 +1,423 @@
+﻿@page "/admin/entrenadores/nuevo"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="trainer-form-page">
+
+    <div class="trainer-breadcrumb">
+        <a href="/admin/inicio">Inicio</a>
+        <span>/</span>
+        <a href="/admin/entrenadores">Entrenadores</a>
+        <span>/</span>
+        <strong>Nuevo Entrenador</strong>
+    </div>
+
+    <div class="trainer-form-title">
+        <h1>Registrar Nuevo Entrenador</h1>
+        <p>Completa la información del entrenador del gimnasio.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    {
+        <div class="@ClaseMensajeFormulario">
+            @MensajeFormulario
+        </div>
+    }
+
+    <div class="trainer-section">
+        <h2>Información Personal</h2>
+
+        <div class="trainer-grid">
+            <div class="trainer-field">
+                <label>DNI <span>*</span></label>
+                <input type="text"
+                       maxlength="8"
+                       placeholder="40567234"
+                       value="@DniValor"
+                       @oninput="CambiarDni" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Fecha de nacimiento <span>*</span></label>
+                <input type="date"
+                       value="@FechaNacimientoValor"
+                       @onchange="CambiarFechaNacimiento" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Nombres <span>*</span></label>
+                <input type="text"
+                       placeholder="Pedro"
+                       value="@NombresValor"
+                       @oninput="CambiarNombres" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Apellidos <span>*</span></label>
+                <input type="text"
+                       placeholder="Sánchez"
+                       value="@ApellidosValor"
+                       @oninput="CambiarApellidos" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Teléfono <span>*</span></label>
+                <input type="text"
+                       maxlength="9"
+                       placeholder="998877666"
+                       value="@TelefonoValor"
+                       @oninput="CambiarTelefono" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Correo electrónico <span>*</span></label>
+                <input type="email"
+                       placeholder="entrenador@email.com"
+                       value="@CorreoValor"
+                       @oninput="CambiarCorreo" />
+            </div>
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Información Profesional</h2>
+
+        <div class="trainer-grid">
+            <div class="trainer-field">
+                <label>Especialidad <span>*</span></label>
+                <select value="@EspecialidadValor" @onchange="CambiarEspecialidad">
+                    <option value="">Seleccione una especialidad</option>
+                    <option value="CrossFit y Musculación">CrossFit y Musculación</option>
+                    <option value="Yoga y Pilates">Yoga y Pilates</option>
+                    <option value="Spinning y Cardio">Spinning y Cardio</option>
+                    <option value="Boxeo y MMA">Boxeo y MMA</option>
+                    <option value="Zumba y Baile">Zumba y Baile</option>
+                </select>
+            </div>
+
+            <div class="trainer-field">
+                <label>Sueldo mensual <span>*</span></label>
+                <input type="text"
+                       placeholder="3500.00"
+                       value="@SueldoMensualValor"
+                       @oninput="CambiarSueldoMensual" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Horario disponible <span>*</span></label>
+                <input type="text"
+                       placeholder="Lunes a Viernes 06:00 - 14:00"
+                       value="@HorarioDisponibleValor"
+                       @oninput="CambiarHorarioDisponible" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Tiempo de trabajo <span>*</span></label>
+                <select value="@TiempoTrabajoValor" @onchange="CambiarTiempoTrabajo">
+                    <option value="">Seleccione tiempo de trabajo</option>
+                    <option value="Tiempo completo">Tiempo completo</option>
+                    <option value="Medio tiempo">Medio tiempo</option>
+                    <option value="Por horas">Por horas</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Cuenta de Acceso</h2>
+
+        <div class="trainer-grid">
+            <div class="trainer-field">
+                <label>Contraseña <span>*</span></label>
+                <input type="password"
+                       placeholder="Mínimo 6 caracteres"
+                       value="@ContraseniaValor"
+                       @oninput="CambiarContrasenia" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Confirmar contraseña <span>*</span></label>
+                <input type="password"
+                       placeholder="Repite la contraseña"
+                       value="@ConfirmarContraseniaValor"
+                       @oninput="CambiarConfirmarContrasenia" />
+            </div>
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Estado</h2>
+
+        <div class="trainer-radio-row">
+            <label>
+                <input type="radio"
+                       name="estadoEntrenador"
+                       checked="@EntrenadorActivo"
+                       @onclick="ActivarEntrenador" />
+                Activo
+            </label>
+
+            <label>
+                <input type="radio"
+                       name="estadoEntrenador"
+                       checked="@(!EntrenadorActivo)"
+                       @onclick="DesactivarEntrenador" />
+                Inactivo
+            </label>
+        </div>
+    </div>
+
+    <div class="trainer-actions">
+        <button type="button"
+                class="trainer-save-button"
+                @onclick="RegistrarEntrenador">
+            ✓ Registrar Entrenador
+        </button>
+
+        <button type="button"
+                class="trainer-cancel-button"
+                @onclick="LimpiarFormulario">
+            × Cancelar
+        </button>
+
+        <a class="trainer-return-link" href="/admin/entrenadores">
+            ← Volver al listado
+        </a>
+    </div>
+
+</section>
+
+@code {
+    private string DniValor { get; set; } = "";
+    private string FechaNacimientoValor { get; set; } = "";
+    private string NombresValor { get; set; } = "";
+    private string ApellidosValor { get; set; } = "";
+    private string TelefonoValor { get; set; } = "";
+    private string CorreoValor { get; set; } = "";
+
+    private string EspecialidadValor { get; set; } = "";
+    private string SueldoMensualValor { get; set; } = "";
+    private string HorarioDisponibleValor { get; set; } = "";
+    private string TiempoTrabajoValor { get; set; } = "";
+
+    private string ContraseniaValor { get; set; } = "";
+    private string ConfirmarContraseniaValor { get; set; } = "";
+    private bool EntrenadorActivo { get; set; } = true;
+
+    private string MensajeFormulario { get; set; } = "";
+    private string ClaseMensajeFormulario { get; set; } = "";
+
+    private void CambiarDni(ChangeEventArgs e)
+    {
+        DniValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarFechaNacimiento(ChangeEventArgs e)
+    {
+        FechaNacimientoValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarNombres(ChangeEventArgs e)
+    {
+        NombresValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarApellidos(ChangeEventArgs e)
+    {
+        ApellidosValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarTelefono(ChangeEventArgs e)
+    {
+        TelefonoValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarCorreo(ChangeEventArgs e)
+    {
+        CorreoValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarEspecialidad(ChangeEventArgs e)
+    {
+        EspecialidadValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarSueldoMensual(ChangeEventArgs e)
+    {
+        SueldoMensualValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarHorarioDisponible(ChangeEventArgs e)
+    {
+        HorarioDisponibleValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarTiempoTrabajo(ChangeEventArgs e)
+    {
+        TiempoTrabajoValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarContrasenia(ChangeEventArgs e)
+    {
+        ContraseniaValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarConfirmarContrasenia(ChangeEventArgs e)
+    {
+        ConfirmarContraseniaValor = e.Value?.ToString() ?? "";
+    }
+
+    private void ActivarEntrenador()
+    {
+        EntrenadorActivo = true;
+    }
+
+    private void DesactivarEntrenador()
+    {
+        EntrenadorActivo = false;
+    }
+
+    private void RegistrarEntrenador()
+    {
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+
+        if (string.IsNullOrWhiteSpace(DniValor))
+        {
+            MostrarError("El DNI es obligatorio.");
+            return;
+        }
+
+        if (DniValor.Length != 8)
+        {
+            MostrarError("El DNI debe tener 8 dígitos.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(FechaNacimientoValor))
+        {
+            MostrarError("La fecha de nacimiento es obligatoria.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NombresValor))
+        {
+            MostrarError("Los nombres son obligatorios.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ApellidosValor))
+        {
+            MostrarError("Los apellidos son obligatorios.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(TelefonoValor))
+        {
+            MostrarError("El teléfono es obligatorio.");
+            return;
+        }
+
+        if (TelefonoValor.Length != 9)
+        {
+            MostrarError("El teléfono debe tener 9 dígitos.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CorreoValor))
+        {
+            MostrarError("El correo electrónico es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(EspecialidadValor))
+        {
+            MostrarError("Debe seleccionar una especialidad.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(SueldoMensualValor))
+        {
+            MostrarError("El sueldo mensual es obligatorio.");
+            return;
+        }
+
+        if (!decimal.TryParse(SueldoMensualValor, out decimal sueldoConvertido))
+        {
+            MostrarError("El sueldo mensual debe ser un número válido.");
+            return;
+        }
+
+        if (sueldoConvertido <= 0)
+        {
+            MostrarError("El sueldo mensual debe ser mayor a cero.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(HorarioDisponibleValor))
+        {
+            MostrarError("El horario disponible es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(TiempoTrabajoValor))
+        {
+            MostrarError("Debe seleccionar el tiempo de trabajo.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ContraseniaValor))
+        {
+            MostrarError("La contraseña es obligatoria.");
+            return;
+        }
+
+        if (ContraseniaValor.Length < 6)
+        {
+            MostrarError("La contraseña debe tener mínimo 6 caracteres.");
+            return;
+        }
+
+        if (ContraseniaValor != ConfirmarContraseniaValor)
+        {
+            MostrarError("Las contraseñas no coinciden.");
+            return;
+        }
+
+        MostrarExito("Entrenador registrado correctamente. Por ahora está en modo visual sin base de datos.");
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message error";
+    }
+
+    private void MostrarExito(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message success";
+    }
+
+    private void LimpiarFormulario()
+    {
+        DniValor = "";
+        FechaNacimientoValor = "";
+        NombresValor = "";
+        ApellidosValor = "";
+        TelefonoValor = "";
+        CorreoValor = "";
+
+        EspecialidadValor = "";
+        SueldoMensualValor = "";
+        HorarioDisponibleValor = "";
+        TiempoTrabajoValor = "";
+
+        ContraseniaValor = "";
+        ConfirmarContraseniaValor = "";
+        EntrenadorActivo = true;
+
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+    }
+}
