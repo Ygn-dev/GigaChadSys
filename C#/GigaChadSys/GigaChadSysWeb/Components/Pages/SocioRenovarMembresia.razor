@@ -1,0 +1,290 @@
+﻿@page "/socio/membresia/renovar"
+@layout SocioLayout
+@rendermode InteractiveServer
+
+<section class="renew-membership-page">
+
+    <div class="renew-header">
+        <h1>Renovar Membresía</h1>
+        <p>Elige tu plan y confirma la renovación de tu membresía.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="@ClaseMensaje">
+            @Mensaje
+        </div>
+    }
+
+    <div class="renew-current-card">
+        <div class="renew-current-plan">
+            <div class="renew-current-icon">♛</div>
+
+            <div>
+                <span>Plan actual</span>
+                <strong>Membresía Black</strong>
+            </div>
+        </div>
+
+        <div class="renew-current-info">
+            <span>Estado</span>
+            <strong class="renew-active-dot">Activa</strong>
+        </div>
+
+        <div class="renew-current-info">
+            <span>Fecha de vencimiento</span>
+            <strong>2025-06-01</strong>
+        </div>
+
+        <div class="renew-current-info">
+            <span>Último pago</span>
+            <strong>2025-05-01</strong>
+        </div>
+    </div>
+
+    <h2 class="renew-step-title">1. Selecciona tu nuevo plan</h2>
+
+    <div class="renew-plan-layout">
+
+        <div class="renew-plans-grid">
+
+            <button type="button"
+                    class="@ClasePlanBasic"
+                    @onclick="SeleccionarBasic">
+
+                <div class="renew-plan-top">
+                    <div class="renew-plan-icon basic">♕</div>
+
+                    <div>
+                        <h3>Membresía Basic</h3>
+                        <div>
+                            <strong>S/79</strong>
+                            <span>/mes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <ul>
+                    <li>Acceso a sala de musculación</li>
+                    <li>Acceso a cardio</li>
+                    <li>Vestuario incluido</li>
+                </ul>
+
+                <div class="renew-radio-circle">
+                    @if (PlanSeleccionado == "basic")
+                    {
+                        <span></span>
+                    }
+                </div>
+            </button>
+
+            <button type="button"
+                    class="@ClasePlanBlack"
+                    @onclick="SeleccionarBlack">
+
+                <span class="recommended-badge">Plan recomendado</span>
+
+                <div class="renew-plan-top">
+                    <div class="renew-plan-icon black">♛</div>
+
+                    <div>
+                        <h3>Membresía Black</h3>
+                        <div>
+                            <strong>S/149</strong>
+                            <span>/mes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <ul>
+                    <li>Todo lo de Basic</li>
+                    <li>Clases grupales ilimitadas</li>
+                    <li>Acceso 24/7</li>
+                    <li>Zona de spa</li>
+                    <li>Entrenador personal 2x/mes</li>
+                </ul>
+
+                <div class="renew-radio-circle">
+                    @if (PlanSeleccionado == "black")
+                    {
+                        <span></span>
+                    }
+                </div>
+            </button>
+
+        </div>
+
+        <aside class="renew-summary-card">
+            <h2>Resumen de pago</h2>
+
+            <div class="renew-summary-row">
+                <span>Plan seleccionado</span>
+                <strong>@NombrePlanSeleccionado</strong>
+            </div>
+
+            <div class="renew-summary-row">
+                <span>Precio mensual</span>
+                <strong>S/@PrecioSeleccionado</strong>
+            </div>
+
+            <div class="renew-summary-total">
+                <span>Total a pagar</span>
+                <strong>S/@PrecioSeleccionado</strong>
+            </div>
+
+            <div class="renew-summary-row">
+                <span>Nueva fecha de vencimiento</span>
+                <strong>@NuevaFechaVencimiento</strong>
+            </div>
+        </aside>
+
+    </div>
+
+    <h2 class="renew-step-title">2. Detalles de renovación</h2>
+
+    <div class="renew-details-grid">
+
+        <div class="renew-detail-card">
+            <label>Fecha de inicio</label>
+
+            <input type="date"
+                   value="@FechaInicio"
+                   @onchange="CambiarFechaInicio" />
+        </div>
+
+        <div class="renew-detail-card">
+            <label>Método de pago</label>
+
+            <div class="renew-methods">
+                <button type="button"
+                        class="@ClaseMetodoTarjeta"
+                        @onclick="SeleccionarTarjeta">
+                    ▭ Tarjeta
+                </button>
+
+                <button type="button"
+                        class="@ClaseMetodoEfectivo"
+                        @onclick="SeleccionarEfectivo">
+                    ⊙ Efectivo
+                </button>
+
+                <button type="button"
+                        class="@ClaseMetodoDebito"
+                        @onclick="SeleccionarDebito">
+                    ▭ Débito
+                </button>
+            </div>
+        </div>
+
+        <div class="renew-auto-card">
+            <div>
+                <strong>Renovación automática</strong>
+                <p>Renovar automáticamente al finalizar el período.</p>
+            </div>
+
+            <button type="button"
+                    class="@ClaseSwitch"
+                    @onclick="CambiarRenovacionAutomatica">
+                <span></span>
+            </button>
+        </div>
+
+    </div>
+
+    <div class="renew-actions">
+        <a class="renew-cancel-button" href="/socio/membresia">
+            Cancelar
+        </a>
+
+        <button type="button"
+                class="renew-confirm-button"
+                @onclick="ConfirmarRenovacion">
+            Confirmar Renovación
+        </button>
+    </div>
+
+</section>
+
+@code {
+    private string PlanSeleccionado { get; set; } = "black";
+    private string MetodoPago { get; set; } = "Tarjeta";
+    private bool RenovacionAutomatica { get; set; } = false;
+
+    private string FechaInicio { get; set; } = "2025-05-02";
+    private string NuevaFechaVencimiento { get; set; } = "2025-06-01";
+
+    private string Mensaje { get; set; } = "";
+    private string ClaseMensaje { get; set; } = "";
+
+    private string NombrePlanSeleccionado =>
+        PlanSeleccionado == "black" ? "Membresía Black" : "Membresía Basic";
+
+    private string PrecioSeleccionado =>
+        PlanSeleccionado == "black" ? "149" : "79";
+
+    private string ClasePlanBasic =>
+        PlanSeleccionado == "basic" ? "renew-plan-card selected" : "renew-plan-card";
+
+    private string ClasePlanBlack =>
+        PlanSeleccionado == "black" ? "renew-plan-card selected recommended" : "renew-plan-card recommended";
+
+    private string ClaseMetodoTarjeta =>
+        MetodoPago == "Tarjeta" ? "renew-method selected" : "renew-method";
+
+    private string ClaseMetodoEfectivo =>
+        MetodoPago == "Efectivo" ? "renew-method selected" : "renew-method";
+
+    private string ClaseMetodoDebito =>
+        MetodoPago == "Debito" ? "renew-method selected" : "renew-method";
+
+    private string ClaseSwitch =>
+        RenovacionAutomatica ? "renew-switch active" : "renew-switch";
+
+    private void SeleccionarBasic()
+    {
+        PlanSeleccionado = "basic";
+    }
+
+    private void SeleccionarBlack()
+    {
+        PlanSeleccionado = "black";
+    }
+
+    private void SeleccionarTarjeta()
+    {
+        MetodoPago = "Tarjeta";
+    }
+
+    private void SeleccionarEfectivo()
+    {
+        MetodoPago = "Efectivo";
+    }
+
+    private void SeleccionarDebito()
+    {
+        MetodoPago = "Debito";
+    }
+
+    private void CambiarRenovacionAutomatica()
+    {
+        RenovacionAutomatica = !RenovacionAutomatica;
+    }
+
+    private void CambiarFechaInicio(ChangeEventArgs e)
+    {
+        FechaInicio = e.Value?.ToString() ?? "";
+    }
+
+    private void ConfirmarRenovacion()
+    {
+        if (string.IsNullOrWhiteSpace(FechaInicio))
+        {
+            Mensaje = "Debes seleccionar una fecha de inicio.";
+            ClaseMensaje = "renew-message error";
+            return;
+        }
+
+        Mensaje = $"Renovación confirmada para {NombrePlanSeleccionado} con método de pago {MetodoPago}. Por ahora es una simulación visual.";
+        ClaseMensaje = "renew-message success";
+    }
+}
