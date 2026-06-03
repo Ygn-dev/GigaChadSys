@@ -60,7 +60,6 @@
                         <span>Membresía Basic</span>
                         <strong>4 socios</strong>
                     </div>
-
                     <div class="membership-bar-track">
                         <div class="membership-bar-fill basic"></div>
                     </div>
@@ -71,7 +70,6 @@
                         <span>Membresía Black</span>
                         <strong>4 socios</strong>
                     </div>
-
                     <div class="membership-bar-track">
                         <div class="membership-bar-fill black"></div>
                     </div>
@@ -113,85 +111,161 @@
     }
     else
     {
-        <div class="reports-stats-grid">
-            <div class="report-stat-card">
-                <div class="report-stat-icon green">S/</div>
-                <span>Recaudación mensual</span>
-                <strong>S/ 1,896</strong>
-                <p>Ingresos estimados del mes</p>
+        <div class="revenue-filter-row">
+            <button class="@ClasePeriodoMes" @onclick="MostrarUltimoMes">Último Mes</button>
+            <button class="@ClasePeriodoTrimestre" @onclick="MostrarUltimoTrimestre">Último Trimestre</button>
+            <button class="@ClasePeriodoAnio" @onclick="MostrarUltimoAnio">Último Año</button>
+        </div>
+
+        <div class="revenue-kpi-grid">
+            <div class="revenue-kpi-card">
+                <div>
+                    <span>Total recaudado</span>
+                    <strong class="green-money">S/ @TotalRecaudado</strong>
+                    <p>@CantidadTransacciones transacciones</p>
+                </div>
+
+                <div class="revenue-kpi-icon green">↗</div>
             </div>
 
-            <div class="report-stat-card">
-                <div class="report-stat-icon yellow">◷</div>
-                <span>Pagos pendientes</span>
-                <strong>S/ 79</strong>
-                <p>1 pago pendiente</p>
+            <div class="revenue-kpi-card">
+                <div>
+                    <span>Total pendiente</span>
+                    <strong class="yellow-money">S/ @TotalPendiente</strong>
+                    <p>@PagosPendientes pagos pendientes</p>
+                </div>
+
+                <div class="revenue-kpi-icon yellow">▧</div>
             </div>
 
-            <div class="report-stat-card">
-                <div class="report-stat-icon red">!</div>
-                <span>Pagos vencidos</span>
-                <strong>S/ 149</strong>
-                <p>1 pago vencido</p>
-            </div>
+            <div class="revenue-kpi-card">
+                <div>
+                    <span>Promedio por pago</span>
+                    <strong>S/ @PromedioPago</strong>
+                    <p>Por transacción pagada</p>
+                </div>
 
-            <div class="report-stat-card">
-                <div class="report-stat-icon blue">◎</div>
-                <span>Pagos registrados</span>
-                <strong>12</strong>
-                <p>Operaciones del mes</p>
+                <div class="revenue-kpi-icon neutral">◷</div>
             </div>
         </div>
 
-        <div class="reports-content-grid">
-            <div class="report-panel">
-                <h2>Recaudación por Membresía</h2>
+        <div class="revenue-chart-card">
+            <h2>Recaudación Mensual (S/)</h2>
 
-                <div class="membership-bar-row">
-                    <div class="membership-bar-header">
-                        <span>Membresía Basic</span>
-                        <strong>S/ 316</strong>
-                    </div>
+            <div class="fake-line-chart">
+                <div class="chart-y-label y1200">1,200</div>
+                <div class="chart-y-label y900">900</div>
+                <div class="chart-y-label y600">600</div>
+                <div class="chart-y-label y300">300</div>
+                <div class="chart-y-label y0">0</div>
 
-                    <div class="membership-bar-track">
-                        <div class="membership-bar-fill basic"></div>
-                    </div>
+                <div class="chart-grid-line line1200"></div>
+                <div class="chart-grid-line line900"></div>
+                <div class="chart-grid-line line600"></div>
+                <div class="chart-grid-line line300"></div>
+                <div class="chart-grid-line line0"></div>
+
+                <svg class="chart-svg" viewBox="0 0 1000 260" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="redArea" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="#E53935" stop-opacity="0.35" />
+                            <stop offset="100%" stop-color="#E53935" stop-opacity="0.02" />
+                        </linearGradient>
+                    </defs>
+
+                    <polygon points="80,150 280,130 500,115 700,125 920,70 920,250 80,250"
+                             fill="url(#redArea)" />
+
+                    <polyline points="80,150 280,130 500,115 700,125 920,70"
+                              fill="none"
+                              stroke="#E53935"
+                              stroke-width="5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round" />
+
+                    <circle cx="80" cy="150" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
+                    <circle cx="280" cy="130" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
+                    <circle cx="500" cy="115" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
+                    <circle cx="700" cy="125" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
+                    <circle cx="920" cy="70" r="7" fill="#F5F5F5" stroke="#E53935" stroke-width="4" />
+                </svg>
+
+                <span class="point-label p1">580</span>
+                <span class="point-label p2">650</span>
+                <span class="point-label p3">720</span>
+                <span class="point-label p4">680</span>
+                <span class="point-label p5">982</span>
+
+                <div class="chart-months">
+                    <span>Ene</span>
+                    <span>Feb</span>
+                    <span>Mar</span>
+                    <span>Abr</span>
+                    <span>May</span>
                 </div>
+            </div>
+        </div>
 
-                <div class="membership-bar-row">
-                    <div class="membership-bar-header">
-                        <span>Membresía Black</span>
-                        <strong>S/ 596</strong>
+        <div class="revenue-bottom-grid">
+            <div class="revenue-panel">
+                <h2>Métodos de Pago Utilizados</h2>
+
+                <div class="donut-layout">
+                    <div class="donut-card payment-donut">
+                        <div class="donut-center">
+                            <strong>8</strong>
+                            <span>Transacciones</span>
+                        </div>
                     </div>
 
-                    <div class="membership-bar-track">
-                        <div class="membership-bar-fill black wide"></div>
-                    </div>
-                </div>
+                    <div class="donut-list">
+                        <div class="donut-row">
+                            <span><i class="dot red"></i>Efectivo</span>
+                            <strong>5 (62.5%)</strong>
+                        </div>
 
-                <div class="report-legend">
-                    <span><i class="legend-basic"></i> Basic</span>
-                    <span><i class="legend-black"></i> Black</span>
+                        <div class="donut-row">
+                            <span><i class="dot blue"></i>Tarjeta Débito</span>
+                            <strong>2 (25.0%)</strong>
+                        </div>
+
+                        <div class="donut-row">
+                            <span><i class="dot green"></i>Tarjeta Crédito</span>
+                            <strong>1 (12.5%)</strong>
+                        </div>
+
+                        <p class="donut-total">Total: 8 transacciones</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="report-panel">
-                <h2>Últimos Pagos</h2>
+            <div class="revenue-panel">
+                <h2>Estado de Pagos</h2>
 
-                <div class="report-member-list">
-                    @foreach (var pago in Pagos)
-                    {
-                        <div class="report-member-row">
-                            <div class="member-avatar-small">S/</div>
-
-                            <div class="member-info-report">
-                                <strong>@pago.Socio</strong>
-                                <span>@pago.Concepto</span>
-                            </div>
-
-                            <span class="report-money">@pago.Monto</span>
+                <div class="donut-layout">
+                    <div class="donut-card status-donut">
+                        <div class="donut-center">
+                            <strong>8</strong>
+                            <span>Total</span>
                         </div>
-                    }
+                    </div>
+
+                    <div class="donut-list">
+                        <div class="donut-row">
+                            <span><i class="dot green"></i>Pagos Pagados</span>
+                            <strong>7 (87.5%)</strong>
+                        </div>
+
+                        <div class="donut-row">
+                            <span><i class="dot orange"></i>Pagos Pendientes</span>
+                            <strong>1 (12.5%)</strong>
+                        </div>
+
+                        <div class="pending-box">
+                            <span>Pendiente por cobrar</span>
+                            <strong>S/ 79.00 ›</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -201,12 +275,47 @@
 
 @code {
     private string ReporteActual { get; set; } = "Socios";
+    private string PeriodoActual { get; set; } = "Mes";
 
     private string ClaseTabSocios =>
         ReporteActual == "Socios" ? "report-tab active" : "report-tab";
 
     private string ClaseTabRecaudacion =>
         ReporteActual == "Recaudacion" ? "report-tab active" : "report-tab";
+
+    private string ClasePeriodoMes =>
+        PeriodoActual == "Mes" ? "revenue-period-button active" : "revenue-period-button";
+
+    private string ClasePeriodoTrimestre =>
+        PeriodoActual == "Trimestre" ? "revenue-period-button active" : "revenue-period-button";
+
+    private string ClasePeriodoAnio =>
+        PeriodoActual == "Anio" ? "revenue-period-button active" : "revenue-period-button";
+
+    private string TotalRecaudado =>
+        PeriodoActual == "Mes" ? "982.00" :
+        PeriodoActual == "Trimestre" ? "2,350.00" :
+        "8,920.00";
+
+    private string TotalPendiente =>
+        PeriodoActual == "Mes" ? "79.00" :
+        PeriodoActual == "Trimestre" ? "228.00" :
+        "605.00";
+
+    private string PromedioPago =>
+        PeriodoActual == "Mes" ? "122.75" :
+        PeriodoActual == "Trimestre" ? "130.55" :
+        "127.42";
+
+    private string CantidadTransacciones =>
+        PeriodoActual == "Mes" ? "8" :
+        PeriodoActual == "Trimestre" ? "18" :
+        "70";
+
+    private string PagosPendientes =>
+        PeriodoActual == "Mes" ? "1" :
+        PeriodoActual == "Trimestre" ? "3" :
+        "7";
 
     private void MostrarReporteSocios()
     {
@@ -216,6 +325,21 @@
     private void MostrarReporteRecaudacion()
     {
         ReporteActual = "Recaudacion";
+    }
+
+    private void MostrarUltimoMes()
+    {
+        PeriodoActual = "Mes";
+    }
+
+    private void MostrarUltimoTrimestre()
+    {
+        PeriodoActual = "Trimestre";
+    }
+
+    private void MostrarUltimoAnio()
+    {
+        PeriodoActual = "Anio";
     }
 
     private List<SocioReporte> Socios { get; set; } = new()
@@ -229,26 +353,10 @@
         new SocioReporte { Nombre = "Camila Flores", Membresia = "Membresía Basic", Activo = false }
     };
 
-    private List<PagoReporte> Pagos { get; set; } = new()
-    {
-        new PagoReporte { Socio = "Lucia Torres", Concepto = "Membresía Black", Monto = "S/ 149" },
-        new PagoReporte { Socio = "Juan Perez", Concepto = "Membresía Basic", Monto = "S/ 79" },
-        new PagoReporte { Socio = "Ana Garcia", Concepto = "Membresía Black", Monto = "S/ 149" },
-        new PagoReporte { Socio = "Sofia Mendez", Concepto = "Membresía Black", Monto = "S/ 149" },
-        new PagoReporte { Socio = "Roberto Diaz", Concepto = "Membresía Basic", Monto = "S/ 79" }
-    };
-
     private class SocioReporte
     {
         public string Nombre { get; set; } = "";
         public string Membresia { get; set; } = "";
         public bool Activo { get; set; }
-    }
-
-    private class PagoReporte
-    {
-        public string Socio { get; set; } = "";
-        public string Concepto { get; set; } = "";
-        public string Monto { get; set; } = "";
     }
 }
