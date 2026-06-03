@@ -1,0 +1,237 @@
+﻿@page "/admin/entrenadores"
+@using Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="admin-list-page">
+    <div class="admin-list-header">
+        <div>
+            <h1>Gestión de Entrenadores</h1>
+            <p>Administra los entrenadores del gimnasio.</p>
+        </div>
+
+        <a class="new-button" href="/admin/entrenadores/nuevo">
+            + Nuevo Entrenador
+        </a>
+    </div>
+
+    <div class="admin-list-toolbar">
+        <input class="admin-search"
+               type="text"
+               placeholder="Buscar por DNI, nombre o especialidad..."
+               @bind="TextoBusqueda"
+               @bind:event="oninput" />
+
+        <div class="admin-filter-group">
+            <button class="@FiltroClaseTodos" @onclick="MostrarTodos">Todos</button>
+            <button class="@FiltroClaseActivos" @onclick="MostrarActivos">Activos</button>
+            <button class="@FiltroClaseInactivos" @onclick="MostrarInactivos">Inactivos</button>
+        </div>
+    </div>
+
+    @{
+        var entrenadores = EntrenadoresFiltrados.ToList();
+    }
+
+    <div class="admin-table-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>DNI</th>
+                    <th>Nombre</th>
+                    <th>Especialidad</th>
+                    <th>Contacto</th>
+                    <th>Horario</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (entrenadores.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="empty-row">
+                            No se encontraron entrenadores.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var entrenador in entrenadores)
+                    {
+                        <tr>
+                            <td>@entrenador.Dni</td>
+
+                            <td>
+                                <div class="trainer-cell">
+                                    <div class="trainer-avatar">
+                                        @entrenador.Iniciales
+                                    </div>
+
+                                    <div>
+                                        <strong>@entrenador.Nombre</strong>
+                                        <span>@entrenador.Email</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>@entrenador.Especialidad</td>
+                            <td>@entrenador.Telefono</td>
+                            <td>@entrenador.Horario</td>
+
+                            <td>
+                                @if (entrenador.Activo)
+                                {
+                                    <span class="status-badge active">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge inactive">Inactivo</span>
+                                }
+                            </td>
+
+                            <td>
+                                <button class="action-button">✎</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private string TextoBusqueda { get; set; } = "";
+    private string FiltroEstado { get; set; } = "Todos";
+
+    private string FiltroClaseTodos => FiltroEstado == "Todos" ? "filter-button active" : "filter-button";
+    private string FiltroClaseActivos => FiltroEstado == "Activos" ? "filter-button active" : "filter-button";
+    private string FiltroClaseInactivos => FiltroEstado == "Inactivos" ? "filter-button active" : "filter-button";
+
+    private void MostrarTodos()
+    {
+        FiltroEstado = "Todos";
+    }
+
+    private void MostrarActivos()
+    {
+        FiltroEstado = "Activos";
+    }
+
+    private void MostrarInactivos()
+    {
+        FiltroEstado = "Inactivos";
+    }
+
+    private List<EntrenadorVista> Entrenadores = new()
+    {
+        new EntrenadorVista
+        {
+            Dni = "40123123",
+            Nombre = "Marco Ruiz",
+            Email = "marco@email.com",
+            Especialidad = "CrossFit y Musculación",
+            Telefono = "999888777",
+            Horario = "Lunes a Sábado 06:00 - 14:00",
+            Activo = true
+        },
+        new EntrenadorVista
+        {
+            Dni = "40567234",
+            Nombre = "Pedro Sánchez",
+            Email = "pedro@email.com",
+            Especialidad = "Yoga y Pilates",
+            Telefono = "998877666",
+            Horario = "Lunes a Viernes 16:00 - 21:00",
+            Activo = true
+        },
+        new EntrenadorVista
+        {
+            Dni = "40678345",
+            Nombre = "Laura Gómez",
+            Email = "laura@email.com",
+            Especialidad = "Spinning y Cardio",
+            Telefono = "997766555",
+            Horario = "Martes a Domingo 07:00 - 13:00",
+            Activo = true
+        },
+        new EntrenadorVista
+        {
+            Dni = "40789456",
+            Nombre = "Andrés Quispe",
+            Email = "andres@email.com",
+            Especialidad = "Boxeo y MMA",
+            Telefono = "996655444",
+            Horario = "Lunes a Sábado 18:00 - 22:00",
+            Activo = true
+        },
+        new EntrenadorVista
+        {
+            Dni = "40890567",
+            Nombre = "Diana Rojas",
+            Email = "diana@email.com",
+            Especialidad = "Zumba y Baile",
+            Telefono = "995544333",
+            Horario = "Lunes a Viernes 17:00 - 20:00",
+            Activo = false
+        }
+    };
+
+    private IEnumerable<EntrenadorVista> EntrenadoresFiltrados
+    {
+        get
+        {
+            IEnumerable<EntrenadorVista> resultado = Entrenadores;
+
+            if (FiltroEstado == "Activos")
+            {
+                resultado = resultado.Where(e => e.Activo);
+            }
+            else if (FiltroEstado == "Inactivos")
+            {
+                resultado = resultado.Where(e => !e.Activo);
+            }
+
+            if (!string.IsNullOrWhiteSpace(TextoBusqueda))
+            {
+                string texto = TextoBusqueda.Trim();
+
+                resultado = resultado.Where(e =>
+                    e.Dni.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                    e.Nombre.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                    e.Especialidad.Contains(texto, StringComparison.OrdinalIgnoreCase)
+                );
+            }
+
+            return resultado;
+        }
+    }
+
+    private class EntrenadorVista
+    {
+        public string Dni { get; set; } = "";
+        public string Nombre { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Especialidad { get; set; } = "";
+        public string Telefono { get; set; } = "";
+        public string Horario { get; set; } = "";
+        public bool Activo { get; set; }
+
+        public string Iniciales
+        {
+            get
+            {
+                string[] partes = Nombre.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+                if (partes.Length >= 2)
+                {
+                    return $"{partes[0][0]}{partes[1][0]}".ToUpper();
+                }
+
+                return Nombre.Length > 0 ? Nombre[0].ToString().ToUpper() : "E";
+            }
+        }
+    }
+}
