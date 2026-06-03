@@ -4057,6 +4057,7 @@ h1:focus {
     color: #B0B0B0 !important;
     padding: 34px !important;
 }
+<<<<<<< HEAD
 
 /* ===== ADMIN SESIONES ===== */
 
@@ -4330,7 +4331,6 @@ h1:focus {
     margin-top: 28px;
     padding-bottom: 40px;
 }
-
 .btn-primary {
     background: #E53935;
     color: white;
@@ -4372,4 +4372,188 @@ h1:focus {
 
     .btn-ghost:hover {
         color: #F5F5F5;
+    }
+
+/* ===== ADMIN NUEVO ENTRENADOR ===== */
+
+.trainer-form-page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+}
+
+.trainer-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #B0B0B0;
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+    .trainer-breadcrumb a {
+        color: #B0B0B0;
+        text-decoration: none;
+    }
+
+        .trainer-breadcrumb a:hover {
+            color: #FF5252;
+        }
+
+    .trainer-breadcrumb strong {
+        color: #F5F5F5;
+    }
+
+.trainer-form-title {
+    margin-bottom: 24px;
+}
+
+    .trainer-form-title h1 {
+        color: #F5F5F5;
+        font-size: 30px;
+        margin-bottom: 6px;
+    }
+
+    .trainer-form-title p {
+        color: #B0B0B0;
+        margin: 0;
+    }
+
+.trainer-section {
+    background: #161616;
+    border: 1px solid #2A2A2A;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 22px;
+}
+
+    .trainer-section h2 {
+        color: #F5F5F5;
+        font-size: 18px;
+        margin-bottom: 22px;
+    }
+
+.trainer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.trainer-field label {
+    display: block;
+    color: #F5F5F5;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+    .trainer-field label span {
+        color: #E53935;
+    }
+
+.trainer-field input,
+.trainer-field select {
+    width: 100%;
+    background: #0D0D0D;
+    border: 1px solid #242424;
+    color: #F5F5F5;
+    border-radius: 8px;
+    padding: 13px 14px;
+    outline: none;
+}
+
+    .trainer-field input:focus,
+    .trainer-field select:focus {
+        border-color: #E53935;
+    }
+
+    .trainer-field input::placeholder {
+        color: #777;
+    }
+
+.trainer-radio-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+    .trainer-radio-row label {
+        color: #F5F5F5;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .trainer-radio-row input {
+        accent-color: #E53935;
+    }
+
+.trainer-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+}
+
+.trainer-save-button {
+    background: #E53935;
+    color: white;
+    border: none;
+    padding: 13px 22px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .trainer-save-button:hover {
+        background: #FF5252;
+    }
+
+.trainer-cancel-button {
+    background: #202020;
+    color: #F5F5F5;
+    border: 1px solid #2A2A2A;
+    padding: 13px 22px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .trainer-cancel-button:hover {
+        border-color: #FF5252;
+    }
+
+.trainer-return-link {
+    color: #B0B0B0;
+    text-decoration: none;
+    font-weight: 700;
+    padding: 13px 16px;
+}
+
+    .trainer-return-link:hover {
+        color: #FF5252;
+    }
+
+.trainer-message {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    font-weight: 700;
+}
+
+    .trainer-message.error {
+        background: rgba(229, 57, 53, 0.15);
+        border: 1px solid rgba(229, 57, 53, 0.45);
+        color: #FF5252;
+    }
+
+    .trainer-message.success {
+        background: rgba(0, 200, 83, 0.15);
+        border: 1px solid rgba(0, 200, 83, 0.45);
+        color: #00C853;
     }
