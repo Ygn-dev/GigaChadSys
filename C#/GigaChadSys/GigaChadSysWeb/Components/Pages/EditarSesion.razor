@@ -1,0 +1,349 @@
+@page "/admin/sesiones/editar/{Id:int}"
+@layout AdminLayout
+
+<div class="socio-form-page">
+
+    <!-- Breadcrumb -->
+    <nav class="sf-breadcrumb">
+        <a href="/admin/sesiones">Sesiones</a>
+        <span class="sf-bc-sep">›</span>
+        <span class="sf-bc-current">Editar</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="sf-page-header">
+        <h1>Editar Sesión</h1>
+        <p class="sf-page-subtitle">Modifica los datos de la sesión programada</p>
+    </div>
+
+    <!-- Toast -->
+    <div class="socios-toast @(toastVisible ? "socios-toast-show" : "") @(toastIsError ? "socios-toast-err" : "socios-toast-ok")">
+        @toastMessage
+    </div>
+
+    <div class="sf-edit-layout">
+
+        <!-- ── Left column ── -->
+        <div>
+
+            <!-- Datos de la Sesión -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-blue">📅</div>
+                    <div>
+                        <h3>Datos de la Sesión</h3>
+                        <span>Clase, fecha, hora y lugar</span>
+                    </div>
+                </div>
+
+                <div class="sf-form-grid">
+                    <div class="sf-form-group">
+                        <label>CLASE <span class="sf-req">*</span></label>
+                        <select @bind="claseId" class="@(errores.ContainsKey("claseId") ? "sf-input-error" : "")">
+                            <option value="0">Seleccionar clase...</option>
+                            @foreach (var c in clasesDisponibles)
+                            {
+                                <option value="@c.Id">@c.Nombre</option>
+                            }
+                        </select>
+                        @if (errores.ContainsKey("claseId"))
+                        {
+                            <span class="sf-error-msg">@errores["claseId"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>ENTRENADOR <span class="sf-req">*</span></label>
+                        <select @bind="entrenadorId" class="@(errores.ContainsKey("entrenadorId") ? "sf-input-error" : "")">
+                            <option value="0">Seleccionar entrenador...</option>
+                            @foreach (var e in entrenadoresDisponibles)
+                            {
+                                <option value="@e.Id">@e.Nombre</option>
+                            }
+                        </select>
+                        @if (errores.ContainsKey("entrenadorId"))
+                        {
+                            <span class="sf-error-msg">@errores["entrenadorId"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>SALÓN <span class="sf-req">*</span></label>
+                        <select @bind="salonId" class="@(errores.ContainsKey("salonId") ? "sf-input-error" : "")">
+                            <option value="0">Seleccionar salón...</option>
+                            @foreach (var s in salonesDisponibles)
+                            {
+                                <option value="@s.Id">@s.Nombre</option>
+                            }
+                        </select>
+                        @if (errores.ContainsKey("salonId"))
+                        {
+                            <span class="sf-error-msg">@errores["salonId"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>CUPOS MÁXIMOS <span class="sf-req">*</span></label>
+                        <input type="number" @bind="cuposMax" min="1" max="200"
+                               class="@(errores.ContainsKey("cuposMax") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("cuposMax"))
+                        {
+                            <span class="sf-error-msg">@errores["cuposMax"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>FECHA <span class="sf-req">*</span></label>
+                        <input type="date" @bind="fecha"
+                               class="@(errores.ContainsKey("fecha") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("fecha"))
+                        {
+                            <span class="sf-error-msg">@errores["fecha"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <!-- spacer -->
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>HORA DE INICIO <span class="sf-req">*</span></label>
+                        <input type="time" value="@horaInicio" @onchange="e => horaInicio = e.Value?.ToString() ?? horaInicio"
+                               class="@(errores.ContainsKey("horaInicio") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("horaInicio"))
+                        {
+                            <span class="sf-error-msg">@errores["horaInicio"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>HORA DE FIN <span class="sf-req">*</span></label>
+                        <input type="time" value="@horaFin" @onchange="e => horaFin = e.Value?.ToString() ?? horaFin"
+                               class="@(errores.ContainsKey("horaFin") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("horaFin"))
+                        {
+                            <span class="sf-error-msg">@errores["horaFin"]</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado de la Sesión -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-yellow">📋</div>
+                    <div>
+                        <h3>Estado de la Sesión</h3>
+                        <span>Controla el estado operativo</span>
+                    </div>
+                </div>
+
+                <p class="sf-sublabel">ESTADO</p>
+                <div class="sf-estado-row">
+                    <button type="button"
+                            class="sf-estado-btn @(estado == "Programada" ? "sf-estado-activo" : "")"
+                            @onclick='() => estado = "Programada"'>
+                        <span class="sf-estado-dot dot-green"></span> Programada
+                    </button>
+                    <button type="button"
+                            class="sf-estado-btn @(estado == "Cancelada" ? "sf-estado-inactivo" : "")"
+                            @onclick='() => estado = "Cancelada"'>
+                        <span class="sf-estado-dot dot-red"></span> Cancelada
+                    </button>
+                    <button type="button"
+                            class="sf-estado-btn"
+                            style="@(estado == "Finalizada" ? "border-color:rgba(66,165,245,0.5);background:rgba(66,165,245,0.10);color:#42A5F5;" : "")"
+                            @onclick='() => estado = "Finalizada"'>
+                        <span class="sf-estado-dot" style="background:#42A5F5;"></span> Finalizada
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="sf-form-actions">
+                <button class="sf-btn-primary" @onclick="GuardarCambios" disabled="@guardando">
+                    @if (guardando)
+                    {
+                        <span>⏳</span> <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span>💾</span> <span>Guardar Cambios</span>
+                    }
+                </button>
+                <a href="/admin/sesiones" class="sf-btn-secondary">Cancelar</a>
+                <div class="sf-back-link">
+                    <a href="/admin/sesiones">← Volver a Sesiones</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── Right column: Resumen ── -->
+        <div class="sf-resumen-col">
+            <div class="sf-resumen-card">
+                <h4>Resumen</h4>
+                <div class="sf-resumen-rows">
+                    <div class="sf-resumen-row">
+                        <span>Clase</span>
+                        <strong>@NombreClase</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Entrenador</span>
+                        <strong>@NombreEntrenador</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Salón</span>
+                        <strong>@NombreSalon</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Fecha</span>
+                        <strong>@(fecha == default ? "—" : fecha.ToString("dd/MM/yyyy"))</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Horario</span>
+                        <strong>@(string.IsNullOrEmpty(horaInicio) ? "—" : $"{horaInicio} - {horaFin}")</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Cupos</span>
+                        <strong>@(cuposMax > 0 ? cuposMax.ToString() : "—")</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Estado</span>
+                        <strong class="@EstadoClass">@estado</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sf-admin-nota">
+                <span class="sf-nota-icon">⚠️</span>
+                <p>Cancelar una sesión notificará automáticamente a los socios con reservas confirmadas. Las reservas pendientes quedarán anuladas.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    // Form fields — horas como string "HH:mm" para compatibilidad con input type="time"
+    private int      claseId      = 0;
+    private int      entrenadorId = 0;
+    private int      salonId      = 0;
+    private int      cuposMax     = 20;
+    private DateOnly fecha        = DateOnly.FromDateTime(DateTime.Today);
+    private string   horaInicio   = "07:00";
+    private string   horaFin      = "08:00";
+    private string   estado       = "Programada";
+
+    private bool   guardando    = false;
+    private bool   toastVisible = false;
+    private bool   toastIsError = false;
+    private string toastMessage = "";
+    private Dictionary<string, string> errores = new();
+
+    // ── Clases de lookup como records para evitar CS0023 con tuplas ──
+    private record ItemLookup(int Id, string Nombre);
+
+    private List<ItemLookup> clasesDisponibles = new()
+    {
+        new(1,"CrossFit Intenso"),    new(2,"Yoga Matutino"),  new(3,"Spinning Power"),
+        new(4,"Boxeo Amateur"),       new(5,"Zumba Fitness"),  new(6,"Pilates Core"),
+        new(7,"Musculacion Avanzada"),new(8,"HIIT 30")
+    };
+    private List<ItemLookup> entrenadoresDisponibles = new()
+    {
+        new(1,"Marco Ruiz"), new(2,"Pedro Sanchez"), new(3,"Laura Gomez"),
+        new(4,"Andres Quispe"), new(5,"Diana Rojas")
+    };
+    private List<ItemLookup> salonesDisponibles = new()
+    {
+        new(1,"Sala Principal"), new(2,"Sala Yoga"), new(3,"Sala Ciclo"),
+        new(4,"Ring Boxeo"),     new(5,"Sala Musculacion")
+    };
+
+    // Computed display names
+    private string NombreClase      => clasesDisponibles.FirstOrDefault(c => c.Id == claseId)?.Nombre      ?? "—";
+    private string NombreEntrenador => entrenadoresDisponibles.FirstOrDefault(e => e.Id == entrenadorId)?.Nombre ?? "—";
+    private string NombreSalon      => salonesDisponibles.FirstOrDefault(s => s.Id == salonId)?.Nombre     ?? "—";
+    private string EstadoClass      => estado switch { "Programada" => "rsm-activo", "Cancelada" => "rsm-inactivo", _ => "" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarSesion();
+    }
+
+    private async Task CargarSesion()
+    {
+        // TODO: reemplazar con llamada real al servicio
+        // IDs tomados directamente de ListaSesiones en AdminSesiones.razor
+        var ejemplos = new Dictionary<int, (int cId, int eId, int sId, int cupos, string fecha, string hi, string hf, string estado)>
+        {
+            // Id   claseId  entId  salId  cupos  fecha          hi      hf      estado
+            { 1,  (1, 1, 1, 20, "2025-05-12", "07:00", "08:00", "Programada") }, // CrossFit Intenso   - Marco Ruiz    - Sala Principal
+            { 2,  (2, 2, 2, 15, "2025-05-12", "08:00", "08:45", "Programada") }, // Yoga Matutino      - Pedro Sanchez - Sala Yoga
+            { 3,  (3, 3, 3, 25, "2025-05-12", "18:30", "19:15", "Programada") }, // Spinning Power     - Laura Gomez   - Sala Ciclo
+            { 4,  (4, 4, 4, 12, "2025-05-12", "19:00", "20:00", "Programada") }, // Boxeo Amateur      - Andres Quispe - Ring Boxeo
+            { 5,  (7, 1, 5, 30, "2025-05-13", "06:00", "07:15", "Programada") }, // Musculacion Avanz. - Marco Ruiz    - Sala Musculacion
+            { 6,  (1, 1, 1, 20, "2025-05-13", "07:00", "08:00", "Programada") }, // CrossFit Intenso   - Marco Ruiz    - Sala Principal
+            { 7,  (6, 2, 2, 12, "2025-05-13", "18:00", "18:50", "Programada") }, // Pilates Core       - Pedro Sanchez - Sala Yoga
+            { 8,  (8, 3, 3, 20, "2025-05-14", "07:00", "07:30", "Programada") }, // HIIT 30            - Laura Gomez   - Sala Ciclo
+            { 9,  (5, 4, 1, 30, "2025-05-14", "10:00", "11:00", "Cancelada")  }, // Zumba Fitness      - Diana Rojas   - Sala Principal
+            { 10, (2, 2, 2, 15, "2025-05-11", "09:00", "10:00", "Finalizada") }, // Yoga Matutino      - Pedro Sanchez - Sala Yoga
+        };
+
+        if (ejemplos.TryGetValue(Id, out var s))
+        {
+            claseId      = s.cId;
+            entrenadorId = s.eId;
+            salonId      = s.sId;
+            cuposMax     = s.cupos;
+            fecha        = DateOnly.Parse(s.fecha);
+            horaInicio   = s.hi;
+            horaFin      = s.hf;
+            estado       = s.estado;
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private bool Validar()
+    {
+        errores.Clear();
+        if (claseId == 0)                           errores["claseId"]      = "Selecciona una clase.";
+        if (entrenadorId == 0)                      errores["entrenadorId"] = "Selecciona un entrenador.";
+        if (salonId == 0)                           errores["salonId"]      = "Selecciona un salón.";
+        if (cuposMax < 1)                           errores["cuposMax"]     = "Los cupos deben ser al menos 1.";
+        if (fecha == default)                       errores["fecha"]        = "La fecha es obligatoria.";
+        if (string.IsNullOrEmpty(horaInicio))       errores["horaInicio"]   = "La hora de inicio es obligatoria.";
+        if (string.IsNullOrEmpty(horaFin))          errores["horaFin"]      = "La hora de fin es obligatoria.";
+        else if (string.Compare(horaFin, horaInicio, StringComparison.Ordinal) <= 0)
+                                                    errores["horaFin"]      = "La hora de fin debe ser mayor a la de inicio.";
+        return errores.Count == 0;
+    }
+
+    private async Task GuardarCambios()
+    {
+        if (!Validar()) return;
+
+        guardando = true;
+        await Task.Delay(800);
+
+        // TODO: await SesionService.UpdateAsync(Id, claseId, entrenadorId, salonId, cuposMax, fecha, horaInicio, horaFin, estado);
+
+        guardando    = false;
+        toastIsError = false;
+        toastMessage = "✅ Sesión actualizada correctamente.";
+        MostrarToast();
+    }
+
+    private async void MostrarToast()
+    {
+        toastVisible = true;
+        StateHasChanged();
+        await Task.Delay(3200);
+        toastVisible = false;
+        StateHasChanged();
+    }
+}

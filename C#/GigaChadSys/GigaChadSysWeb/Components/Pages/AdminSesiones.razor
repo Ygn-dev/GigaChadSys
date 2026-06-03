@@ -1,6 +1,7 @@
 ﻿@page "/admin/sesiones"
 @using Components.Layout
 @layout AdminLayout
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <section class="admin-list-page">
@@ -103,8 +104,8 @@
                             </td>
 
                             <td>
-                                <button class="action-button" title="Ver">👁</button>
-                                <button class="action-button" title="Editar">✎</button>
+                                <button type="button" class="action-button" title="Ver">👁</button>
+                                <button type="button" class="action-button" title="Editar" @onclick="() => IrAEditarSesion(sesion.Id)">✎</button>
                             </td>
                         </tr>
                     }
@@ -129,18 +130,25 @@
     private void MostrarCanceladas() => FiltroEstado = "Cancelada";
     private void MostrarFinalizadas() => FiltroEstado = "Finalizada";
 
+    // 🔥 Método para navegar a la edición
+    private void IrAEditarSesion(int id)
+    {
+        Navigation.NavigateTo($"/admin/sesiones/editar/{id}");
+    }
+
+    // 🔥 Agregado el 'Id' a los datos falsos para que funcione la redirección
     private List<SesionVista> ListaSesiones = new()
     {
-        new SesionVista { Fecha = new DateTime(2025,5,12), HoraInicio = "07:00", HoraFin = "08:00", NombreClase = "CrossFit Intenso",    Disciplina = "CrossFit",    Entrenador = "Marco Ruiz",    Salon = "Sala Principal",   CuposOcupados = 2,  CuposMaximos = 20, Estado = "Programada" },
-        new SesionVista { Fecha = new DateTime(2025,5,12), HoraInicio = "08:00", HoraFin = "08:45", NombreClase = "Yoga Matutino",        Disciplina = "Yoga",        Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 3,  CuposMaximos = 15, Estado = "Programada" },
-        new SesionVista { Fecha = new DateTime(2025,5,12), HoraInicio = "18:30", HoraFin = "19:15", NombreClase = "Spinning Power",       Disciplina = "Spinning",    Entrenador = "Laura Gomez",   Salon = "Sala Ciclo",       CuposOcupados = 3,  CuposMaximos = 25, Estado = "Programada" },
-        new SesionVista { Fecha = new DateTime(2025,5,12), HoraInicio = "19:00", HoraFin = "20:00", NombreClase = "Boxeo Amateur",        Disciplina = "Boxeo",       Entrenador = "Andres Quispe", Salon = "Ring Boxeo",       CuposOcupados = 2,  CuposMaximos = 12, Estado = "Programada" },
-        new SesionVista { Fecha = new DateTime(2025,5,13), HoraInicio = "06:00", HoraFin = "07:15", NombreClase = "Musculacion Avanzada", Disciplina = "Musculacion", Entrenador = "Marco Ruiz",    Salon = "Sala Musculacion", CuposOcupados = 8,  CuposMaximos = 30, Estado = "Programada" },
-        new SesionVista { Fecha = new DateTime(2025,5,13), HoraInicio = "07:00", HoraFin = "08:00", NombreClase = "CrossFit Intenso",    Disciplina = "CrossFit",    Entrenador = "Marco Ruiz",    Salon = "Sala Principal",   CuposOcupados = 5,  CuposMaximos = 20, Estado = "Programada" },
-        new SesionVista { Fecha = new DateTime(2025,5,13), HoraInicio = "18:00", HoraFin = "18:50", NombreClase = "Pilates Core",         Disciplina = "Pilates",     Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 1,  CuposMaximos = 12, Estado = "Programada" },
-        new SesionVista { Fecha = new DateTime(2025,5,14), HoraInicio = "07:00", HoraFin = "07:30", NombreClase = "HIIT 30",              Disciplina = "HIIT",        Entrenador = "Laura Gomez",   Salon = "Sala Ciclo",       CuposOcupados = 10, CuposMaximos = 20, Estado = "Programada" },
-        new SesionVista { Fecha = new DateTime(2025,5,14), HoraInicio = "10:00", HoraFin = "11:00", NombreClase = "Zumba Fitness",        Disciplina = "Zumba",       Entrenador = "Diana Rojas",   Salon = "Sala Principal",   CuposOcupados = 15, CuposMaximos = 30, Estado = "Cancelada"  },
-        new SesionVista { Fecha = new DateTime(2025,5,11), HoraInicio = "09:00", HoraFin = "10:00", NombreClase = "Yoga Matutino",        Disciplina = "Yoga",        Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 12, CuposMaximos = 15, Estado = "Finalizada" },
+        new SesionVista { Id = 1, Fecha = new DateTime(2025,5,12), HoraInicio = "07:00", HoraFin = "08:00", NombreClase = "CrossFit Intenso",    Disciplina = "CrossFit",    Entrenador = "Marco Ruiz",    Salon = "Sala Principal",   CuposOcupados = 2,  CuposMaximos = 20, Estado = "Programada" },
+        new SesionVista { Id = 2, Fecha = new DateTime(2025,5,12), HoraInicio = "08:00", HoraFin = "08:45", NombreClase = "Yoga Matutino",        Disciplina = "Yoga",        Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 3,  CuposMaximos = 15, Estado = "Programada" },
+        new SesionVista { Id = 3, Fecha = new DateTime(2025,5,12), HoraInicio = "18:30", HoraFin = "19:15", NombreClase = "Spinning Power",       Disciplina = "Spinning",    Entrenador = "Laura Gomez",   Salon = "Sala Ciclo",       CuposOcupados = 3,  CuposMaximos = 25, Estado = "Programada" },
+        new SesionVista { Id = 4, Fecha = new DateTime(2025,5,12), HoraInicio = "19:00", HoraFin = "20:00", NombreClase = "Boxeo Amateur",        Disciplina = "Boxeo",       Entrenador = "Andres Quispe", Salon = "Ring Boxeo",       CuposOcupados = 2,  CuposMaximos = 12, Estado = "Programada" },
+        new SesionVista { Id = 5, Fecha = new DateTime(2025,5,13), HoraInicio = "06:00", HoraFin = "07:15", NombreClase = "Musculacion Avanzada", Disciplina = "Musculacion", Entrenador = "Marco Ruiz",    Salon = "Sala Musculacion", CuposOcupados = 8,  CuposMaximos = 30, Estado = "Programada" },
+        new SesionVista { Id = 6, Fecha = new DateTime(2025,5,13), HoraInicio = "07:00", HoraFin = "08:00", NombreClase = "CrossFit Intenso",    Disciplina = "CrossFit",    Entrenador = "Marco Ruiz",    Salon = "Sala Principal",   CuposOcupados = 5,  CuposMaximos = 20, Estado = "Programada" },
+        new SesionVista { Id = 7, Fecha = new DateTime(2025,5,13), HoraInicio = "18:00", HoraFin = "18:50", NombreClase = "Pilates Core",         Disciplina = "Pilates",     Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 1,  CuposMaximos = 12, Estado = "Programada" },
+        new SesionVista { Id = 8, Fecha = new DateTime(2025,5,14), HoraInicio = "07:00", HoraFin = "07:30", NombreClase = "HIIT 30",              Disciplina = "HIIT",        Entrenador = "Laura Gomez",   Salon = "Sala Ciclo",       CuposOcupados = 10, CuposMaximos = 20, Estado = "Programada" },
+        new SesionVista { Id = 9, Fecha = new DateTime(2025,5,14), HoraInicio = "10:00", HoraFin = "11:00", NombreClase = "Zumba Fitness",        Disciplina = "Zumba",       Entrenador = "Diana Rojas",   Salon = "Sala Principal",   CuposOcupados = 15, CuposMaximos = 30, Estado = "Cancelada"  },
+        new SesionVista { Id = 10, Fecha = new DateTime(2025,5,11), HoraInicio = "09:00", HoraFin = "10:00", NombreClase = "Yoga Matutino",        Disciplina = "Yoga",        Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 12, CuposMaximos = 15, Estado = "Finalizada" },
     };
 
     private IEnumerable<SesionVista> SesionesFiltradas
@@ -172,6 +180,7 @@
 
     private class SesionVista
     {
+        public int Id { get; set; } // 🔥 Propiedad añadida
         public DateTime Fecha { get; set; }
         public string HoraInicio { get; set; } = "";
         public string HoraFin { get; set; } = "";

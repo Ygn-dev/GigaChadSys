@@ -1,0 +1,158 @@
+@page "/admin/clases"
+@using Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="admin-list-page">
+
+    <!-- Header -->
+    <div class="admin-list-header">
+        <div>
+            <h1>Clases Grupales</h1>
+            <p>Gestiona las clases disponibles en el gimnasio</p>
+        </div>
+        <a class="new-button" href="/admin/clases/nueva">
+            + Nueva Clase
+        </a>
+    </div>
+
+    <!-- Toolbar: búsqueda + dropdown disciplina -->
+    <div class="admin-list-toolbar" style="margin-bottom:28px;">
+        <div class="gc-search-wrapper">
+            <span class="gc-search-icon">🔍</span>
+            <input class="admin-search"
+                   style="border:none;background:transparent;padding-left:0;"
+                   type="text"
+                   placeholder="Buscar clase o disciplina..."
+                   @bind="TextoBusqueda"
+                   @bind:event="oninput" />
+        </div>
+        <div class="gc-discipline-select-wrapper">
+            <select class="gc-discipline-select" @bind="DisciplinaFiltro">
+                <option value="">Todas las disciplinas</option>
+                @foreach (var d in Disciplinas)
+                {
+                    <option value="@d">@d</option>
+                }
+            </select>
+            <span class="gc-select-arrow">▾</span>
+        </div>
+    </div>
+
+    <!-- Grid de cards -->
+    @{
+        var clasesFiltradas = ClasesFiltradas.ToList();
+    }
+
+    @if (clasesFiltradas.Count == 0)
+    {
+        <div class="gc-empty">
+            <span>🏋️</span>
+            <p>No se encontraron clases con los filtros actuales.</p>
+        </div>
+    }
+    else
+    {
+        <div class="gc-grid">
+            @foreach (var c in clasesFiltradas)
+            {
+                <div class="gc-card">
+                    <!-- Top badges -->
+                    <div class="gc-card-top">
+                        <span class="gc-nivel-badge gc-nivel-@c.Nivel.ToLower()">@c.Nivel</span>
+                        <span class="gc-activa-badge @(c.Activa ? "gc-badge-activa" : "gc-badge-inactiva")">
+                            @(c.Activa ? "Activa" : "Inactiva")
+                        </span>
+                    </div>
+
+                    <!-- Nombre y disciplina -->
+                    <h3 class="gc-card-nombre">@c.Nombre</h3>
+                    <p class="gc-card-disciplina">@c.Disciplina</p>
+
+                    <!-- Descripción -->
+                    <p class="gc-card-desc">@c.Descripcion</p>
+
+                    <!-- Duración -->
+                    <div class="gc-card-duracion">
+                        <span class="gc-clock-icon">🕐</span>
+                        <span>@c.DuracionMin min</span>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="gc-card-actions">
+                        <a class="gc-btn-ver" href="/admin/clases/@c.Id">
+                            👁 Ver
+                        </a>
+                        <a class="gc-btn-editar" href="/admin/clases/editar/@c.Id">
+                            ✏ Editar
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</section>
+
+@code {
+    private string TextoBusqueda   = "";
+    private string DisciplinaFiltro = "";
+
+    private List<string> Disciplinas = new()
+    {
+        "CrossFit", "Yoga", "Spinning", "Boxeo",
+        "Zumba", "Pilates", "Musculacion", "HIIT"
+    };
+
+    private IEnumerable<ClaseVista> ClasesFiltradas
+    {
+        get
+        {
+            IEnumerable<ClaseVista> resultado = Clases;
+
+            if (!string.IsNullOrWhiteSpace(DisciplinaFiltro))
+                resultado = resultado.Where(c => c.Disciplina == DisciplinaFiltro);
+
+            if (!string.IsNullOrWhiteSpace(TextoBusqueda))
+            {
+                string t = TextoBusqueda.Trim();
+                resultado = resultado.Where(c =>
+                    c.Nombre.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                    c.Disciplina.Contains(t, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return resultado;
+        }
+    }
+
+    private List<ClaseVista> Clases = new()
+    {
+        new() { Id=1, Nombre="CrossFit Intenso",     Disciplina="CrossFit",    Nivel="Avanzado",     DuracionMin=60, Activa=true,
+                Descripcion="Entrenamiento funcional de alta intensidad con ejercicios variados." },
+        new() { Id=2, Nombre="Yoga Matutino",         Disciplina="Yoga",        Nivel="Principiante", DuracionMin=45, Activa=true,
+                Descripcion="Sesion de yoga para mejorar flexibilidad y reducir estres." },
+        new() { Id=3, Nombre="Spinning Power",        Disciplina="Spinning",    Nivel="Intermedio",   DuracionMin=45, Activa=true,
+                Descripcion="Clase de ciclismo indoor con musica motivadora." },
+        new() { Id=4, Nombre="Boxeo Amateur",         Disciplina="Boxeo",       Nivel="Intermedio",   DuracionMin=60, Activa=true,
+                Descripcion="Tecnicas basicas de boxeo y acondicionamiento fisico." },
+        new() { Id=5, Nombre="Zumba Party",           Disciplina="Zumba",       Nivel="Principiante", DuracionMin=50, Activa=true,
+                Descripcion="Baile fitness latino con ritmos divertidos." },
+        new() { Id=6, Nombre="Pilates Core",          Disciplina="Pilates",     Nivel="Intermedio",   DuracionMin=50, Activa=true,
+                Descripcion="Fortalecimiento del core y control postural." },
+        new() { Id=7, Nombre="Musculacion Avanzada",  Disciplina="Musculacion", Nivel="Avanzado",     DuracionMin=75, Activa=true,
+                Descripcion="Entrenamiento de fuerza con tecnicas avanzadas." },
+        new() { Id=8, Nombre="HIIT 30",               Disciplina="HIIT",        Nivel="Intermedio",   DuracionMin=30, Activa=true,
+                Descripcion="Entrenamiento intervalico de alta intensidad de 30 minutos." },
+    };
+
+    private class ClaseVista
+    {
+        public int    Id          { get; set; }
+        public string Nombre      { get; set; } = "";
+        public string Disciplina  { get; set; } = "";
+        public string Nivel       { get; set; } = "";
+        public int    DuracionMin { get; set; }
+        public bool   Activa      { get; set; }
+        public string Descripcion { get; set; } = "";
+    }
+}

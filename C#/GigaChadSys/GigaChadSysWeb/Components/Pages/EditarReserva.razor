@@ -1,0 +1,320 @@
+@page "/admin/reservas/editar/{Id:int}"
+@layout AdminLayout
+
+<div class="socio-form-page">
+
+    <!-- Breadcrumb -->
+    <nav class="sf-breadcrumb">
+        <a href="/admin/reservas">Reservas</a>
+        <span class="sf-bc-sep">›</span>
+        <span class="sf-bc-current">Editar</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="sf-page-header">
+        <h1>Editar Reserva</h1>
+        <p class="sf-page-subtitle">Modifica los datos y el estado de la reserva</p>
+    </div>
+
+    <!-- Toast -->
+    <div class="socios-toast @(toastVisible ? "socios-toast-show" : "") @(toastIsError ? "socios-toast-err" : "socios-toast-ok")">
+        @toastMessage
+    </div>
+
+    <div class="sf-edit-layout">
+
+        <!-- ── Left column ── -->
+        <div>
+
+            <!-- Datos de la Reserva -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-red">🎫</div>
+                    <div>
+                        <h3>Datos de la Reserva</h3>
+                        <span>Socio, sesión y detalles</span>
+                    </div>
+                </div>
+
+                <div class="sf-form-grid">
+                    <!-- Socio (solo lectura: la reserva ya tiene un socio asignado) -->
+                    <div class="sf-form-group sf-form-full">
+                        <label>SOCIO</label>
+                        <input type="text" value="@socioNombre" disabled />
+                        <span class="sf-error-msg" style="color:#666;font-size:11px;">El socio no puede modificarse. Cancela esta reserva y crea una nueva si necesitas cambiarlo.</span>
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>CLASE <span class="sf-req">*</span></label>
+                        <select @bind="claseNombre" class="@(errores.ContainsKey("claseNombre") ? "sf-input-error" : "")">
+                            <option value="">Seleccionar clase...</option>
+                            @foreach (var c in clasesDisponibles)
+                            {
+                                <option value="@c">@c</option>
+                            }
+                        </select>
+                        @if (errores.ContainsKey("claseNombre"))
+                        {
+                            <span class="sf-error-msg">@errores["claseNombre"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>ENTRENADOR</label>
+                        <select @bind="entrenadorNombre">
+                            <option value="">Seleccionar entrenador...</option>
+                            @foreach (var e in entrenadoresDisponibles)
+                            {
+                                <option value="@e">@e</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>FECHA <span class="sf-req">*</span></label>
+                        <input type="date" @bind="fecha"
+                               class="@(errores.ContainsKey("fecha") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("fecha"))
+                        {
+                            <span class="sf-error-msg">@errores["fecha"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>HORARIO</label>
+                        <input type="text" @bind="horario" placeholder="Ej. 07:00 - 08:00" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado de la Reserva -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-yellow">🔖</div>
+                    <div>
+                        <h3>Estado de la Reserva</h3>
+                        <span>Controla el seguimiento del socio</span>
+                    </div>
+                </div>
+
+                <p class="sf-sublabel">ESTADO</p>
+                <div class="sf-estado-row" style="flex-wrap:wrap;">
+                    <button type="button"
+                            class="sf-estado-btn @(estado == "Confirmadas" ? "sf-estado-activo" : "")"
+                            @onclick='() => estado = "Confirmadas"'>
+                        <span class="sf-estado-dot dot-green"></span> Confirmada
+                    </button>
+                    <button type="button"
+                            class="sf-estado-btn"
+                            style="@(estado == "Pendientes" ? "border-color:rgba(255,193,7,0.5);background:rgba(255,193,7,0.10);color:#FFC107;" : "")"
+                            @onclick='() => estado = "Pendientes"'>
+                        <span class="sf-estado-dot" style="background:#FFC107;"></span> Pendiente
+                    </button>
+                    <button type="button"
+                            class="sf-estado-btn"
+                            style="@(estado == "Asistió" ? "border-color:rgba(66,165,245,0.5);background:rgba(66,165,245,0.10);color:#42A5F5;" : "")"
+                            @onclick='() => estado = "Asistió"'>
+                        <span class="sf-estado-dot" style="background:#42A5F5;"></span> Asistió
+                    </button>
+                    <button type="button"
+                            class="sf-estado-btn @(estado == "Canceladas" ? "sf-estado-inactivo" : "")"
+                            @onclick='() => estado = "Canceladas"'>
+                        <span class="sf-estado-dot dot-red"></span> Cancelada
+                    </button>
+                </div>
+            </div>
+
+            <!-- Motivo (si se cancela) -->
+            @if (estado == "Canceladas")
+            {
+                <div class="sf-section-card">
+                    <div class="sf-section-title">
+                        <div class="sf-section-icon icon-red">📝</div>
+                        <div>
+                            <h3>Motivo de Cancelación</h3>
+                            <span>Indica el motivo administrativo</span>
+                        </div>
+                    </div>
+                    <div class="sf-form-group">
+                        <label>MOTIVO</label>
+                        <textarea @bind="motivoCancelacion" rows="3" placeholder="Describe brevemente el motivo de la cancelación..."></textarea>
+                    </div>
+                </div>
+            }
+
+            <!-- Actions -->
+            <div class="sf-form-actions">
+                <button class="sf-btn-primary" @onclick="GuardarCambios" disabled="@guardando">
+                    @if (guardando)
+                    {
+                        <span>⏳</span> <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span>💾</span> <span>Guardar Cambios</span>
+                    }
+                </button>
+                <a href="/admin/reservas" class="sf-btn-secondary">Cancelar</a>
+                <div class="sf-back-link">
+                    <a href="/admin/reservas">← Volver a Reservas</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── Right column: Resumen ── -->
+        <div class="sf-resumen-col">
+            <div class="sf-resumen-card">
+                <h4>Resumen</h4>
+                <div class="sf-resumen-rows">
+                    <div class="sf-resumen-row">
+                        <span>Socio</span>
+                        <strong>@socioNombre</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>DNI</span>
+                        <strong>@socioDni</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Clase</span>
+                        <strong>@(string.IsNullOrWhiteSpace(claseNombre) ? "—" : claseNombre)</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Entrenador</span>
+                        <strong>@(string.IsNullOrWhiteSpace(entrenadorNombre) ? "—" : entrenadorNombre)</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Fecha</span>
+                        <strong>@(fecha == default ? "—" : fecha.ToString("dd/MM/yyyy"))</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Horario</span>
+                        <strong>@(string.IsNullOrWhiteSpace(horario) ? "—" : horario)</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Estado</span>
+                        <strong class="@EstadoClass">@EstadoLabel</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sf-admin-nota">
+                <span class="sf-nota-icon">⚠️</span>
+                <p>Desde aquí puedes confirmar, marcar asistencia o cancelar la reserva del socio por motivos administrativos.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    // Form fields
+    private string socioNombre        = "";
+    private string socioDni           = "";
+    private string claseNombre        = "";
+    private string entrenadorNombre   = "";
+    private DateOnly fecha            = DateOnly.FromDateTime(DateTime.Today);
+    private string horario            = "";
+    private string estado             = "Confirmadas";
+    private string motivoCancelacion  = "";
+
+    private bool guardando    = false;
+    private bool toastVisible = false;
+    private bool toastIsError = false;
+    private string toastMessage = "";
+    private Dictionary<string, string> errores = new();
+
+    private string EstadoClass => estado switch
+    {
+        "Confirmadas" => "rsm-activo",
+        "Canceladas"  => "rsm-inactivo",
+        _             => ""
+    };
+    private string EstadoLabel => estado switch
+    {
+        "Confirmadas" => "Confirmada",
+        "Canceladas"  => "Cancelada",
+        "Pendientes"  => "Pendiente",
+        "Asistió"     => "Asistió",
+        _             => estado
+    };
+
+    private List<string> clasesDisponibles = new()
+    {
+        "CrossFit Intenso","Yoga Matutino","Spinning Power","Boxeo Amateur",
+        "Zumba Party","Pilates Core","Musculacion Avanzada","HIIT 30"
+    };
+    private List<string> entrenadoresDisponibles = new()
+    {
+        "Marco Ruiz","Pedro Sanchez","Laura Gomez","Andres Quispe"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarReserva();
+    }
+
+    private async Task CargarReserva()
+    {
+        // TODO: reemplazar con llamada real al servicio
+        // var reserva = await ReservaService.GetByIdAsync(Id);
+        var ejemplos = new Dictionary<int, (string socio, string dni, string clase, string ent, string fecha, string horario, string estado)>
+        {
+            { 1, ("Maria Gonzalez",   "40123897", "CrossFit Intenso",    "Marco Ruiz",   "2026-05-12", "07:00 - 08:00", "Confirmadas") },
+            { 2, ("Laura Martinez",   "42890123", "Yoga Matutino",       "Pedro Sanchez","2026-05-12", "08:00 - 09:00", "Confirmadas") },
+            { 3, ("Diego Fernandez",  "37890123", "Spinning Power",      "Laura Gomez",  "2026-05-12", "18:30 - 19:30", "Asistió")    },
+            { 4, ("Carlos Rodriguez", "38456721", "Boxeo Amateur",       "Andres Quispe","2026-05-12", "19:00 - 20:00", "Pendientes") },
+            { 5, ("Juan Perez",       "35678912", "Musculacion Avanzada","Marco Ruiz",   "2026-05-13", "06:00 - 07:15", "Confirmadas") },
+            { 6, ("Camila Torres",    "44567890", "CrossFit Intenso",    "Marco Ruiz",   "2026-05-13", "07:00 - 08:00", "Confirmadas") },
+            { 7, ("Florencia Sanchez","41234567", "Pilates Core",        "Pedro Sanchez","2026-05-13", "16:00 - 17:00", "Canceladas") },
+            { 8, ("Martin Lopez",     "39012345", "HIIT 30",             "Laura Gomez",  "2026-05-13", "17:00 - 17:30", "Pendientes") },
+        };
+
+        if (ejemplos.TryGetValue(Id, out var r))
+        {
+            socioNombre      = r.socio;
+            socioDni         = r.dni;
+            claseNombre      = r.clase;
+            entrenadorNombre = r.ent;
+            fecha            = DateOnly.Parse(r.fecha);
+            horario          = r.horario;
+            estado           = r.estado;
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private bool Validar()
+    {
+        errores.Clear();
+        if (string.IsNullOrWhiteSpace(claseNombre)) errores["claseNombre"] = "Selecciona una clase.";
+        if (fecha == default)                       errores["fecha"]       = "La fecha es obligatoria.";
+        return errores.Count == 0;
+    }
+
+    private async Task GuardarCambios()
+    {
+        if (!Validar()) return;
+
+        guardando = true;
+        await Task.Delay(800);
+
+        // TODO: await ReservaService.UpdateAsync(Id, claseNombre, entrenadorNombre, fecha, horario, estado, motivoCancelacion);
+
+        guardando    = false;
+        toastIsError = false;
+        toastMessage = "✅ Reserva actualizada correctamente.";
+        MostrarToast();
+    }
+
+    private async void MostrarToast()
+    {
+        toastVisible = true;
+        StateHasChanged();
+        await Task.Delay(3200);
+        toastVisible = false;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,267 @@
+@page "/admin/clases/nueva"
+@using Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="admin-form-page">
+
+    <!-- Breadcrumb -->
+    <div class="admin-breadcrumb">
+        <a href="/admin/inicio">Inicio</a>
+        <span> / </span>
+        <a href="/admin/clases">Clases</a>
+        <span> / </span>
+        <span class="breadcrumb-active">Nueva Clase</span>
+    </div>
+
+    <!-- Título -->
+    <h1 class="admin-form-title">Registrar Nueva Clase Grupal</h1>
+    <p class="admin-form-subtitle">Complete la información de la clase que estará disponible para los socios</p>
+
+    <!-- Layout: form izquierda, preview derecha -->
+    <div class="sesion-form-layout">
+
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="sesion-form-left">
+
+            <!-- Card: Información de la Clase -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <span class="form-card-icon">📋</span>
+                    <h2>Información de la Clase</h2>
+                </div>
+                <div class="form-card-body">
+
+                    <!-- Nombre -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Nombre de la clase <span class="required">*</span>
+                            </label>
+                            <input class="form-input"
+                                   type="text"
+                                   placeholder="Ej: CrossFit Intenso"
+                                   @bind="Nombre"
+                                   @bind:event="oninput" />
+                        </div>
+                    </div>
+
+                    <!-- Disciplina + Nivel -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Disciplina <span class="required">*</span>
+                            </label>
+                            <select class="form-select" @bind="Disciplina">
+                                <option value="">Seleccione una disciplina</option>
+                                <option>CrossFit</option>
+                                <option>Yoga</option>
+                                <option>Spinning</option>
+                                <option>Boxeo</option>
+                                <option>Zumba</option>
+                                <option>Pilates</option>
+                                <option>Musculacion</option>
+                                <option>HIIT</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                Nivel <span class="required">*</span>
+                            </label>
+                            <select class="form-select" @bind="Nivel">
+                                <option value="">Seleccione un nivel</option>
+                                <option>Principiante</option>
+                                <option>Intermedio</option>
+                                <option>Avanzado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Duración -->
+                    <div class="form-row">
+                        <div class="form-group" style="max-width:220px;">
+                            <label class="form-label">
+                                Duración (minutos) <span class="required">*</span>
+                            </label>
+                            <input class="form-input"
+                                   type="number"
+                                   min="10" max="180"
+                                   placeholder="Ej: 60"
+                                   @bind="DuracionMin"
+                                   @bind:event="oninput" />
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Descripción <span class="required">*</span>
+                            </label>
+                            <textarea class="form-input gc-textarea"
+                                      placeholder="Describa brevemente el contenido de la clase..."
+                                      maxlength="500"
+                                      @bind="Descripcion"
+                                      @bind:event="oninput"></textarea>
+                            <span class="gc-char-count">@Descripcion.Length / 500</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Card: Estado -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <span class="form-card-icon">👁</span>
+                    <h2>Estado de la Clase</h2>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-radio-group">
+                        <label class="form-radio-label">
+                            <input type="radio" name="estado" value="Activa"
+                                   checked="@(Activa)"
+                                   @onchange='() => Activa = true' />
+                            Activa
+                        </label>
+                        <label class="form-radio-label">
+                            <input type="radio" name="estado" value="Inactiva"
+                                   checked="@(!Activa)"
+                                   @onchange='() => Activa = false' />
+                            Inactiva
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="form-actions">
+                <button class="btn-primary" @onclick="RegistrarClase">
+                    ✔ Registrar Clase
+                </button>
+                <button class="btn-secondary" @onclick="LimpiarFormulario">
+                    ✕ Cancelar
+                </button>
+                <a class="btn-ghost" href="/admin/clases">
+                    ← Volver al listado
+                </a>
+            </div>
+
+        </div>
+
+        <!-- COLUMNA DERECHA: Vista Previa -->
+        <div class="sesion-form-right">
+            <div class="form-card sesion-preview-card">
+                <div class="form-card-header">
+                    <span class="form-card-icon">👁</span>
+                    <h2>Vista Previa</h2>
+                </div>
+                <div class="form-card-body">
+
+                    @if (string.IsNullOrWhiteSpace(Nombre) && string.IsNullOrWhiteSpace(Disciplina))
+                    {
+                        <div class="preview-empty">
+                            <span class="preview-empty-icon">📋</span>
+                            <p>Complete el formulario para ver la vista previa de la clase.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="sesion-preview">
+                            @if (!string.IsNullOrWhiteSpace(Nombre))
+                            {
+                                <div class="preview-row">
+                                    <span class="preview-label">Nombre</span>
+                                    <span class="preview-value">@Nombre</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Disciplina))
+                            {
+                                <div class="preview-row">
+                                    <span class="preview-label">Disciplina</span>
+                                    <span class="preview-value">@Disciplina</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Nivel))
+                            {
+                                <div class="preview-row">
+                                    <span class="preview-label">Nivel</span>
+                                    <span class="gc-nivel-badge gc-nivel-@Nivel.ToLower() preview-value" style="text-align:right;">
+                                        @Nivel
+                                    </span>
+                                </div>
+                            }
+                            @if (DuracionMin > 0)
+                            {
+                                <div class="preview-row">
+                                    <span class="preview-label">Duración</span>
+                                    <span class="preview-value">@DuracionMin min</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Descripcion))
+                            {
+                                <div class="preview-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+                                    <span class="preview-label">Descripción</span>
+                                    <span class="preview-value" style="text-align:left;font-weight:400;color:#B0B0B0;font-size:12px;line-height:1.5;">
+                                        @Descripcion
+                                    </span>
+                                </div>
+                            }
+                            <div class="preview-row">
+                                <span class="preview-label">Estado</span>
+                                <span class="gc-activa-badge @(Activa ? "gc-badge-activa" : "gc-badge-inactiva")">
+                                    @(Activa ? "Activa" : "Inactiva")
+                                </span>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+@if (MostrarToast)
+{
+    <div class="socios-toast socios-toast-show">
+        <span>✅</span> Clase registrada correctamente
+    </div>
+}
+
+@code {
+    private string Nombre      = "";
+    private string Disciplina  = "";
+    private string Nivel       = "";
+    private int    DuracionMin = 0;
+    private string Descripcion = "";
+    private bool   Activa      = true;
+    private bool   MostrarToast = false;
+
+    private async Task RegistrarClase()
+    {
+        if (string.IsNullOrWhiteSpace(Nombre) ||
+            string.IsNullOrWhiteSpace(Disciplina) ||
+            string.IsNullOrWhiteSpace(Nivel) ||
+            DuracionMin <= 0)
+            return;
+
+        MostrarToast = true;
+        StateHasChanged();
+        await Task.Delay(2800);
+        MostrarToast = false;
+        LimpiarFormulario();
+    }
+
+    private void LimpiarFormulario()
+    {
+        Nombre      = "";
+        Disciplina  = "";
+        Nivel       = "";
+        DuracionMin = 0;
+        Descripcion = "";
+        Activa      = true;
+    }
+}

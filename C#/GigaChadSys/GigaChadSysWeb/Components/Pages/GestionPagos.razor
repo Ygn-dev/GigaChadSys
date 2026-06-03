@@ -1,0 +1,241 @@
+@page "/admin/pagos"
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager Navigation
+
+<div class="admin-shell">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="admin-sidebar">
+        <div>
+            <div class="admin-logo">
+                <div class="logo-mark">GC</div>
+                <div>
+                    <h2 style="color:#F5F5F5; font-weight:900; letter-spacing:2px; margin:0;">GIGACHAD</h2>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+
+            <nav class="admin-nav">
+                <a href="/admin/dashboard">Inicio</a>
+
+                <div class="nav-section">USUARIOS</div>
+                <a href="/admin/socios">Socios</a>
+                <a href="/admin/entrenadores">Entrenadores</a>
+
+                <div class="nav-section">MEMBRESÍAS</div>
+                <a href="/admin/membresias">Membresías</a>
+                <a href="/admin/suscripciones">Suscripciones</a>
+
+                <div class="nav-section">OPERACIONES</div>
+                <a href="/admin/clases">Clases</a>
+                <a href="/admin/sesiones">Sesiones</a>
+                <a href="/admin/reservas">Reservas</a>
+                <a href="/admin/pagos" class="active">Pagos</a>
+
+                <div class="nav-section">INFRAESTRUCTURA</div>
+                <a href="/admin/salones">Salones</a>
+                <a href="/admin/maquinas">Máquinas</a>
+
+                <div class="nav-section">ANÁLISIS</div>
+                <a href="/admin/reportes">Reportes</a>
+
+                <div class="nav-section">CUENTA</div>
+                <a href="/admin/perfil">Mi Perfil</a>
+            </nav>
+        </div>
+
+        <div class="admin-bottom">
+            <div class="admin-profile">
+                <div class="profile-avatar">A</div>
+                <div>
+                    <strong>Administrador</strong>
+                    <span>admin@gigachad.com</span>
+                </div>
+            </div>
+            <a href="/logout" class="admin-logout">Cerrar Sesión</a>
+        </div>
+    </aside>
+
+    <!-- ===== CONTENT AREA ===== -->
+    <div class="admin-content-area">
+        <!-- Topbar -->
+        <header class="gp-topbar">
+            <div class="topbar-actions">
+                <button class="topbar-btn">🔔</button>
+                <button class="topbar-btn">🔍</button>
+                <a href="/logout" class="topbar-btn topbar-logout">🚪 Salir</a>
+            </div>
+        </header>
+
+        <!-- Main -->
+        <main class="admin-main">
+            <div class="admin-list-page">
+
+                <!-- Header -->
+                <div class="admin-list-header">
+                    <div>
+                        <h1>Gestion de Pagos</h1>
+                        <p>Registra y consulta los pagos de los socios</p>
+                    </div>
+                    <a href="/admin/pagos/registrar" class="new-button">＋ Registrar Pago</a>
+                </div>
+
+                <!-- Stats cards -->
+                <div class="gp-stats-row">
+                    <div class="gp-stat-card">
+                        <div class="gp-stat-label">TOTAL RECAUDADO</div>
+                        <div class="gp-stat-value">S/982.00</div>
+                    </div>
+                    <div class="gp-stat-card">
+                        <div class="gp-stat-label">TOTAL PENDIENTE</div>
+                        <div class="gp-stat-value gp-stat-yellow">S/79.00</div>
+                    </div>
+                    <div class="gp-stat-card">
+                        <div class="gp-stat-label">TOTAL TRANSACCIONES</div>
+                        <div class="gp-stat-value">9</div>
+                    </div>
+                </div>
+
+                <!-- Toolbar: search + filters -->
+                <div class="admin-list-toolbar">
+                    <input type="text"
+                           class="admin-search"
+                           placeholder="🔍  Buscar por socio o concepto..."
+                           @bind="SearchTerm"
+                           @bind:event="oninput" />
+
+                    <select class="gp-filter-select" @bind="EstadoFiltro">
+                        <option value="">Todos los estados</option>
+                        <option value="pagado">Pagado</option>
+                        <option value="pendiente">Pendiente</option>
+                    </select>
+
+                    <select class="gp-filter-select" @bind="MetodoFiltro">
+                        <option value="">Todos los metodos</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="tarjeta_debito">Tarjeta Débito</option>
+                        <option value="tarjeta_credito">Tarjeta Crédito</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <div class="admin-table-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>SOCIO</th>
+                                <th>CONCEPTO</th>
+                                <th>MONTO</th>
+                                <th>METODO</th>
+                                <th>FECHA</th>
+                                <th>ESTADO</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!PagosFiltrados.Any())
+                            {
+                                <tr>
+                                    <td colspan="8" class="empty-row">No se encontraron pagos.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var pago in PagosFiltrados)
+                                {
+                                    <tr>
+                                        <td style="color:#666; font-size:12px;">#@pago.Id</td>
+                                        <td>
+                                            <div class="trainer-cell">
+                                                <div class="trainer-avatar">@pago.Iniciales</div>
+                                                <div>
+                                                    <strong>@pago.SocioNombre</strong>
+                                                    <span>@pago.SocioDni</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="color:#F5F5F5; font-weight:600;">@pago.Concepto</td>
+                                        <td class="td-monto">@pago.Monto</td>
+                                        <td style="color:#B0B0B0;">@pago.Metodo</td>
+                                        <td style="color:#B0B0B0;">@pago.Fecha</td>
+                                        <td>
+                                            @if (pago.Estado == "pagado")
+                                            {
+                                                <span class="pagos-estado estado-pagado">
+                                                    <span class="estado-dot"></span> pagado
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="pagos-estado estado-pendiente">
+                                                    <span class="estado-dot"></span> pendiente
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <button class="action-button"
+                                                    title="Ver detalle"
+                                                    @onclick="() => VerDetalle(pago.Id)">
+                                                👁
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+@code {
+    private string SearchTerm { get; set; } = "";
+    private string EstadoFiltro { get; set; } = "";
+    private string MetodoFiltro { get; set; } = "";
+
+    // Modelo de datos
+    private class PagoItem
+    {
+        public int Id { get; set; }
+        public string SocioNombre { get; set; } = "";
+        public string SocioDni { get; set; } = "";
+        public string Iniciales { get; set; } = "";
+        public string Concepto { get; set; } = "";
+        public string Monto { get; set; } = "";
+        public string Metodo { get; set; } = "";
+        public string Fecha { get; set; } = "";
+        public string Estado { get; set; } = "";
+    }
+
+    // Datos de ejemplo (reemplazar con llamadas al servicio real)
+    private List<PagoItem> Pagos = new()
+    {
+        new() { Id=1, SocioNombre="Lucia Torres",   SocioDni="40234123", Iniciales="LT", Concepto="Membresía Black - Mayo",  Monto="S/149", Metodo="Tarjeta Crédito", Fecha="2025-05-01", Estado="pagado"   },
+        new() { Id=2, SocioNombre="Juan Perez",     SocioDni="40123123", Iniciales="JP", Concepto="Membresía Basic - Mayo",  Monto="S/79",  Metodo="Tarjeta Débito",  Fecha="2025-05-03", Estado="pagado"   },
+        new() { Id=3, SocioNombre="Ana Garcia",     SocioDni="40345234", Iniciales="AG", Concepto="Membresía Black - Abril", Monto="S/149", Metodo="Efectivo",          Fecha="2025-04-28", Estado="pagado"   },
+        new() { Id=4, SocioNombre="Sofia Mendez",   SocioDni="40678345", Iniciales="SM", Concepto="Membresía Black - Mayo",  Monto="S/149", Metodo="Tarjeta Crédito", Fecha="2025-05-05", Estado="pagado"   },
+        new() { Id=5, SocioNombre="Roberto Diaz",   SocioDni="40789456", Iniciales="RD", Concepto="Membresía Basic - Mayo",  Monto="S/79",  Metodo="Tarjeta Débito",  Fecha="2025-05-02", Estado="pagado"   },
+        new() { Id=6, SocioNombre="Fernando Loza",  SocioDni="40901678", Iniciales="FL", Concepto="Membresía Black - Mayo",  Monto="S/149", Metodo="Tarjeta Crédito", Fecha="2025-05-04", Estado="pagado"   },
+        new() { Id=7, SocioNombre="Lucia Torres",   SocioDni="40234123", Iniciales="LT", Concepto="Membresía Black - Abril", Monto="S/149", Metodo="Tarjeta Crédito", Fecha="2025-04-01", Estado="pagado"   },
+        new() { Id=8, SocioNombre="Juan Perez",     SocioDni="40123123", Iniciales="JP", Concepto="Membresía Basic - Abril", Monto="S/79",  Metodo="Efectivo",          Fecha="2025-04-02", Estado="pendiente"},
+        new() { Id=9, SocioNombre="Ana Garcia",     SocioDni="40345234", Iniciales="AG", Concepto="Inscripción",              Monto="S/50",  Metodo="Efectivo",          Fecha="2025-03-15", Estado="pendiente"},
+    };
+
+    private IEnumerable<PagoItem> PagosFiltrados =>
+        Pagos.Where(p =>
+            (string.IsNullOrEmpty(SearchTerm) ||
+             p.SocioNombre.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+             p.Concepto.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(EstadoFiltro) || p.Estado == EstadoFiltro) &&
+            (string.IsNullOrEmpty(MetodoFiltro) ||
+             p.Metodo.Replace(" ", "_").ToLower().Contains(MetodoFiltro.Replace("_", " ")))
+        );
+
+    private void VerDetalle(int id)
+    {
+        Navigation.NavigateTo($"/admin/pagos/{id}");
+    }
+}

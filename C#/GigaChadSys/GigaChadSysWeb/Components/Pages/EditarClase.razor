@@ -1,0 +1,262 @@
+@page "/admin/clases/editar/{Id:int}"
+@layout AdminLayout
+
+<div class="socio-form-page">
+
+    <!-- Breadcrumb -->
+    <nav class="sf-breadcrumb">
+        <a href="/admin/clases">Clases</a>
+        <span class="sf-bc-sep">›</span>
+        <span class="sf-bc-current">Editar</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="sf-page-header">
+        <h1>Editar Clase</h1>
+        <p class="sf-page-subtitle">Actualiza los datos de la clase grupal</p>
+    </div>
+
+    <!-- Toast -->
+    <div class="socios-toast @(toastVisible ? "socios-toast-show" : "") @(toastIsError ? "socios-toast-err" : "socios-toast-ok")">
+        @toastMessage
+    </div>
+
+    <div class="sf-edit-layout">
+
+        <!-- ── Left column: form cards ── -->
+        <div>
+
+            <!-- Información General -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-red">🏋️</div>
+                    <div>
+                        <h3>Información General</h3>
+                        <span>Datos básicos de la clase</span>
+                    </div>
+                </div>
+
+                <div class="sf-form-grid">
+                    <div class="sf-form-group">
+                        <label>NOMBRE <span class="sf-req">*</span></label>
+                        <input type="text" @bind="nombre" @bind:event="oninput" placeholder="Ej. CrossFit Intenso"
+                               class="@(errores.ContainsKey("nombre") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("nombre"))
+                        {
+                            <span class="sf-error-msg">@errores["nombre"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>DISCIPLINA <span class="sf-req">*</span></label>
+                        <select @bind="disciplina">
+                            <option value="">Seleccionar disciplina...</option>
+                            <option value="CrossFit">CrossFit</option>
+                            <option value="Yoga">Yoga</option>
+                            <option value="Spinning">Spinning</option>
+                            <option value="Boxeo">Boxeo</option>
+                            <option value="Zumba">Zumba</option>
+                            <option value="Pilates">Pilates</option>
+                            <option value="Musculacion">Musculación</option>
+                            <option value="HIIT">HIIT</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                        @if (errores.ContainsKey("disciplina"))
+                        {
+                            <span class="sf-error-msg">@errores["disciplina"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>DURACIÓN (minutos) <span class="sf-req">*</span></label>
+                        <input type="number" @bind="duracion" min="10" max="240" placeholder="60"
+                               class="@(errores.ContainsKey("duracion") ? "sf-input-error" : "")" />
+                        @if (errores.ContainsKey("duracion"))
+                        {
+                            <span class="sf-error-msg">@errores["duracion"]</span>
+                        }
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label>NIVEL</label>
+                        <select @bind="nivel">
+                            <option value="Principiante">Principiante</option>
+                            <option value="Intermedio">Intermedio</option>
+                            <option value="Avanzado">Avanzado</option>
+                        </select>
+                    </div>
+
+                    <div class="sf-form-group sf-form-full">
+                        <label>DESCRIPCIÓN</label>
+                        <textarea @bind="descripcion" rows="3" placeholder="Describe brevemente la clase..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado de la Clase -->
+            <div class="sf-section-card">
+                <div class="sf-section-title">
+                    <div class="sf-section-icon icon-green">✅</div>
+                    <div>
+                        <h3>Estado de la Clase</h3>
+                        <span>Controla la visibilidad y disponibilidad</span>
+                    </div>
+                </div>
+
+                <p class="sf-sublabel">ESTADO ACTUAL</p>
+                <div class="sf-estado-row">
+                    <button type="button"
+                            class="sf-estado-btn @(estado == "Activa" ? "sf-estado-activo" : "")"
+                            @onclick='() => estado = "Activa"'>
+                        <span class="sf-estado-dot dot-green"></span> Activa
+                    </button>
+                    <button type="button"
+                            class="sf-estado-btn @(estado == "Inactiva" ? "sf-estado-inactivo" : "")"
+                            @onclick='() => estado = "Inactiva"'>
+                        <span class="sf-estado-dot dot-red"></span> Inactiva
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="sf-form-actions">
+                <button class="sf-btn-primary" @onclick="GuardarCambios" disabled="@guardando">
+                    @if (guardando)
+                    {
+                        <span>⏳</span> <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <span>💾</span> <span>Guardar Cambios</span>
+                    }
+                </button>
+                <a href="/admin/clases" class="sf-btn-secondary">Cancelar</a>
+                <div class="sf-back-link">
+                    <a href="/admin/clases">← Volver a Clases</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── Right column: Resumen ── -->
+        <div class="sf-resumen-col">
+            <div class="sf-resumen-card">
+                <h4>Resumen</h4>
+                <div class="sf-resumen-rows">
+                    <div class="sf-resumen-row">
+                        <span>Clase</span>
+                        <strong>@(string.IsNullOrWhiteSpace(nombre) ? "—" : nombre)</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Disciplina</span>
+                        <strong>@(string.IsNullOrWhiteSpace(disciplina) ? "—" : disciplina)</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Nivel</span>
+                        <strong>@nivel</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Duración</span>
+                        <strong>@(duracion > 0 ? $"{duracion} min" : "—")</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Estado</span>
+                        <strong class="@(estado == "Activa" ? "rsm-activo" : "rsm-inactivo")">@estado</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sf-admin-nota">
+                <span class="sf-nota-icon">⚠️</span>
+                <p>Modificar la clase afectará a todas las sesiones programadas que la utilicen. Las reservas existentes no se cancelarán automáticamente.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    // Form fields
+    private string nombre = "";
+    private string disciplina = "";
+    private int duracion = 60;
+    private string nivel = "Intermedio";
+    private string descripcion = "";
+    private string estado = "Activa";
+
+    private bool guardando = false;
+    private bool toastVisible = false;
+    private bool toastIsError = false;
+    private string toastMessage = "";
+    private Dictionary<string, string> errores = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarClase();
+    }
+
+    private async Task CargarClase()
+    {
+        // TODO: reemplazar con llamada real al servicio
+        // var clase = await ClaseService.GetByIdAsync(Id);
+        // Datos de ejemplo sincronizados con la vista de Clases:
+        var ejemplos = new Dictionary<int, (string, string, int, string, string, string)>
+        {
+            { 1, ("CrossFit Intenso",  "CrossFit",    60, "Avanzado",     "Entrenamiento funcional de alta intensidad con ejercicios variados.", "Activa") },
+            { 2, ("Yoga Matutino",     "Yoga",        45, "Principiante", "Sesion de yoga para mejorar flexibilidad y reducir estres.",           "Activa") },
+            { 3, ("Spinning Power",    "Spinning",    45, "Intermedio",   "Clase de ciclismo indoor con musica motivadora.",                       "Activa") },
+            { 4, ("Boxeo Amateur",     "Boxeo",       60, "Intermedio",   "Tecnicas basicas de boxeo y acondicionamiento fisico.",                 "Activa") },
+            { 5, ("Zumba Party",       "Zumba",       50, "Principiante", "Baile fitness latino con ritmos divertidos.",                           "Activa") },
+            { 6, ("Pilates Core",      "Pilates",     50, "Intermedio",   "Fortalecimiento del core y control postural.",                          "Activa") },
+            { 7, ("Musculacion Avanzada","Musculacion",75,"Avanzado",     "Entrenamiento de fuerza con tecnicas avanzadas.",                      "Activa") },
+            { 8, ("HIIT 30",           "HIIT",        30, "Intermedio",   "Entrenamiento intervalico de alta intensidad de 30 minutos.",           "Activa") },
+        };
+
+        if (ejemplos.TryGetValue(Id, out var c))
+        {
+            nombre      = c.Item1;
+            disciplina  = c.Item2;
+            duracion    = c.Item3;
+            nivel       = c.Item4;
+            descripcion = c.Item5;
+            estado      = c.Item6;
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private bool Validar()
+    {
+        errores.Clear();
+        if (string.IsNullOrWhiteSpace(nombre))      errores["nombre"]     = "El nombre es obligatorio.";
+        if (string.IsNullOrWhiteSpace(disciplina))  errores["disciplina"] = "Selecciona una disciplina.";
+        if (duracion < 10)                          errores["duracion"]   = "La duración mínima es 10 minutos.";
+        return errores.Count == 0;
+    }
+
+    private async Task GuardarCambios()
+    {
+        if (!Validar()) return;
+
+        guardando = true;
+        await Task.Delay(800); // simula llamada al servicio
+
+        // TODO: await ClaseService.UpdateAsync(Id, nombre, disciplina, duracion, nivel, descripcion, estado);
+
+        guardando    = false;
+        toastIsError = false;
+        toastMessage = "✅ Clase actualizada correctamente.";
+        MostrarToast();
+    }
+
+    private async void MostrarToast()
+    {
+        toastVisible = true;
+        StateHasChanged();
+        await Task.Delay(3200);
+        toastVisible = false;
+        StateHasChanged();
+    }
+}
