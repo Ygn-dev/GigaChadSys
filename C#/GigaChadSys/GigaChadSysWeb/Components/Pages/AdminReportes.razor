@@ -1,0 +1,254 @@
+﻿@page "/admin/reportes"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="reports-page">
+
+    <div class="reports-header">
+        <h1>Reportes</h1>
+        <p>Visualiza métricas y estadísticas del gimnasio.</p>
+    </div>
+
+    <div class="reports-tabs">
+        <button class="@ClaseTabSocios" @onclick="MostrarReporteSocios">
+            Reporte de Socios
+        </button>
+
+        <button class="@ClaseTabRecaudacion" @onclick="MostrarReporteRecaudacion">
+            Reporte de Recaudación
+        </button>
+    </div>
+
+    @if (ReporteActual == "Socios")
+    {
+        <div class="reports-stats-grid">
+            <div class="report-stat-card">
+                <div class="report-stat-icon green">♙</div>
+                <span>Socios activos</span>
+                <strong>6</strong>
+                <p>75% del total</p>
+            </div>
+
+            <div class="report-stat-card">
+                <div class="report-stat-icon red">♙</div>
+                <span>Socios inactivos</span>
+                <strong>2</strong>
+                <p>25% del total</p>
+            </div>
+
+            <div class="report-stat-card">
+                <div class="report-stat-icon yellow">◷</div>
+                <span>Pagos pendientes</span>
+                <strong>1</strong>
+                <p>S/ 79.00 en total</p>
+            </div>
+
+            <div class="report-stat-card">
+                <div class="report-stat-icon blue">◎</div>
+                <span>Total socios</span>
+                <strong>8</strong>
+                <p>Registrados en el sistema</p>
+            </div>
+        </div>
+
+        <div class="reports-content-grid">
+            <div class="report-panel">
+                <h2>Distribución por Membresía</h2>
+
+                <div class="membership-bar-row">
+                    <div class="membership-bar-header">
+                        <span>Membresía Basic</span>
+                        <strong>4 socios</strong>
+                    </div>
+
+                    <div class="membership-bar-track">
+                        <div class="membership-bar-fill basic"></div>
+                    </div>
+                </div>
+
+                <div class="membership-bar-row">
+                    <div class="membership-bar-header">
+                        <span>Membresía Black</span>
+                        <strong>4 socios</strong>
+                    </div>
+
+                    <div class="membership-bar-track">
+                        <div class="membership-bar-fill black"></div>
+                    </div>
+                </div>
+
+                <div class="report-legend">
+                    <span><i class="legend-basic"></i> Basic</span>
+                    <span><i class="legend-black"></i> Black</span>
+                </div>
+            </div>
+
+            <div class="report-panel">
+                <h2>Estado de Membresías</h2>
+
+                <div class="report-member-list">
+                    @foreach (var socio in Socios)
+                    {
+                        <div class="report-member-row">
+                            <div class="member-avatar-small">◎</div>
+
+                            <div class="member-info-report">
+                                <strong>@socio.Nombre</strong>
+                                <span>@socio.Membresia</span>
+                            </div>
+
+                            @if (socio.Activo)
+                            {
+                                <span class="report-status active">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="report-status inactive">Inactivo</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="reports-stats-grid">
+            <div class="report-stat-card">
+                <div class="report-stat-icon green">S/</div>
+                <span>Recaudación mensual</span>
+                <strong>S/ 1,896</strong>
+                <p>Ingresos estimados del mes</p>
+            </div>
+
+            <div class="report-stat-card">
+                <div class="report-stat-icon yellow">◷</div>
+                <span>Pagos pendientes</span>
+                <strong>S/ 79</strong>
+                <p>1 pago pendiente</p>
+            </div>
+
+            <div class="report-stat-card">
+                <div class="report-stat-icon red">!</div>
+                <span>Pagos vencidos</span>
+                <strong>S/ 149</strong>
+                <p>1 pago vencido</p>
+            </div>
+
+            <div class="report-stat-card">
+                <div class="report-stat-icon blue">◎</div>
+                <span>Pagos registrados</span>
+                <strong>12</strong>
+                <p>Operaciones del mes</p>
+            </div>
+        </div>
+
+        <div class="reports-content-grid">
+            <div class="report-panel">
+                <h2>Recaudación por Membresía</h2>
+
+                <div class="membership-bar-row">
+                    <div class="membership-bar-header">
+                        <span>Membresía Basic</span>
+                        <strong>S/ 316</strong>
+                    </div>
+
+                    <div class="membership-bar-track">
+                        <div class="membership-bar-fill basic"></div>
+                    </div>
+                </div>
+
+                <div class="membership-bar-row">
+                    <div class="membership-bar-header">
+                        <span>Membresía Black</span>
+                        <strong>S/ 596</strong>
+                    </div>
+
+                    <div class="membership-bar-track">
+                        <div class="membership-bar-fill black wide"></div>
+                    </div>
+                </div>
+
+                <div class="report-legend">
+                    <span><i class="legend-basic"></i> Basic</span>
+                    <span><i class="legend-black"></i> Black</span>
+                </div>
+            </div>
+
+            <div class="report-panel">
+                <h2>Últimos Pagos</h2>
+
+                <div class="report-member-list">
+                    @foreach (var pago in Pagos)
+                    {
+                        <div class="report-member-row">
+                            <div class="member-avatar-small">S/</div>
+
+                            <div class="member-info-report">
+                                <strong>@pago.Socio</strong>
+                                <span>@pago.Concepto</span>
+                            </div>
+
+                            <span class="report-money">@pago.Monto</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+</section>
+
+@code {
+    private string ReporteActual { get; set; } = "Socios";
+
+    private string ClaseTabSocios =>
+        ReporteActual == "Socios" ? "report-tab active" : "report-tab";
+
+    private string ClaseTabRecaudacion =>
+        ReporteActual == "Recaudacion" ? "report-tab active" : "report-tab";
+
+    private void MostrarReporteSocios()
+    {
+        ReporteActual = "Socios";
+    }
+
+    private void MostrarReporteRecaudacion()
+    {
+        ReporteActual = "Recaudacion";
+    }
+
+    private List<SocioReporte> Socios { get; set; } = new()
+    {
+        new SocioReporte { Nombre = "Lucia Torres", Membresia = "Membresía Black", Activo = true },
+        new SocioReporte { Nombre = "Juan Perez", Membresia = "Membresía Basic", Activo = true },
+        new SocioReporte { Nombre = "Ana Garcia", Membresia = "Membresía Black", Activo = true },
+        new SocioReporte { Nombre = "Diego Ramos", Membresia = "Membresía Basic", Activo = false },
+        new SocioReporte { Nombre = "Sofia Mendez", Membresia = "Membresía Black", Activo = true },
+        new SocioReporte { Nombre = "Roberto Diaz", Membresia = "Membresía Basic", Activo = true },
+        new SocioReporte { Nombre = "Camila Flores", Membresia = "Membresía Basic", Activo = false }
+    };
+
+    private List<PagoReporte> Pagos { get; set; } = new()
+    {
+        new PagoReporte { Socio = "Lucia Torres", Concepto = "Membresía Black", Monto = "S/ 149" },
+        new PagoReporte { Socio = "Juan Perez", Concepto = "Membresía Basic", Monto = "S/ 79" },
+        new PagoReporte { Socio = "Ana Garcia", Concepto = "Membresía Black", Monto = "S/ 149" },
+        new PagoReporte { Socio = "Sofia Mendez", Concepto = "Membresía Black", Monto = "S/ 149" },
+        new PagoReporte { Socio = "Roberto Diaz", Concepto = "Membresía Basic", Monto = "S/ 79" }
+    };
+
+    private class SocioReporte
+    {
+        public string Nombre { get; set; } = "";
+        public string Membresia { get; set; } = "";
+        public bool Activo { get; set; }
+    }
+
+    private class PagoReporte
+    {
+        public string Socio { get; set; } = "";
+        public string Concepto { get; set; } = "";
+        public string Monto { get; set; } = "";
+    }
+}
