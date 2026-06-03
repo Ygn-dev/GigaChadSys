@@ -1,0 +1,201 @@
+@page "/admin/reservas"
+@using Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="admin-list-page">
+
+    <div class="admin-list-header">
+        <div>
+            <h1>Gestión de Reservas</h1>
+            <p>Administre las reservas de clases de los socios</p>
+        </div>
+        <a class="new-button" href="/admin/reservas/nueva">
+            + Nueva Reserva
+        </a>
+    </div>
+
+    <div class="admin-list-toolbar">
+        <input class="admin-search"
+               type="text"
+               placeholder="Buscar por socio, clase, entrenador o salón..."
+               @bind="TextoBusqueda"
+               @bind:event="oninput" />
+
+        <div class="admin-filter-group">
+            <button class="@GetFiltroClase("Todas")"  @onclick='() => SetFiltro("Todas")'>Todas</button>
+            <button class="@GetFiltroClase("Confirmadas")" @onclick='() => SetFiltro("Confirmadas")'>Confirmadas</button>
+            <button class="@GetFiltroClase("Pendientes")" @onclick='() => SetFiltro("Pendientes")'>Pendientes</button>
+            <button class="@GetFiltroClase("Asistió")"  @onclick='() => SetFiltro("Asistió")'>Asistió</button>
+            <button class="@GetFiltroClase("Canceladas")" @onclick='() => SetFiltro("Canceladas")'>Canceladas</button>
+        </div>
+    </div>
+
+    <div class="admin-table-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>SOCIO</th>
+                    <th>CLASE</th>
+                    <th>ENTRENADOR</th>
+                    <th>FECHA</th>
+                    <th>HORARIO</th>
+                    <th>CUPOS</th>
+                    <th>ESTADO</th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var lista = ReservasFiltradas.ToList();
+                }
+                @if (lista.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="empty-row">
+                            No se encontraron reservas con los filtros actuales.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var r in lista)
+                    {
+                        <tr>
+                            <td>
+                                <div class="trainer-cell">
+                                    <div class="trainer-avatar">@r.Iniciales</div>
+                                    <div>
+                                        <strong>@r.SocioNombre</strong>
+                                        <span>DNI: @r.SocioDni</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>@r.ClaseNombre</strong>
+                                    <span style="display:block;color:#666;font-size:12px;">@r.ClaseTipo</span>
+                                </div>
+                            </td>
+                            <td>@r.Entrenador</td>
+                            <td>@r.Fecha</td>
+                            <td>@r.Horario</td>
+                            <td>
+                                <div class="reserva-cupos-cell">
+                                    <span class="reserva-cupos-text">@r.CuposOcupados / @r.CuposTotal</span>
+                                    <div class="reserva-bar-track">
+                                        <div class="reserva-bar-fill @GetBarColor(r.CuposOcupados, r.CuposTotal)"
+                                             style="width: @GetCuposPct(r.CuposOcupados, r.CuposTotal)%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="reserva-estado-badge reserva-estado-@NormalizeEstado(r.Estado)">
+                                    <span class="reserva-estado-dot"></span>
+                                    @r.Estado
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;">
+                                    <button class="action-button" title="Ver detalle">👁</button>
+                                    <a class="action-button"
+                                       href="@($"/admin/reservas/editar/{r.Id}")"
+                                       title="Editar">✎</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+@code {
+    private string TextoBusqueda = "";
+    private string FiltroEstado  = "Todas";
+
+    private string GetFiltroClase(string filtro) =>
+        FiltroEstado == filtro ? "filter-button active" : "filter-button";
+
+    private void SetFiltro(string filtro) => FiltroEstado = filtro;
+
+    private IEnumerable<ReservaVista> ReservasFiltradas
+    {
+        get
+        {
+            IEnumerable<ReservaVista> resultado = Reservas;
+
+            if (FiltroEstado != "Todas")
+                resultado = resultado.Where(r => r.Estado == FiltroEstado);
+
+            if (!string.IsNullOrWhiteSpace(TextoBusqueda))
+            {
+                string t = TextoBusqueda.Trim();
+                resultado = resultado.Where(r =>
+                    r.SocioNombre.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                    r.ClaseNombre.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                    r.Entrenador.Contains(t, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return resultado;
+        }
+    }
+
+    private int GetCuposPct(int ocupados, int total) =>
+        total == 0 ? 0 : (int)Math.Round((double)ocupados / total * 100);
+
+    private string GetBarColor(int ocupados, int total)
+    {
+        if (total == 0) return "reserva-bar-green";
+        double pct = (double)ocupados / total;
+        return pct >= 0.9 ? "reserva-bar-red"
+             : pct >= 0.6 ? "reserva-bar-yellow"
+             : "reserva-bar-green";
+    }
+
+    private string NormalizeEstado(string estado) =>
+        estado.ToLower()
+              .Replace("ó", "o")
+              .Replace(" ", "");
+
+    private List<ReservaVista> Reservas = new()
+    {
+        new() { Id=1, SocioNombre="Maria Gonzalez",   SocioDni="40123897", ClaseNombre="CrossFit Intenso",     ClaseTipo="CrossFit",    Entrenador="Marco Ruiz",    Fecha="2026-05-12", Horario="07:00 - 08:00", CuposOcupados=12, CuposTotal=20, Estado="Confirmadas" },
+        new() { Id=2, SocioNombre="Laura Martinez",   SocioDni="42890123", ClaseNombre="Yoga Matutino",        ClaseTipo="Yoga",        Entrenador="Pedro Sanchez", Fecha="2026-05-12", Horario="08:00 - 09:00", CuposOcupados= 8, CuposTotal=15, Estado="Confirmadas" },
+        new() { Id=3, SocioNombre="Diego Fernandez",  SocioDni="37890123", ClaseNombre="Spinning Power",       ClaseTipo="Spinning",    Entrenador="Laura Gomez",   Fecha="2026-05-12", Horario="18:30 - 19:30", CuposOcupados=18, CuposTotal=25, Estado="Asistió"     },
+        new() { Id=4, SocioNombre="Carlos Rodriguez", SocioDni="38456721", ClaseNombre="Boxeo Amateur",        ClaseTipo="Boxeo",       Entrenador="Andres Quispe", Fecha="2026-05-12", Horario="19:00 - 20:00", CuposOcupados=10, CuposTotal=12, Estado="Pendientes"  },
+        new() { Id=5, SocioNombre="Juan Perez",       SocioDni="35678912", ClaseNombre="Musculacion Avanzada", ClaseTipo="Musculacion", Entrenador="Marco Ruiz",    Fecha="2026-05-13", Horario="06:00 - 07:15", CuposOcupados=22, CuposTotal=30, Estado="Confirmadas" },
+        new() { Id=6, SocioNombre="Camila Torres",    SocioDni="44567890", ClaseNombre="CrossFit Intenso",     ClaseTipo="CrossFit",    Entrenador="Marco Ruiz",    Fecha="2026-05-13", Horario="07:00 - 08:00", CuposOcupados=17, CuposTotal=20, Estado="Confirmadas" },
+        new() { Id=7, SocioNombre="Florencia Sanchez",SocioDni="41234567", ClaseNombre="Pilates Core",         ClaseTipo="Pilates",     Entrenador="Pedro Sanchez", Fecha="2026-05-13", Horario="16:00 - 17:00", CuposOcupados= 5, CuposTotal=12, Estado="Canceladas"  },
+        new() { Id=8, SocioNombre="Martin Lopez",     SocioDni="39012345", ClaseNombre="HIIT 30",              ClaseTipo="HIIT",        Entrenador="Laura Gomez",   Fecha="2026-05-13", Horario="17:00 - 17:30", CuposOcupados=19, CuposTotal=20, Estado="Pendientes"  },
+        new() { Id=9, SocioNombre="Ana Ramirez",      SocioDni="42345678", ClaseNombre="Zumba Party",          ClaseTipo="Zumba",       Entrenador="Diana Rojas",   Fecha="2026-05-14", Horario="20:00 - 21:00", CuposOcupados=24, CuposTotal=30, Estado="Confirmadas" },
+    };
+
+    private class ReservaVista
+    {
+        public int    Id             { get; set; }
+        public string SocioNombre   { get; set; } = "";
+        public string SocioDni      { get; set; } = "";
+        public string ClaseNombre   { get; set; } = "";
+        public string ClaseTipo     { get; set; } = "";
+        public string Entrenador    { get; set; } = "";
+        public string Fecha         { get; set; } = "";
+        public string Horario       { get; set; } = "";
+        public int    CuposOcupados { get; set; }
+        public int    CuposTotal    { get; set; }
+        public string Estado        { get; set; } = "";
+
+        public string Iniciales
+        {
+            get
+            {
+                var partes = SocioNombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                return partes.Length >= 2
+                    ? $"{partes[0][0]}{partes[1][0]}".ToUpper()
+                    : SocioNombre.Length > 0 ? SocioNombre[0].ToString().ToUpper() : "S";
+            }
+        }
+    }
+}
