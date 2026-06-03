@@ -1,0 +1,247 @@
+﻿@page "/admin/sesiones/nuevo"
+@using Components.Layout
+@layout AdminLayout
+@rendermode InteractiveServer
+
+<section class="admin-form-page">
+
+    <div class="admin-breadcrumb">
+        <a href="/admin/inicio">Inicio</a>
+        <span>/</span>
+        <a href="/admin/sesiones">Sesiones</a>
+        <span>/</span>
+        <span class="breadcrumb-active">Nueva Sesión</span>
+    </div>
+
+    <h1 class="admin-form-title">Registrar Nueva Sesión</h1>
+    <p class="admin-form-subtitle">Programe una sesión de clase para los socios del gimnasio</p>
+
+    <div class="sesion-form-layout">
+
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="sesion-form-left">
+
+            <!-- Información de la Clase -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <span class="form-card-icon">📅</span>
+                    <h2>Información de la Clase</h2>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-group">
+                        <label class="form-label">Clase grupal <span class="required">*</span></label>
+                        <select class="form-select" @bind="ClaseSeleccionada">
+                            <option value="">Seleccione una clase grupal</option>
+                            <option value="CrossFit Intenso">CrossFit Intenso</option>
+                            <option value="Yoga Matutino">Yoga Matutino</option>
+                            <option value="Spinning Power">Spinning Power</option>
+                            <option value="Boxeo Amateur">Boxeo Amateur</option>
+                            <option value="Pilates Core">Pilates Core</option>
+                            <option value="HIIT 30">HIIT 30</option>
+                            <option value="Zumba Fitness">Zumba Fitness</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Asignación -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <span class="form-card-icon">👤</span>
+                    <h2>Asignación</h2>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Entrenador <span class="required">*</span></label>
+                            <select class="form-select" @bind="EntrenadorSeleccionado">
+                                <option value="">Seleccione un entrenador</option>
+                                <option value="Marco Ruiz">Marco Ruiz</option>
+                                <option value="Pedro Sanchez">Pedro Sanchez</option>
+                                <option value="Laura Gomez">Laura Gomez</option>
+                                <option value="Andres Quispe">Andres Quispe</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Salón <span class="required">*</span></label>
+                            <select class="form-select" @bind="SalonSeleccionado">
+                                <option value="">Seleccione un salón</option>
+                                <option value="Sala Principal">Sala Principal</option>
+                                <option value="Sala Yoga">Sala Yoga</option>
+                                <option value="Sala Ciclo">Sala Ciclo</option>
+                                <option value="Ring Boxeo">Ring Boxeo</option>
+                                <option value="Sala Musculacion">Sala Musculacion</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Programación -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <span class="form-card-icon">🕐</span>
+                    <h2>Programación</h2>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Fecha <span class="required">*</span></label>
+                            <input class="form-input" type="date" @bind="Fecha" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Capacidad máxima <span class="required">*</span></label>
+                            <input class="form-input" type="number" placeholder="Ej: 15" @bind="CapacidadMaxima" min="1" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Hora de inicio <span class="required">*</span></label>
+                            <input class="form-input" type="time"
+                                   value="@(HoraInicio?.ToString("HH:mm"))"
+                                   @onchange="e => HoraInicio = TimeOnly.TryParse(e.Value?.ToString(), out var t) ? t : null" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hora de fin <span class="required">*</span></label>
+                            <input class="form-input" type="time"
+                                   value="@(HoraFin?.ToString("HH:mm"))"
+                                   @onchange="e => HoraFin = TimeOnly.TryParse(e.Value?.ToString(), out var t) ? t : null" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <span class="form-card-icon">🔴</span>
+                    <h2>Estado de la Sesión</h2>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-radio-group">
+                        <label class="form-radio-label">
+                            <input type="radio" name="estado" value="Programada"
+                                   checked="@(EstadoSesion == "Programada")"
+                                   @onchange="@(() => EstadoSesion = "Programada")" />
+                            <span class="radio-custom"></span>
+                            Programada
+                        </label>
+                        <label class="form-radio-label">
+                            <input type="radio" name="estado" value="Cancelada"
+                                   checked="@(EstadoSesion == "Cancelada")"
+                                   @onchange="@(() => EstadoSesion = "Cancelada")" />
+                            <span class="radio-custom"></span>
+                            Cancelada
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- COLUMNA DERECHA: Vista previa -->
+        <div class="sesion-form-right">
+            <div class="form-card sesion-preview-card">
+                <div class="form-card-header">
+                    <span class="form-card-icon">🔴</span>
+                    <h2>Vista Previa de Sesión</h2>
+                </div>
+                <div class="form-card-body">
+                    @if (FormularioIncompleto)
+                    {
+                        <div class="preview-empty">
+                            <span class="preview-empty-icon">🕐</span>
+                            <p>Complete el formulario para ver la vista previa de la sesión</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="sesion-preview">
+                            <div class="preview-row">
+                                <span class="preview-label">Clase</span>
+                                <span class="preview-value">@ClaseSeleccionada</span>
+                            </div>
+                            <div class="preview-row">
+                                <span class="preview-label">Entrenador</span>
+                                <span class="preview-value">@EntrenadorSeleccionado</span>
+                            </div>
+                            <div class="preview-row">
+                                <span class="preview-label">Salón</span>
+                                <span class="preview-value">@SalonSeleccionado</span>
+                            </div>
+                            <div class="preview-row">
+                                <span class="preview-label">Fecha</span>
+                                <span class="preview-value">@Fecha?.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="preview-row">
+                                <span class="preview-label">Horario</span>
+                                <span class="preview-value">@HoraInicioTexto - @HoraFinTexto</span>
+                            </div>
+                            <div class="preview-row">
+                                <span class="preview-label">Capacidad</span>
+                                <span class="preview-value">@CapacidadMaxima cupos</span>
+                            </div>
+                            <div class="preview-row">
+                                <span class="preview-label">Estado</span>
+                                @if (EstadoSesion == "Programada")
+                                {
+                                    <span class="status-badge active">Programada</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge inactive">Cancelada</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BOTONES -->
+    <div class="form-actions">
+        <button class="btn-primary" @onclick="Registrar">✔ Registrar Sesión</button>
+        <button class="btn-secondary" @onclick="Cancelar">✕ Cancelar</button>
+        <a class="btn-ghost" href="/admin/sesiones">← Volver al listado</a>
+    </div>
+
+</section>
+
+@code {
+    private string ClaseSeleccionada { get; set; } = "";
+    private string EntrenadorSeleccionado { get; set; } = "";
+    private string SalonSeleccionado { get; set; } = "";
+    private DateTime? Fecha { get; set; } = null;
+    private TimeOnly? HoraInicio { get; set; } = null;
+    private TimeOnly? HoraFin { get; set; } = null;
+    private int? CapacidadMaxima { get; set; } = null;
+    private string EstadoSesion { get; set; } = "Programada";
+
+    private string HoraInicioTexto => HoraInicio?.ToString("HH:mm") ?? "";
+    private string HoraFinTexto => HoraFin?.ToString("HH:mm") ?? "";
+
+    private bool FormularioIncompleto =>
+        string.IsNullOrWhiteSpace(ClaseSeleccionada) ||
+        string.IsNullOrWhiteSpace(EntrenadorSeleccionado) ||
+        string.IsNullOrWhiteSpace(SalonSeleccionado) ||
+        Fecha == null ||
+        HoraInicio == null ||
+        HoraFin == null ||
+        CapacidadMaxima == null;
+
+    private void Registrar() { }
+
+    private void Cancelar()
+    {
+        ClaseSeleccionada = "";
+        EntrenadorSeleccionado = "";
+        SalonSeleccionado = "";
+        Fecha = null;
+        HoraInicio = null;
+        HoraFin = null;
+        CapacidadMaxima = null;
+        EstadoSesion = "Programada";
+    }
+}
