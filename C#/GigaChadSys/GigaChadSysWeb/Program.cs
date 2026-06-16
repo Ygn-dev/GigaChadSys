@@ -6,6 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Add global HttpClient pointing to the Java REST Backend
+builder.Services.AddScoped(sp => new HttpClient { 
+    BaseAddress = new Uri("http://localhost:8080/GigaChadSys-REST/webresources/") 
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

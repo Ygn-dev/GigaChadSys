@@ -3,6 +3,7 @@
 @layout AdminLayout
 @rendermode InteractiveServer
 @using System.Text.Json.Serialization
+@inject HttpClient Http
 
 
 <section class="admin-list-page">
@@ -46,7 +47,14 @@
         var clasesFiltradas = ClasesFiltradas.ToList();
     }
 
-    @if (clasesFiltradas.Count == 0)
+    @if (Cargando)
+    {
+        <div class="gc-empty">
+            <span>⏳</span>
+            <p>Cargando clases desde el servidor...</p>
+        </div>
+    }
+    else if (clasesFiltradas.Count == 0)
     {
         <div class="gc-empty">
             <span>🏋️</span>
@@ -127,25 +135,28 @@
         }
     }
 
-    private List<ClaseVista> Clases = new()
+    private List<ClaseVista> Clases = new();
+    private bool Cargando = true;
+
+    protected override async Task OnInitializedAsync()
     {
-        new() { Id=1, Nombre="CrossFit Intenso",     Disciplina="CrossFit",    Nivel="Avanzado",     DuracionMin=60, Activa=true,
-                Descripcion="Entrenamiento funcional de alta intensidad con ejercicios variados." },
-        new() { Id=2, Nombre="Yoga Matutino",         Disciplina="Yoga",        Nivel="Principiante", DuracionMin=45, Activa=true,
-                Descripcion="Sesion de yoga para mejorar flexibilidad y reducir estres." },
-        new() { Id=3, Nombre="Spinning Power",        Disciplina="Spinning",    Nivel="Intermedio",   DuracionMin=45, Activa=true,
-                Descripcion="Clase de ciclismo indoor con musica motivadora." },
-        new() { Id=4, Nombre="Boxeo Amateur",         Disciplina="Boxeo",       Nivel="Intermedio",   DuracionMin=60, Activa=true,
-                Descripcion="Tecnicas basicas de boxeo y acondicionamiento fisico." },
-        new() { Id=5, Nombre="Zumba Party",           Disciplina="Zumba",       Nivel="Principiante", DuracionMin=50, Activa=true,
-                Descripcion="Baile fitness latino con ritmos divertidos." },
-        new() { Id=6, Nombre="Pilates Core",          Disciplina="Pilates",     Nivel="Intermedio",   DuracionMin=50, Activa=true,
-                Descripcion="Fortalecimiento del core y control postural." },
-        new() { Id=7, Nombre="Musculacion Avanzada",  Disciplina="Musculacion", Nivel="Avanzado",     DuracionMin=75, Activa=true,
-                Descripcion="Entrenamiento de fuerza con tecnicas avanzadas." },
-        new() { Id=8, Nombre="HIIT 30",               Disciplina="HIIT",        Nivel="Intermedio",   DuracionMin=30, Activa=true,
-                Descripcion="Entrenamiento intervalico de alta intensidad de 30 minutos." },
-    };
+        try
+        {
+            var response = await Http.GetFromJsonAsync<List<ClaseVista>>("ClaseGrupalRS");
+            if (response != null)
+            {
+                Clases = response;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar clases: {ex.Message}");
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
 
     private class ClaseVista
     {
