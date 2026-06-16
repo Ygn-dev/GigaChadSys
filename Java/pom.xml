@@ -14,6 +14,7 @@
         <module>GigaChadSys-DB-Manager</module>
         <module>AppPrueba</module>
         <module>GigaChadSys-Business-Logic</module>
+        <module>GigaChadSys-REST</module>
     </modules>
 
     <properties>
