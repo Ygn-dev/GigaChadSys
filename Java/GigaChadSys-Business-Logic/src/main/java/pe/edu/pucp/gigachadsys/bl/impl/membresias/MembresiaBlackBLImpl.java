@@ -14,4 +14,43 @@ public class MembresiaBlackBLImpl implements MembresiaBlackBL {
     public List<MembresiaBlack> listarMembresiasBlack() {
         return membresiaDAO.listAll();
     }
+
+    @Override
+    public MembresiaBlack obtenerPorId(int idMembresia) {
+        return membresiaDAO.load(idMembresia);
+    }
+
+    @Override
+    public String registrar(MembresiaBlack membresia) {
+        try {
+            membresiaDAO.save(membresia);
+            return "Membresía Black registrada correctamente.";
+        } catch (Exception e) {
+            return "Error al registrar membresía Black: " + e.getMessage();
+        }
+    }
+
+    @Override
+    public String actualizar(int idMembresia, MembresiaBlack membresia) {
+        try {
+            membresia.setIdMembresia(idMembresia);
+            membresiaDAO.update(membresia);
+            return "Membresía Black actualizada correctamente.";
+        } catch (Exception e) {
+            return "Error al actualizar membresía Black: " + e.getMessage();
+        }
+    }
+
+    @Override
+    public String eliminar(int idMembresia) {
+        try {
+            MembresiaBlack membresia = new MembresiaBlack();
+            membresia.setIdMembresia(idMembresia);
+            membresia.setActiva(false);
+            membresiaDAO.remove(membresia);
+            return "Membresía Black eliminada correctamente.";
+        } catch (Exception e) {
+            return "Error al eliminar membresía Black: " + e.getMessage();
+        }
+    }
 }

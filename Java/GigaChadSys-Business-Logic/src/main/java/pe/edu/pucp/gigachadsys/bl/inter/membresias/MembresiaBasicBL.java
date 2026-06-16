@@ -5,5 +5,9 @@ import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBasic;
 import java.util.List;
 
 public interface MembresiaBasicBL {
-    public List<MembresiaBasic> listarMembresiasBlack();
+    List<MembresiaBasic> listarMembresiasBasic();
+    MembresiaBasic obtenerPorId(int idMembresia);
+    String registrar(MembresiaBasic membresia);
+    String actualizar(int idMembresia, MembresiaBasic membresia);
+    String eliminar(int idMembresia);
 }
