@@ -27,4 +27,45 @@ public class SuscripcionRS {
         List<Suscripcion> suscripciones = suscripcionBL.listarSuscripciones();
         return Response.ok(suscripciones).build();
     }
+
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response obtenerSuscripcionPorId(@PathParam("id") int idSuscripcion) {
+        Suscripcion suscripcion = suscripcionBL.obtenerPorId(idSuscripcion);
+
+        if (suscripcion == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("mensaje", "Suscripción no encontrada."))
+                    .build();
+        }
+
+        return Response.ok(suscripcion).build();
+    }
+
+    @POST
+    public Response registrarSuscripcion(Suscripcion suscripcion) {
+        String mensaje = suscripcionBL.registrar(suscripcion);
+
+        return Response.status(Response.Status.CREATED)
+                .entity(Map.of("mensaje", mensaje))
+                .build();
+    }
+
+    @PUT
+    @Path("{id}")
+    public Response actualizarSuscripcion(@PathParam("id") int idSuscripcion,
+                                          Suscripcion suscripcion) {
+        String mensaje = suscripcionBL.actualizar(idSuscripcion, suscripcion);
+
+        return Response.ok(Map.of("mensaje", mensaje)).build();
+    }
+
+    @DELETE
+    @Path("{id}")
+    public Response eliminarSuscripcion(@PathParam("id") int idSuscripcion) {
+        String mensaje = suscripcionBL.eliminar(idSuscripcion);
+
+        return Response.ok(Map.of("mensaje", mensaje)).build();
+    }
 }

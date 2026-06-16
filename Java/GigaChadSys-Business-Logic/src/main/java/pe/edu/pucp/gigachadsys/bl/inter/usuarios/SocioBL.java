@@ -5,5 +5,9 @@ import pe.edu.pucp.gigachadsys.model.personas.Socio;
 import java.util.List;
 
 public interface SocioBL {
-    public List<Socio> listarSocios();
+    List<Socio> listarSocios();
+    Socio obtenerPorId(int idUsuario);
+    String registrar(Socio socio);
+    String actualizar(int idUsuario, Socio socio);
+    String eliminar(int idUsuario);
 }
