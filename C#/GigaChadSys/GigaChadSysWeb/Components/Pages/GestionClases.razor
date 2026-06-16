@@ -2,6 +2,8 @@
 @using Components.Layout
 @layout AdminLayout
 @rendermode InteractiveServer
+@using System.Text.Json.Serialization
+
 
 <section class="admin-list-page">
 
@@ -147,12 +149,25 @@
 
     private class ClaseVista
     {
+        [JsonPropertyName("idClase")]
         public int    Id          { get; set; }
+        
+        [JsonPropertyName("nombre")]
         public string Nombre      { get; set; } = "";
+        
+        [JsonPropertyName("nombreDisciplina")]
         public string Disciplina  { get; set; } = "";
+        
+        [JsonPropertyName("nivelClase")]
         public string Nivel       { get; set; } = "";
+        
+        [JsonPropertyName("duracionMinutos")]
         public int    DuracionMin { get; set; }
+        
+        [JsonPropertyName("activo")]
         public bool   Activa      { get; set; }
+        
+        [JsonPropertyName("descripcion")]
         public string Descripcion { get; set; } = "";
     }
 }

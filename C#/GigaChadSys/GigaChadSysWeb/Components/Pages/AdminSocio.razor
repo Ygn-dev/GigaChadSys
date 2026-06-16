@@ -1,6 +1,7 @@
-﻿@page "/admin/socios"
+@page "/admin/socios"
 @using GigaChadSysModel
 @using GigaChadSysWeb.Components.Layout
+@using System.Text.Json.Serialization
 @layout AdminLayout
 @rendermode InteractiveServer
 @inject NavigationManager Nav
@@ -241,12 +242,25 @@
     // ── Modelo interno ──
     private class SocioItem
     {
+        [JsonPropertyName("dni")]
         public string Dni { get; set; } = "";
+        
+        [JsonPropertyName("nombres")]
         public string Nombre { get; set; } = "";
+        
+        [JsonPropertyName("email")]
         public string Email { get; set; } = "";
+        
+        [JsonPropertyName("telefono")]
         public string Telefono { get; set; } = "";
+        
+        [JsonPropertyName("membresia")]
         public string Membresia { get; set; } = "";
+        
+        [JsonPropertyName("activo")]
         public string Estado { get; set; } = "";
+        
+        [JsonPropertyName("ultimoPago")]
         public string UltimoPago { get; set; } = "";
     }
 

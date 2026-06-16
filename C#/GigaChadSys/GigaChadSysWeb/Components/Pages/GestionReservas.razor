@@ -1,5 +1,6 @@
 @page "/admin/reservas"
 @using Components.Layout
+@using System.Text.Json.Serialization
 @layout AdminLayout
 @rendermode InteractiveServer
 
@@ -175,16 +176,37 @@
 
     private class ReservaVista
     {
+        [JsonPropertyName("idReserva")]
         public int    Id             { get; set; }
+        
+        [JsonPropertyName("socioNombre")]
         public string SocioNombre   { get; set; } = "";
+        
+        [JsonPropertyName("socioDni")]
         public string SocioDni      { get; set; } = "";
+        
+        [JsonPropertyName("claseNombre")]
         public string ClaseNombre   { get; set; } = "";
+        
+        [JsonPropertyName("claseTipo")]
         public string ClaseTipo     { get; set; } = "";
+        
+        [JsonPropertyName("entrenador")]
         public string Entrenador    { get; set; } = "";
+        
+        [JsonPropertyName("fechaAsignada")]
         public string Fecha         { get; set; } = "";
+        
+        [JsonPropertyName("horario")]
         public string Horario       { get; set; } = "";
+        
+        [JsonPropertyName("cuposOcupados")]
         public int    CuposOcupados { get; set; }
+        
+        [JsonPropertyName("cuposTotal")]
         public int    CuposTotal    { get; set; }
+        
+        [JsonPropertyName("estado")]
         public string Estado        { get; set; } = "";
 
         public string Iniciales

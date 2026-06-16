@@ -1,5 +1,6 @@
-﻿@page "/admin/entrenadores"
+@page "/admin/entrenadores"
 @using Components.Layout
+@using System.Text.Json.Serialization
 @layout AdminLayout
 @rendermode InteractiveServer
 
@@ -214,12 +215,25 @@
 
     private class EntrenadorVista
     {
+        [JsonPropertyName("dni")]
         public string Dni { get; set; } = "";
+        
+        [JsonPropertyName("nombres")]
         public string Nombre { get; set; } = "";
+        
+        [JsonPropertyName("email")]
         public string Email { get; set; } = "";
+        
+        [JsonPropertyName("especialidad")]
         public string Especialidad { get; set; } = "";
+        
+        [JsonPropertyName("telefono")]
         public string Telefono { get; set; } = "";
+        
+        [JsonPropertyName("horario")]
         public string Horario { get; set; } = "";
+        
+        [JsonPropertyName("activo")]
         public bool Activo { get; set; }
 
         public string Iniciales

@@ -1,4 +1,5 @@
 @page "/admin/pagos"
+@using System.Text.Json.Serialization
 @layout AdminLayout
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
@@ -320,14 +321,31 @@
 
     private class PagoItem
     {
+        [JsonPropertyName("idPago")]
         public int Id { get; set; }
+        
+        [JsonPropertyName("socioNombre")]
         public string SocioNombre { get; set; } = "";
+        
+        [JsonPropertyName("socioDni")]
         public string SocioDni { get; set; } = "";
+        
+        [JsonPropertyName("iniciales")]
         public string Iniciales { get; set; } = "";
+        
+        [JsonPropertyName("tipo")]
         public string Concepto { get; set; } = "";
+        
+        [JsonPropertyName("monto")]
         public decimal Monto { get; set; }
+        
+        [JsonPropertyName("metodoPago")]
         public string Metodo { get; set; } = "";
+        
+        [JsonPropertyName("fechaPago")]
         public string Fecha { get; set; } = "";
+        
+        [JsonPropertyName("estado")]
         public string Estado { get; set; } = "";
 
         public string MontoTexto
