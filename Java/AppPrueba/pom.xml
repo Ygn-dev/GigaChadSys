@@ -12,8 +12,8 @@
     <artifactId>AppPrueba</artifactId>
 
     <properties>
-        <maven.compiler.source>26</maven.compiler.source>
-        <maven.compiler.target>26</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -31,11 +31,7 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>pe.edu.pucp.gigachadsys</groupId>
-            <artifactId>GigaChadSys-Model</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
+
 
         <dependency>
             <groupId>com.mysql</groupId>
