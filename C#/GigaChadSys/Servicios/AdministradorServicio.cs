@@ -1,0 +1,69 @@
+using System.Net.Http.Json;
+using GigaChadSysModel;
+
+namespace GigaChadSys.Servicios;
+
+/// <summary>
+/// Servicio que consume el endpoint REST AdministradorRS del backend Java.
+/// Base URL: http://localhost:8080/GigaChadSys-REST/webresources/AdministradorRS
+/// </summary>
+public class AdministradorServicio
+{
+    private readonly HttpClient _httpClient;
+    private const string Endpoint = "AdministradorRS";
+
+    public AdministradorServicio(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
+    /// <summary>
+    /// GET /AdministradorRS — Lista todos los administradores.
+    /// </summary>
+    public async Task<List<Administrador>> ListarAdministradoresAsync()
+    {
+        var admins = await _httpClient.GetFromJsonAsync<List<Administrador>>(Endpoint);
+        return admins ?? new List<Administrador>();
+    }
+
+    /// <summary>
+    /// GET /AdministradorRS/{id} — Obtiene un administrador por su ID.
+    /// </summary>
+    public async Task<Administrador?> ObtenerPorIdAsync(int idUsuario)
+    {
+        var response = await _httpClient.GetAsync($"{Endpoint}/{idUsuario}");
+        if (response.IsSuccessStatusCode)
+            return await response.Content.ReadFromJsonAsync<Administrador>();
+        return null;
+    }
+
+    /// <summary>
+    /// POST /AdministradorRS — Registra un nuevo administrador.
+    /// </summary>
+    public async Task<string> RegistrarAsync(Administrador administrador)
+    {
+        var response = await _httpClient.PostAsJsonAsync(Endpoint, administrador);
+        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
+        return result?.Mensaje ?? "Error al registrar administrador.";
+    }
+
+    /// <summary>
+    /// PUT /AdministradorRS/{id} — Actualiza los datos de un administrador existente.
+    /// </summary>
+    public async Task<string> ActualizarAsync(int idUsuario, Administrador administrador)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", administrador);
+        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
+        return result?.Mensaje ?? "Error al actualizar administrador.";
+    }
+
+    /// <summary>
+    /// DELETE /AdministradorRS/{id} — Elimina (desactiva) un administrador por su ID.
+    /// </summary>
+    public async Task<string> EliminarAsync(int idUsuario)
+    {
+        var response = await _httpClient.DeleteAsync($"{Endpoint}/{idUsuario}");
+        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
+        return result?.Mensaje ?? "Error al eliminar administrador.";
+    }
+}

@@ -1,0 +1,69 @@
+using System.Net.Http.Json;
+using GigaChadSysModel;
+
+namespace GigaChadSys.Servicios;
+
+/// <summary>
+/// Servicio que consume el endpoint REST EntrenadorRS del backend Java.
+/// Base URL: http://localhost:8080/GigaChadSys-REST/webresources/EntrenadorRS
+/// </summary>
+public class EntrenadorServicio
+{
+    private readonly HttpClient _httpClient;
+    private const string Endpoint = "EntrenadorRS";
+
+    public EntrenadorServicio(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
+    /// <summary>
+    /// GET /EntrenadorRS — Lista todos los entrenadores.
+    /// </summary>
+    public async Task<List<Entrenador>> ListarEntrenadoresAsync()
+    {
+        var entrenadores = await _httpClient.GetFromJsonAsync<List<Entrenador>>(Endpoint);
+        return entrenadores ?? new List<Entrenador>();
+    }
+
+    /// <summary>
+    /// GET /EntrenadorRS/{id} — Obtiene un entrenador por su ID.
+    /// </summary>
+    public async Task<Entrenador?> ObtenerPorIdAsync(int idUsuario)
+    {
+        var response = await _httpClient.GetAsync($"{Endpoint}/{idUsuario}");
+        if (response.IsSuccessStatusCode)
+            return await response.Content.ReadFromJsonAsync<Entrenador>();
+        return null;
+    }
+
+    /// <summary>
+    /// POST /EntrenadorRS — Registra un nuevo entrenador.
+    /// </summary>
+    public async Task<string> RegistrarAsync(Entrenador entrenador)
+    {
+        var response = await _httpClient.PostAsJsonAsync(Endpoint, entrenador);
+        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
+        return result?.Mensaje ?? "Error al registrar entrenador.";
+    }
+
+    /// <summary>
+    /// PUT /EntrenadorRS/{id} — Actualiza los datos de un entrenador existente.
+    /// </summary>
+    public async Task<string> ActualizarAsync(int idUsuario, Entrenador entrenador)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", entrenador);
+        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
+        return result?.Mensaje ?? "Error al actualizar entrenador.";
+    }
+
+    /// <summary>
+    /// DELETE /EntrenadorRS/{id} — Elimina (desactiva) un entrenador por su ID.
+    /// </summary>
+    public async Task<string> EliminarAsync(int idUsuario)
+    {
+        var response = await _httpClient.DeleteAsync($"{Endpoint}/{idUsuario}");
+        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
+        return result?.Mensaje ?? "Error al eliminar entrenador.";
+    }
+}

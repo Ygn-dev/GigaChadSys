@@ -16,6 +16,7 @@
     <ProjectReference Include="..\GigaChadSys-DAO\GigaChadSys-DAO.csproj" />
     <ProjectReference Include="..\GigaChadSys-DB-Manager\GigaChadSys-DB-Manager.csproj" />
     <ProjectReference Include="..\GigaChadSys-Model\GigaChadSys-Model.csproj" />
+    <ProjectReference Include="..\Servicios\Servicios.csproj" />
   </ItemGroup>
 
 </Project>

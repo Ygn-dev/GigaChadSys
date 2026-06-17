@@ -1,3 +1,4 @@
+using GigaChadSys.Servicios;
 using GigaChadSysWeb.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,9 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped(sp => new HttpClient { 
     BaseAddress = new Uri("http://localhost:8080/GigaChadSys-REST/webresources/") 
 });
+
+// Registrar todos los servicios REST que consumen el backend Java
+builder.Services.AddGigaChadSysServicios();
 
 var app = builder.Build();
 
