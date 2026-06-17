@@ -37,7 +37,9 @@ public class DBManager {
         String database = properties.getProperty("database");
 
         this.url = "jdbc:mysql://" + host + ":" + port + "/" + database
-                + "?useSSL=false&serverTimezone=UTC";
+                + "?useSSL=false"
+                + "&allowPublicKeyRetrieval=true"
+                + "&serverTimezone=UTC";
 
         this.user = properties.getProperty("user");
         this.password = properties.getProperty("password");

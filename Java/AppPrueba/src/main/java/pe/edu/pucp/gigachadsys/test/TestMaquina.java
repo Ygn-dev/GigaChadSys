@@ -40,15 +40,15 @@ public class TestMaquina {
 
                 Maquina comprobacion = dao.load(idGenerado);
                 if(comprobacion != null) {
-                    System.out.println("✅ Prueba Finalizada: Base de datos limpia.");
+                    System.out.println("Prueba Finalizada: Base de datos limpia.");
                 } else {
-                    System.err.println("❌ Error: La máquina no se eliminó correctamente.");
+                    System.err.println("Error: La máquina no se eliminó correctamente.");
                 }
             } else {
-                System.err.println("❌ Error: No se pudo leer la máquina recién creada.");
+                System.err.println("Error: No se pudo leer la máquina recién creada.");
             }
         } else {
-            System.err.println("❌ Error: No se generó un ID válido al guardar.");
+            System.err.println("Error: No se generó un ID válido al guardar.");
         }
     }
 }
