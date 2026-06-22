@@ -326,6 +326,44 @@ h1:focus {
         color: #FF5252;
     }
 
+/* Auth messages (error / success) */
+.auth-error-msg {
+    background: rgba(229, 57, 53, 0.12);
+    border: 1px solid rgba(229, 57, 53, 0.35);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #FF5252;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+}
+
+.auth-success-msg {
+    background: rgba(38, 176, 80, 0.12);
+    border: 1px solid rgba(38, 176, 80, 0.35);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #4CAF50;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+}
+
+.auth-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 .admin-shell {
     min-height: 100vh;
     display: flex;

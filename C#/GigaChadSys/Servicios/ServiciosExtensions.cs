@@ -13,6 +13,9 @@ public static class ServiciosExtensions
 {
     public static IServiceCollection AddGigaChadSysServicios(this IServiceCollection services)
     {
+        // Autenticación
+        services.AddScoped<AuthServicio>();
+
         // Usuarios
         services.AddScoped<SocioServicio>();
         services.AddScoped<EntrenadorServicio>();

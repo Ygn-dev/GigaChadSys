@@ -43,6 +43,13 @@ public class DBManager {
 
         this.user = properties.getProperty("user");
         this.password = properties.getProperty("password");
+
+        // En servidores web (como GlassFish), es necesario registrar explícitamente el driver JDBC
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.out.println("Error: No se encontró el driver de MySQL - " + e.getMessage());
+        }
     }
 
     public static DBManager getInstance() {

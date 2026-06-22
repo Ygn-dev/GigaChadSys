@@ -1,8 +1,12 @@
 @page "/"
 @page "/login"
 @using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AuthLayout
 @rendermode InteractiveServer
+@inject AuthServicio AuthService
+@inject NavigationManager Nav
 
 <div class="auth-page">
     <!-- Decorative corner lines -->
@@ -25,13 +29,21 @@
         <h2 class="auth-title">Iniciar Sesión</h2>
         <p class="auth-desc">Bienvenido de vuelta a GigaChad</p>
 
+        <!-- Error Message -->
+        @if (!string.IsNullOrEmpty(mensajeError))
+        {
+            <div class="auth-error-msg">
+                <span>⚠️</span> @mensajeError
+            </div>
+        }
+
         <!-- Form Card -->
         <div class="auth-card">
             <div class="auth-form-group">
                 <label>CORREO ELECTRÓNICO</label>
                 <div class="auth-input-wrapper">
                     <span class="auth-input-icon">✉️</span>
-                    <input type="email" @bind="correo" placeholder="Ej: juan@email.com" />
+                    <input type="email" @bind="correo" placeholder="Ej: juan@email.com" disabled="@cargando" />
                 </div>
             </div>
 
@@ -39,14 +51,23 @@
                 <label>CONTRASEÑA</label>
                 <div class="auth-input-wrapper">
                     <span class="auth-input-icon">🔒</span>
-                    <input type="@(mostrarPass ? "text" : "password")" @bind="password" placeholder="Ingresa tu contraseña" />
+                    <input type="@(mostrarPass ? "text" : "password")" @bind="password" placeholder="Ingresa tu contraseña" disabled="@cargando" />
                     <button class="auth-eye-btn" @onclick="() => mostrarPass = !mostrarPass" type="button">
                         @(mostrarPass ? "🙈" : "👁️")
                     </button>
                 </div>
             </div>
 
-            <button class="auth-submit-btn" @onclick="IniciarSesion">Iniciar Sesión</button>
+            <button class="auth-submit-btn" @onclick="IniciarSesion" disabled="@cargando">
+                @if (cargando)
+                {
+                    <span>Iniciando sesión...</span>
+                }
+                else
+                {
+                    <span>Iniciar Sesión</span>
+                }
+            </button>
         </div>
 
         <!-- Link -->
@@ -61,9 +82,51 @@
     private string correo = "";
     private string password = "";
     private bool mostrarPass = false;
+    private bool cargando = false;
+    private string mensajeError = "";
 
-    private void IniciarSesion()
+    private async Task IniciarSesion()
     {
-        // Se conectará con BL después
+        mensajeError = "";
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            var resultado = await AuthService.LoginAsync(correo, password);
+
+            if (resultado.Exito)
+            {
+                // Navegar según el rol del usuario
+                switch (resultado.Rol)
+                {
+                    case "Administrador":
+                        Nav.NavigateTo("/admin/inicio");
+                        break;
+                    case "Entrenador":
+                        Nav.NavigateTo("/entrenador/inicio");
+                        break;
+                    case "Socio":
+                        Nav.NavigateTo("/socio/inicio");
+                        break;
+                    default:
+                        Nav.NavigateTo("/");
+                        break;
+                }
+            }
+            else
+            {
+                mensajeError = resultado.Mensaje;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error de conexión: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
     }
 }

@@ -1,7 +1,11 @@
 @page "/registro"
 @using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AuthLayout
 @rendermode InteractiveServer
+@inject SocioServicio SocioService
+@inject NavigationManager Nav
 
 <div class="auth-page">
     <!-- Decorative corner lines -->
@@ -24,13 +28,27 @@
         <h2 class="auth-title">Crear Cuenta</h2>
         <p class="auth-desc">Únete a la comunidad GigaChad</p>
 
+        <!-- Error / Success Message -->
+        @if (!string.IsNullOrEmpty(mensajeError))
+        {
+            <div class="auth-error-msg">
+                <span>⚠️</span> @mensajeError
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(mensajeExito))
+        {
+            <div class="auth-success-msg">
+                <span>✅</span> @mensajeExito
+            </div>
+        }
+
         <!-- Form Card -->
         <div class="auth-card">
             <div class="auth-form-group">
                 <label>NOMBRE COMPLETO</label>
                 <div class="auth-input-wrapper">
                     <span class="auth-input-icon">👤</span>
-                    <input type="text" @bind="nombre" placeholder="Ej: Juan Perez" />
+                    <input type="text" @bind="nombre" placeholder="Ej: Juan Perez" disabled="@cargando" />
                 </div>
             </div>
 
@@ -38,7 +56,7 @@
                 <label>CORREO ELECTRÓNICO</label>
                 <div class="auth-input-wrapper">
                     <span class="auth-input-icon">✉️</span>
-                    <input type="email" @bind="correo" placeholder="Ej: juan@email.com" />
+                    <input type="email" @bind="correo" placeholder="Ej: juan@email.com" disabled="@cargando" />
                 </div>
             </div>
 
@@ -46,7 +64,7 @@
                 <label>CONTRASEÑA</label>
                 <div class="auth-input-wrapper">
                     <span class="auth-input-icon">🔒</span>
-                    <input type="@(mostrarPass ? "text" : "password")" @bind="password" placeholder="Mínimo 6 caracteres" />
+                    <input type="@(mostrarPass ? "text" : "password")" @bind="password" placeholder="Mínimo 6 caracteres" disabled="@cargando" />
                     <button class="auth-eye-btn" @onclick="() => mostrarPass = !mostrarPass" type="button">
                         @(mostrarPass ? "🙈" : "👁️")
                     </button>
@@ -57,14 +75,23 @@
                 <label>CONFIRMAR CONTRASEÑA</label>
                 <div class="auth-input-wrapper">
                     <span class="auth-input-icon">🔒</span>
-                    <input type="@(mostrarConfirm ? "text" : "password")" @bind="confirmPassword" placeholder="Repite tu contraseña" />
+                    <input type="@(mostrarConfirm ? "text" : "password")" @bind="confirmPassword" placeholder="Repite tu contraseña" disabled="@cargando" />
                     <button class="auth-eye-btn" @onclick="() => mostrarConfirm = !mostrarConfirm" type="button">
                         @(mostrarConfirm ? "🙈" : "👁️")
                     </button>
                 </div>
             </div>
 
-            <button class="auth-submit-btn" @onclick="Registrar">Crear Cuenta</button>
+            <button class="auth-submit-btn" @onclick="Registrar" disabled="@cargando">
+                @if (cargando)
+                {
+                    <span>Registrando...</span>
+                }
+                else
+                {
+                    <span>Crear Cuenta</span>
+                }
+            </button>
         </div>
 
         <!-- Link -->
@@ -82,9 +109,76 @@
     private string confirmPassword = "";
     private bool mostrarPass = false;
     private bool mostrarConfirm = false;
+    private bool cargando = false;
+    private string mensajeError = "";
+    private string mensajeExito = "";
 
-    private void Registrar()
+    private async Task Registrar()
     {
-        // Se conectará con BL después
+        mensajeError = "";
+        mensajeExito = "";
+
+        // Validaciones del lado del cliente
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            mensajeError = "El nombre es obligatorio.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(correo))
+        {
+            mensajeError = "El correo es obligatorio.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+        {
+            mensajeError = "La contraseña debe tener al menos 6 caracteres.";
+            return;
+        }
+
+        if (password != confirmPassword)
+        {
+            mensajeError = "Las contraseñas no coinciden.";
+            return;
+        }
+
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            // Crear el DTO con los campos que espera el backend Java
+            var socioDTO = new SocioDTO
+            {
+                Nombres = nombre,
+                Email = correo,
+                Contrasenia = password,
+                Rol = "Socio",
+                Activo = true,
+                EstadoMembresia = false
+            };
+
+            var resultado = await SocioService.RegistrarAsync(socioDTO);
+
+            mensajeExito = resultado;
+
+            // Esperar un momento para que el usuario vea el mensaje
+            await Task.Delay(1500);
+            Nav.NavigateTo("/login");
+        }
+        catch (HttpRequestException)
+        {
+            mensajeError = "No se pudo conectar con el servidor. Verifica que el backend esté activo.";
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al registrar: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
     }
 }
