@@ -16,53 +16,74 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
     public List<MembresiaBlack> listAll() {
         List<MembresiaBlack> list = new ArrayList<>();
 
-        String sql = "SELECT membresia_ID, nombrePlan, costoMantenimientoAnual, cantidadInvitadosPorMes , activo FROM MembresiaBlack WHERE activo = 1";
+        String sql = "SELECT membresia_ID, nombrePlan, costoMantenimientoAnual, " +
+                "cantidadInvitadosPorMes, activo " +
+                "FROM MembresiaBlack " +
+                "WHERE activo = 1";
 
-        try (Connection connection = DBManager.getInstance().getConnection();
-             Statement stm = connection.createStatement();
-             ResultSet rs = stm.executeQuery(sql)) {
-
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql);
+                ResultSet rs = pstm.executeQuery()
+        ) {
             while (rs.next()) {
-                MembresiaBlack membresia = new MembresiaBlack(
-                        rs.getInt("membresia_ID"),
-                        rs.getString("nombrePlan"),
-                        rs.getDouble("costoMantenimientoMensual"),
+                MembresiaBlack membresia = new MembresiaBlack();
+
+                membresia.setIdMembresia(rs.getInt("membresia_ID"));
+                membresia.setNombre(rs.getString("nombrePlan"));
+                membresia.setCostoMantenimientoAnual(
+                        rs.getDouble("costoMantenimientoAnual")
+                );
+                membresia.setCantidadInvitadosPorMes(
                         rs.getInt("cantidadInvitadosPorMes")
                 );
+                membresia.setActiva(rs.getBoolean("activo"));
+
                 list.add(membresia);
             }
 
-            return list;
-
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al listar membresías Black", e);
         }
+
+        return list;
     }
 
     @Override
     public MembresiaBlack load(Integer id) {
+        String sql = "SELECT membresia_ID, nombrePlan, costoMantenimientoAnual, " +
+                "cantidadInvitadosPorMes, activo " +
+                "FROM MembresiaBlack " +
+                "WHERE membresia_ID = ?";
 
-        String sql= "select membresia_ID, nombrePlan, costoMantenimientoAnual, cantidadInvitadosPorMes, activo "
-                + "FROM MembresiaBlack where = membresia_ID = ?";
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql)
+        ) {
+            pstm.setInt(1, id);
 
-        Connection connection = DBManager.getInstance().getConnection();
-
-        try(PreparedStatement pstm = connection.prepareStatement(sql)){
-            pstm.setInt(1,id);
-            try(ResultSet rs =pstm.executeQuery()){
-                if(rs.next()){
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
                     MembresiaBlack membresia = new MembresiaBlack();
-                    membresia.setIdMembresia(rs.getInt(1));
-                    membresia.setNombre(rs.getString(2));
-                    membresia.setCostoMantenimientoAnual(rs.getDouble(3));
-                    membresia.setCantidadInvitadosPorMes(rs.getInt(4));
-                    membresia.setActiva(rs.getBoolean(5));
+
+                    membresia.setIdMembresia(rs.getInt("membresia_ID"));
+                    membresia.setNombre(rs.getString("nombrePlan"));
+                    membresia.setCostoMantenimientoAnual(
+                            rs.getDouble("costoMantenimientoAnual")
+                    );
+                    membresia.setCantidadInvitadosPorMes(
+                            rs.getInt("cantidadInvitadosPorMes")
+                    );
+                    membresia.setActiva(rs.getBoolean("activo"));
+
                     return membresia;
                 }
             }
-        }catch (SQLException e){
-            throw new RuntimeException(e);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al obtener membresía Black por ID", e);
         }
+
         return null;
     }
 

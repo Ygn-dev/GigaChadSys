@@ -1,6 +1,7 @@
 package pe.edu.pucp.gigachadsys.model.personas;
 
 import java.sql.Time;
+import jakarta.json.bind.annotation.JsonbTransient;
 
 public class Entrenador extends Usuario{
     //Atributos
@@ -40,12 +41,17 @@ public class Entrenador extends Usuario{
         this.sueldo = sueldo;
     }
 
+    @JsonbTransient
     public Time getTiempoTrabajado() {
         return tiempoTrabajado;
     }
 
+    @JsonbTransient
     public void setTiempoTrabajado(Time tiempoTrabajado) {
         this.tiempoTrabajado = tiempoTrabajado;
+    }
+    public String getTiempoTrabajadoTexto() {
+        return tiempoTrabajado != null ? tiempoTrabajado.toString() : null;
     }
 
     //Metodos

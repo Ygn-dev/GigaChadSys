@@ -14,7 +14,9 @@ public class MetodoPagoDAOImpl implements MetodoPagoDAO {
     @Override
     public List<MetodoPago> listAll() {
         List<MetodoPago> lista = new ArrayList<>();
-        String sql = "SELECT idMetodoPago,tipo,detalle FROM MetodoPago WHERE activo = 1";
+        String sql = "SELECT idMetodoPago, tipo, detalle, activo " +
+                "FROM MetodoPago " +
+                "WHERE activo = 1";
 
         try(Connection con = DBManager.getInstance().getConnection();
             Statement st = con.createStatement();
