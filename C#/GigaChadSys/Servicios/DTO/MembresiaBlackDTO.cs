@@ -45,4 +45,14 @@ public class MembresiaBlackDTO
     /// </summary>
     [JsonPropertyName("activa")]
     public bool Activa { get; set; }
+
+    // ── Alias de compatibilidad para código existente ──────────────────
+    [JsonIgnore]
+    public int IdMembresiaBlack => IdMembresia;
+
+    [JsonIgnore]
+    public string Tipo => Nombre; // alias por si algún código usa .Tipo
+
+    [JsonIgnore]
+    public bool Activo => Activa; // alias por si algún código usa .Activo
 }

@@ -51,4 +51,9 @@ public class UsuarioDTO
     [JsonIgnore]
     public string NombreCompleto =>
         $"{Nombres} {ApellidoPaterno} {ApellidoMaterno}".Trim();
+
+    // ── Alias de compatibilidad para código existente ──────────────────
+    /// <summary>Alias de Email para compatibilidad con código que usa CorreoElectronico.</summary>
+    [JsonIgnore]
+    public string CorreoElectronico => Email;
 }

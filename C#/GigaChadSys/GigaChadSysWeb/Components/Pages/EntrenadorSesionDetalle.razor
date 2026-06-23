@@ -145,16 +145,16 @@
 
             sesion = new SesionDetalle
             {
-                NombreClase = sesionDTO.ClaseGrupal?.Nombre ?? "Sin nombre",
-                Categoria = sesionDTO.ClaseGrupal?.Nombre ?? "General",
-                Nivel = "General", // Placeholder si no hay nivel en DTO
+                NombreClase = sesionDTO.ClaseGrupal?.NombreDisciplina ?? "Sin nombre",
+                Categoria = sesionDTO.ClaseGrupal?.NombreDisciplina ?? "General",
+                Nivel = sesionDTO.ClaseGrupal?.Nivel ?? "General",
                 Estado = sesionDTO.FechaSesion >= DateTime.Today ? "Programada" : "Finalizada",
                 Fecha = sesionDTO.FechaSesion,
                 HoraInicio = sesionDTO.HoraInicio.ToString("HH:mm"),
                 HoraFin = sesionDTO.HoraFin.ToString("HH:mm"),
-                Salon = sesionDTO.Salon?.Nombre ?? "Sin asignar",
+                Salon = sesionDTO.Salon?.NombreSalon ?? "Sin asignar",
                 Duracion = (int)(sesionDTO.HoraFin - sesionDTO.HoraInicio).TotalMinutes,
-                CapacidadMaxima = sesionDTO.Salon?.CapacidadMax ?? 0,
+                CapacidadMaxima = sesionDTO.Salon?.AforoMaximo ?? 0,
                 Ocupados = reservasSesion.Count,
                 Descripcion = sesionDTO.ClaseGrupal?.Descripcion ?? ""
             };
@@ -166,7 +166,7 @@
             alumnos.Clear();
             foreach (var reserva in reservasSesion)
             {
-                var socioId = reserva.IdSocio; // Necesitamos el Socio de la reserva, pero ReservaDTO solo tiene IdSocio
+                var socioId = reserva.IdUsuario; // ReservaDTO.IdUsuario es el FK del socio
                 var socioDTO = listaSocios.FirstOrDefault(s => s.IdUsuario == socioId);
                 
                 string estadoMem = "Inactiva";

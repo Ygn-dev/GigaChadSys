@@ -15,5 +15,12 @@ namespace GigaChadSys.Servicios.DTO
 
         [JsonPropertyName("active")]
         public bool Estado { get; set; } // Java uses isActive() / setActive() mapping to "active"
+
+        // ── Alias de compatibilidad para código existente ──────────────────
+        [JsonIgnore]
+        public string Nombre => NombreSalon;
+
+        [JsonIgnore]
+        public int CapacidadMax => AforoMaximo;
     }
 }

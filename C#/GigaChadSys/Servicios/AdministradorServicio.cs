@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class AdministradorServicio
     /// <summary>
     /// GET /AdministradorRS — Lista todos los administradores.
     /// </summary>
-    public async Task<List<Administrador>> ListarAdministradoresAsync()
+    public async Task<List<AdministradorDTO>> ListarAdministradoresAsync()
     {
-        var admins = await _httpClient.GetFromJsonAsync<List<Administrador>>(Endpoint);
-        return admins ?? new List<Administrador>();
+        var admins = await _httpClient.GetFromJsonAsync<List<AdministradorDTO>>(Endpoint);
+        return admins ?? new List<AdministradorDTO>();
     }
 
     /// <summary>
     /// GET /AdministradorRS/{id} — Obtiene un administrador por su ID.
     /// </summary>
-    public async Task<Administrador?> ObtenerPorIdAsync(int idUsuario)
+    public async Task<AdministradorDTO?> ObtenerPorIdAsync(int idUsuario)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idUsuario}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<Administrador>();
+            return await response.Content.ReadFromJsonAsync<AdministradorDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /AdministradorRS — Registra un nuevo administrador.
     /// </summary>
-    public async Task<string> RegistrarAsync(Administrador administrador)
+    public async Task<string> RegistrarAsync(AdministradorDTO administrador)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, administrador);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class AdministradorServicio
     /// <summary>
     /// PUT /AdministradorRS/{id} — Actualiza los datos de un administrador existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idUsuario, Administrador administrador)
+    public async Task<string> ActualizarAsync(int idUsuario, AdministradorDTO administrador)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", administrador);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
