@@ -1,19 +1,21 @@
-﻿@page "/entrenador/inicio"
+@page "/entrenador/inicio"
+@using GigaChadSys.Servicios
 @using GigaChadSysWeb.Components.Layout
 @layout EntrenadorLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
 
 <section class="entrenador-home">
     <div class="entrenador-hero">
         <div>
-            <h1>¡Bienvenido, Marco!</h1>
+            <h1>¡Bienvenido, @(Session.EstaAutenticado ? Session.Nombres : "Entrenador")!</h1>
             <p>Desde aquí puedes gestionar tus sesiones, horarios y alumnos inscritos.</p>
             <div class="hero-line"></div>
         </div>
     </div>
 
     <div class="entrenador-grid">
-        <a class="entrenador-card" href="/entrenador/sesiones">
+        <a class="entrenador-card" href="/entrenador/horario">
             <div class="entrenador-icon">▣</div>
             <h3>Mis Sesiones</h3>
             <p>Consulta las sesiones de clase que tienes asignadas.</p>
@@ -27,11 +29,11 @@
             <span>Ver Horario</span>
         </a>
 
-        <a class="entrenador-card" href="/entrenador/alumnos">
-            <div class="entrenador-icon">◎</div>
-            <h3>Alumnos Inscritos</h3>
-            <p>Visualiza los socios inscritos en tus sesiones.</p>
-            <span>Ver Alumnos</span>
+        <a class="entrenador-card" href="/entrenador/pagos">
+            <div class="entrenador-icon">⬡</div>
+            <h3>Mis Pagos</h3>
+            <p>Revisa el historial de pagos de tu sueldo.</p>
+            <span>Ver Pagos</span>
         </a>
 
         <a class="entrenador-card" href="/entrenador/perfil">

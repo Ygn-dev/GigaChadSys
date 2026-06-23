@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @inject GigaChadSys.Servicios.SessionServicio Session
+@inject NavigationManager Navigation
 <div class="socio-shell">
     <aside class="socio-sidebar">
         <div class="socio-logo">
@@ -53,7 +54,7 @@
             <div class="topbar-actions">
                 <button class="topbar-btn" title="Notificaciones">🔔</button>
                 <button class="topbar-btn" title="Buscar">🔍</button>
-                <a class="topbar-btn topbar-logout" href="/login" title="Salir">⏻ Salir</a>
+                <button class="topbar-btn topbar-logout" title="Salir" @onclick="CerrarSesion">⏻ Salir</button>
             </div>
         </header>
 
@@ -62,3 +63,11 @@
         </main>
     </div>
 </div>
+
+@code {
+    private void CerrarSesion()
+    {
+        Session.CerrarSesion();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

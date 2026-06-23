@@ -1,12 +1,14 @@
-﻿@page "/socio/inicio"
+@page "/socio/inicio"
+@using GigaChadSys.Servicios
 @using GigaChadSysWeb.Components.Layout
 @layout SocioLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
 
 <section class="socio-home">
     <div class="socio-hero">
         <div>
-            <h1>¡Bienvenida, Lucia!</h1>
+            <h1>¡Bienvenido/a, @(Session.EstaAutenticado ? Session.Nombres : "Socio")!</h1>
             <p>Desde aquí puedes gestionar tu experiencia en GigaChad.</p>
         </div>
     </div>

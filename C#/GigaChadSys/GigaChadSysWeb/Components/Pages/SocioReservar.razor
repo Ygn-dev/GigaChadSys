@@ -29,11 +29,10 @@
 
                 <select value="@FiltroDisciplina" @onchange="CambiarDisciplina">
                     <option value="">Todas las disciplinas</option>
-                    <option value="CrossFit">CrossFit</option>
-                    <option value="Yoga">Yoga</option>
-                    <option value="Spinning">Spinning</option>
-                    <option value="Boxeo">Boxeo</option>
-                    <option value="Pilates">Pilates</option>
+                    @foreach (var disc in DisciplinasDisponibles)
+                    {
+                        <option value="@disc">@disc</option>
+                    }
                 </select>
             </div>
 
@@ -127,6 +126,9 @@
     private string FiltroHora { get; set; } = "";
 
     private List<ClaseDisponible> Clases { get; set; } = new();
+
+    private IEnumerable<string> DisciplinasDisponibles =>
+        Clases.Select(c => c.Disciplina).Where(d => !string.IsNullOrWhiteSpace(d)).Distinct().OrderBy(d => d);
 
     private IEnumerable<ClaseDisponible> ClasesFiltradas
     {

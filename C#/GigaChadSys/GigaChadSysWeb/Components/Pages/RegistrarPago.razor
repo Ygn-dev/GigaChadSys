@@ -436,7 +436,16 @@
                 if (sub != null)
                 {
                     sub.IdPago = resultado.IdPago.Value;
+                    sub.EstadoMembresia = "activa";
                     await SuscripcionService.ActualizarAsync(sub.IdSuscripcion, sub);
+                }
+
+                // Actualizar estadoMembresia del Socio
+                var socioToUpdate = await SocioService.ObtenerPorIdAsync(SocioSeleccionado.Id);
+                if (socioToUpdate != null)
+                {
+                    socioToUpdate.EstadoMembresia = true;
+                    await SocioService.ActualizarAsync(socioToUpdate.IdUsuario, socioToUpdate);
                 }
             }
 
