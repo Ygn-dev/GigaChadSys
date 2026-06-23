@@ -8,12 +8,16 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import pe.edu.pucp.gigachadsys.dao.inter.clases.SesionClaseDAO;
+import pe.edu.pucp.gigachadsys.dao.impl.clases.SesionClaseDAOImpl;
+
 public class ReservaDAOImpl implements ReservaDAO {
 
     @Override
     public List<Reserva> listAll() {
         List<Reserva> lista = new ArrayList<>();
         String sql = "SELECT * FROM Reserva WHERE activo=1";
+        SesionClaseDAO sesionDAO = new SesionClaseDAOImpl();
 
         try(Connection con = DBManager.getInstance().getConnection();
             Statement st = con.createStatement();
@@ -27,6 +31,7 @@ public class ReservaDAOImpl implements ReservaDAO {
                         rs.getInt("idSesion"),
                         rs.getInt("idUsuario")
                 );
+                r.setSesionClase(sesionDAO.load(rs.getInt("idSesion")));
                 lista.add(r);
             }
 
@@ -38,6 +43,7 @@ public class ReservaDAOImpl implements ReservaDAO {
     @Override
     public Reserva load(Integer id) {
         String sql = "SELECT * FROM Reserva WHERE idReserva=?";
+        SesionClaseDAO sesionDAO = new SesionClaseDAOImpl();
 
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
@@ -46,13 +52,15 @@ public class ReservaDAOImpl implements ReservaDAO {
             ResultSet rs = ps.executeQuery();
 
             if(rs.next()){
-                return new Reserva(
+                Reserva r = new Reserva(
                         rs.getInt("idReserva"),
                         rs.getTimestamp("fechaHoraReserva"),
                         rs.getBoolean("asistio"),
                         rs.getInt("idSesion"),
                         rs.getInt("idUsuario")
                 );
+                r.setSesionClase(sesionDAO.load(rs.getInt("idSesion")));
+                return r;
             }
 
         } catch(SQLException e){ throw new RuntimeException(e); }

@@ -8,12 +8,22 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import pe.edu.pucp.gigachadsys.dao.inter.clases.SalonDAO;
+import pe.edu.pucp.gigachadsys.dao.impl.clases.SalonDAOImpl;
+import pe.edu.pucp.gigachadsys.dao.inter.usuarios.EntrenadorDAO;
+import pe.edu.pucp.gigachadsys.dao.impl.usuarios.EntrenadorDAOImpl;
+import pe.edu.pucp.gigachadsys.dao.inter.clases.ClaseGrupalDAO;
+import pe.edu.pucp.gigachadsys.dao.impl.clases.ClaseGrupalDAOImpl;
+
 public class SesionClaseDAOImpl implements SesionClaseDAO {
 
     @Override
     public List<SesionClase> listAll() {
         List<SesionClase> lista = new ArrayList<>();
         String sql = "SELECT * FROM SesionClase WHERE activo=1";
+        SalonDAO salonDAO = new SalonDAOImpl();
+        EntrenadorDAO entrenadorDAO = new EntrenadorDAOImpl();
+        ClaseGrupalDAO claseDAO = new ClaseGrupalDAOImpl();
 
         try(Connection con = DBManager.getInstance().getConnection();
             Statement st = con.createStatement();
@@ -30,6 +40,9 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
                         rs.getInt("idEntrenador"),
                         rs.getInt("idClase")
                 );
+                s.setSalon(salonDAO.load(rs.getInt("idSalon")));
+                s.setEntrenador(entrenadorDAO.load(rs.getInt("idEntrenador")));
+                s.setClaseGrupal(claseDAO.load(rs.getInt("idClase")));
                 lista.add(s);
             }
 
@@ -41,6 +54,9 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
     @Override
     public SesionClase load(Integer id) {
         String sql = "SELECT * FROM SesionClase WHERE idSesion=?";
+        SalonDAO salonDAO = new SalonDAOImpl();
+        EntrenadorDAO entrenadorDAO = new EntrenadorDAOImpl();
+        ClaseGrupalDAO claseDAO = new ClaseGrupalDAOImpl();
 
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
@@ -49,7 +65,7 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
             ResultSet rs = ps.executeQuery();
 
             if(rs.next()){
-                return new SesionClase(
+                SesionClase s = new SesionClase(
                         rs.getInt("idSesion"),
                         rs.getDate("fechaSesion"),
                         rs.getTimestamp("horaInicio"),
@@ -59,6 +75,10 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
                         rs.getInt("idEntrenador"),
                         rs.getInt("idClase")
                 );
+                s.setSalon(salonDAO.load(rs.getInt("idSalon")));
+                s.setEntrenador(entrenadorDAO.load(rs.getInt("idEntrenador")));
+                s.setClaseGrupal(claseDAO.load(rs.getInt("idClase")));
+                return s;
             }
 
         } catch(SQLException e){ throw new RuntimeException(e); }

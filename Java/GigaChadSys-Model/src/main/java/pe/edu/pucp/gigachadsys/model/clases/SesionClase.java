@@ -21,6 +21,20 @@ public class SesionClase {
     }
 
     public SesionClase(int idSesion, java.sql.Date fechaSesion, Timestamp horaInicio, Timestamp horaFin, int cuposDisponibles, int idSalon, int idEntrenador, int idClase) {
+        this.idSesion = idSesion;
+        this.fechaSesion = fechaSesion;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
+        this.cuposDisponibles = cuposDisponibles;
+        
+        this.salon = new Salon();
+        this.salon.setIdSalon(idSalon);
+        
+        this.entrenador = new Entrenador();
+        this.entrenador.setIdUsuario(idEntrenador);
+        
+        this.claseGrupal = new ClaseGrupal();
+        this.claseGrupal.setIdClase(idClase);
     }
 
     public SesionClase(int idSesion, Date fechaSesion, Timestamp horaInicio,

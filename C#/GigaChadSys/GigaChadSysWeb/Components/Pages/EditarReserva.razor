@@ -1,6 +1,11 @@
 @page "/admin/reservas/editar/{Id:int}"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
-
+@rendermode InteractiveServer
+@inject ReservaServicio ReservaService
+@inject SocioServicio SocioService
+@inject SesionClaseServicio SesionClaseService
 <div class="socio-form-page">
 
     <!-- Breadcrumb -->
@@ -45,12 +50,12 @@
                     </div>
 
                     <div class="sf-form-group">
-                        <label>CLASE <span class="sf-req">*</span></label>
-                        <select @bind="claseNombre" class="@(errores.ContainsKey("claseNombre") ? "sf-input-error" : "")">
-                            <option value="">Seleccionar clase...</option>
-                            @foreach (var c in clasesDisponibles)
+                        <label>SESIÓN <span class="sf-req">*</span></label>
+                        <select value="@idSesionSeleccionada" @onchange="OnSesionSeleccionada" class="@(errores.ContainsKey("claseNombre") ? "sf-input-error" : "")">
+                            <option value="0">Seleccionar sesión...</option>
+                            @foreach (var s in sesionesDisponibles)
                             {
-                                <option value="@c">@c</option>
+                                <option value="@s.IdSesion">@s.ClaseGrupal?.Nombre - @s.FechaSesion.ToString("dd/MM/yyyy")</option>
                             }
                         </select>
                         @if (errores.ContainsKey("claseNombre"))
@@ -61,28 +66,17 @@
 
                     <div class="sf-form-group">
                         <label>ENTRENADOR</label>
-                        <select @bind="entrenadorNombre">
-                            <option value="">Seleccionar entrenador...</option>
-                            @foreach (var e in entrenadoresDisponibles)
-                            {
-                                <option value="@e">@e</option>
-                            }
-                        </select>
+                        <input type="text" value="@entrenadorNombre" disabled />
                     </div>
 
                     <div class="sf-form-group">
-                        <label>FECHA <span class="sf-req">*</span></label>
-                        <input type="date" @bind="fecha"
-                               class="@(errores.ContainsKey("fecha") ? "sf-input-error" : "")" />
-                        @if (errores.ContainsKey("fecha"))
-                        {
-                            <span class="sf-error-msg">@errores["fecha"]</span>
-                        }
+                        <label>FECHA</label>
+                        <input type="text" value="@fecha.ToString("dd/MM/yyyy")" disabled />
                     </div>
 
                     <div class="sf-form-group">
                         <label>HORARIO</label>
-                        <input type="text" @bind="horario" placeholder="Ej. 07:00 - 08:00" />
+                        <input type="text" value="@horario" disabled />
                     </div>
                 </div>
             </div>
@@ -211,8 +205,12 @@
     [Parameter] public int Id { get; set; }
 
     // Form fields
+    private ReservaDTO? reservaActual;
     private string socioNombre        = "";
     private string socioDni           = "";
+    private int idSesionSeleccionada  = 0;
+    
+    // UI details
     private string claseNombre        = "";
     private string entrenadorNombre   = "";
     private DateOnly fecha            = DateOnly.FromDateTime(DateTime.Today);
@@ -241,71 +239,97 @@
         _             => estado
     };
 
-    private List<string> clasesDisponibles = new()
-    {
-        "CrossFit Intenso","Yoga Matutino","Spinning Power","Boxeo Amateur",
-        "Zumba Party","Pilates Core","Musculacion Avanzada","HIIT 30"
-    };
-    private List<string> entrenadoresDisponibles = new()
-    {
-        "Marco Ruiz","Pedro Sanchez","Laura Gomez","Andres Quispe"
-    };
+    private List<SesionClaseDTO> sesionesDisponibles = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarReserva();
+        await CargarDatos();
     }
 
-    private async Task CargarReserva()
+    private async Task CargarDatos()
     {
-        // TODO: reemplazar con llamada real al servicio
-        // var reserva = await ReservaService.GetByIdAsync(Id);
-        var ejemplos = new Dictionary<int, (string socio, string dni, string clase, string ent, string fecha, string horario, string estado)>
-        {
-            { 1, ("Maria Gonzalez",   "40123897", "CrossFit Intenso",    "Marco Ruiz",   "2026-05-12", "07:00 - 08:00", "Confirmadas") },
-            { 2, ("Laura Martinez",   "42890123", "Yoga Matutino",       "Pedro Sanchez","2026-05-12", "08:00 - 09:00", "Confirmadas") },
-            { 3, ("Diego Fernandez",  "37890123", "Spinning Power",      "Laura Gomez",  "2026-05-12", "18:30 - 19:30", "Asistió")    },
-            { 4, ("Carlos Rodriguez", "38456721", "Boxeo Amateur",       "Andres Quispe","2026-05-12", "19:00 - 20:00", "Pendientes") },
-            { 5, ("Juan Perez",       "35678912", "Musculacion Avanzada","Marco Ruiz",   "2026-05-13", "06:00 - 07:15", "Confirmadas") },
-            { 6, ("Camila Torres",    "44567890", "CrossFit Intenso",    "Marco Ruiz",   "2026-05-13", "07:00 - 08:00", "Confirmadas") },
-            { 7, ("Florencia Sanchez","41234567", "Pilates Core",        "Pedro Sanchez","2026-05-13", "16:00 - 17:00", "Canceladas") },
-            { 8, ("Martin Lopez",     "39012345", "HIIT 30",             "Laura Gomez",  "2026-05-13", "17:00 - 17:30", "Pendientes") },
-        };
+        sesionesDisponibles = await SesionClaseService.ListarSesionesAsync();
+        var todasLasReservas = await ReservaService.ListarReservasAsync();
+        reservaActual = todasLasReservas.FirstOrDefault(r => r.IdReserva == Id);
 
-        if (ejemplos.TryGetValue(Id, out var r))
+        if (reservaActual != null)
         {
-            socioNombre      = r.socio;
-            socioDni         = r.dni;
-            claseNombre      = r.clase;
-            entrenadorNombre = r.ent;
-            fecha            = DateOnly.Parse(r.fecha);
-            horario          = r.horario;
-            estado           = r.estado;
+            var socio = (await SocioService.ListarSociosAsync()).FirstOrDefault(s => s.IdUsuario == reservaActual.IdUsuario);
+            if (socio != null)
+            {
+                socioNombre = $"{socio.Nombres} {socio.ApellidoPaterno}";
+                socioDni = socio.Dni.ToString();
+            }
+
+            idSesionSeleccionada = reservaActual.SesionClase?.IdSesion ?? 0;
+            estado = reservaActual.Asistio ? "Asistió" : "Confirmadas"; // O según la lógica de negocio
+            ActualizarDetallesSesion();
         }
+    }
 
-        await Task.CompletedTask;
+    private void ActualizarDetallesSesion()
+    {
+        var sesion = sesionesDisponibles.FirstOrDefault(s => s.IdSesion == idSesionSeleccionada);
+        if (sesion != null)
+        {
+            claseNombre = sesion.ClaseGrupal?.Nombre ?? "";
+            entrenadorNombre = sesion.Entrenador != null ? $"{sesion.Entrenador.Nombres} {sesion.Entrenador.ApellidoPaterno}" : "";
+            fecha = DateOnly.FromDateTime(sesion.FechaSesion);
+            horario = $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}";
+        }
+        else
+        {
+            claseNombre = "";
+            entrenadorNombre = "";
+            horario = "";
+        }
+    }
+
+    private void OnSesionSeleccionada(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            idSesionSeleccionada = id;
+            ActualizarDetallesSesion();
+        }
     }
 
     private bool Validar()
     {
         errores.Clear();
-        if (string.IsNullOrWhiteSpace(claseNombre)) errores["claseNombre"] = "Selecciona una clase.";
-        if (fecha == default)                       errores["fecha"]       = "La fecha es obligatoria.";
+        if (idSesionSeleccionada == 0) errores["claseNombre"] = "Selecciona una sesión.";
         return errores.Count == 0;
     }
 
     private async Task GuardarCambios()
     {
-        if (!Validar()) return;
+        if (!Validar() || reservaActual == null) return;
 
         guardando = true;
-        await Task.Delay(800);
 
-        // TODO: await ReservaService.UpdateAsync(Id, claseNombre, entrenadorNombre, fecha, horario, estado, motivoCancelacion);
+        reservaActual.Asistio = estado == "Asistió";
+        reservaActual.SesionClase = new SesionClaseDTO { IdSesion = idSesionSeleccionada };
 
-        guardando    = false;
-        toastIsError = false;
-        toastMessage = "✅ Reserva actualizada correctamente.";
+        var result = await ReservaService.ActualizarAsync(Id, reservaActual);
+
+        guardando = false;
+        
+        if (!result.StartsWith("Error"))
+        {
+            toastIsError = false;
+            toastMessage = "✅ Reserva actualizada correctamente.";
+            if (estado == "Canceladas")
+            {
+                await ReservaService.EliminarAsync(Id); // Si el admin la cancela, la eliminamos
+                toastMessage = "✅ Reserva cancelada correctamente.";
+            }
+        }
+        else
+        {
+            toastIsError = true;
+            toastMessage = "❌ " + result;
+        }
+
         MostrarToast();
     }
 

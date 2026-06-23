@@ -108,11 +108,7 @@
     private string TextoBusqueda   = "";
     private string DisciplinaFiltro = "";
 
-    private List<string> Disciplinas = new()
-    {
-        "CrossFit", "Yoga", "Spinning", "Boxeo",
-        "Zumba", "Pilates", "Musculacion", "HIIT"
-    };
+    private List<string> Disciplinas = new();
 
     private IEnumerable<ClaseGrupalDTO> ClasesFiltradas
     {
@@ -143,6 +139,7 @@
         try
         {
             Clases = await ClaseService.ListarClasesGrupalesAsync();
+            Disciplinas = Clases.Select(c => c.NombreDisciplina).Distinct().ToList();
         }
         catch (Exception ex)
         {

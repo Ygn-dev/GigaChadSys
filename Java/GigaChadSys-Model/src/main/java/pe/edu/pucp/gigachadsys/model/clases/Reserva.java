@@ -14,6 +14,11 @@ public class Reserva {
     }
 
     public Reserva(int idReserva, Timestamp fechaHoraReserva, boolean asistio, int idSesion, int idUsuario) {
+        this.idReserva = idReserva;
+        this.fechaHoraReserva = fechaHoraReserva;
+        this.asistio = asistio;
+        this.sesionClase = new SesionClase();
+        this.sesionClase.setIdSesion(idSesion);
     }
 
     public Reserva(int idReserva, Timestamp fechaHoraReserva, boolean asistio, SesionClase sesionClase) {

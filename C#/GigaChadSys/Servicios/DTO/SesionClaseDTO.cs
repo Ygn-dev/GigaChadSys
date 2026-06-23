@@ -7,14 +7,47 @@ namespace GigaChadSys.Servicios.DTO
         [JsonPropertyName("idSesion")]
         public int IdSesion { get; set; }
 
-        [JsonPropertyName("fechaSesion")]
+        [JsonIgnore]
         public DateTime FechaSesion { get; set; }
 
-        [JsonPropertyName("horaInicio")]
+        [JsonPropertyName("fechaSesion")]
+        public string? FechaSesionStr
+        {
+            get => FechaSesion.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            set
+            {
+                if (DateTime.TryParse(value?.Replace("[UTC]", ""), out var d))
+                    FechaSesion = d;
+            }
+        }
+
+        [JsonIgnore]
         public DateTime HoraInicio { get; set; }
 
-        [JsonPropertyName("horaFin")]
+        [JsonPropertyName("horaInicio")]
+        public string? HoraInicioStr
+        {
+            get => HoraInicio.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            set
+            {
+                if (DateTime.TryParse(value?.Replace("[UTC]", ""), out var d))
+                    HoraInicio = d;
+            }
+        }
+
+        [JsonIgnore]
         public DateTime HoraFin { get; set; }
+
+        [JsonPropertyName("horaFin")]
+        public string? HoraFinStr
+        {
+            get => HoraFin.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            set
+            {
+                if (DateTime.TryParse(value?.Replace("[UTC]", ""), out var d))
+                    HoraFin = d;
+            }
+        }
 
         [JsonPropertyName("cuposDisponibles")]
         public int CuposDisponibles { get; set; }

@@ -139,10 +139,13 @@
         }
     }
 
-    private void CancelarSesion(SesionHorario sesion)
+    private async Task CancelarSesion(SesionHorario sesion)
     {
-        // En una implementación real, aquí se llamaría al servicio para cancelar.
-        sesionesActivas.Remove(sesion);
+        var response = await SesionClaseService.EliminarAsync(sesion.Id);
+        if (!response.StartsWith("Error"))
+        {
+            await CargarSesiones();
+        }
     }
 
     private class SesionHorario

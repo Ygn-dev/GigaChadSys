@@ -180,12 +180,6 @@
             });
         }
         
-        // Si no hay pagos reales de sueldo, agreamos los de la maqueta como placeholder 
-        if (!pagos.Any())
-        {
-            pagos.Add(new PagoEntrenador { Concepto = "Sueldo Abril 2025", Tipo = "Sueldo", Metodo = "Transferencia", Monto = 2200, Fecha = new DateTime(2025, 4, 1), Estado = "Pagado" });
-            pagos.Add(new PagoEntrenador { Concepto = "Bono especial", Tipo = "Bono", Metodo = "Transferencia", Monto = 450, Fecha = new DateTime(2025, 5, 10), Estado = "Pagado" });
-        }
     }
 
     private class PagoEntrenador

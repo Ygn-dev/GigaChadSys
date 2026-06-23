@@ -16,8 +16,21 @@ public class ReservaDTO
     /// <summary>
     /// Java: Timestamp fechaHoraReserva → se serializa como string ISO.
     /// </summary>
-    [JsonPropertyName("fechaHoraReserva")]
+    [JsonIgnore]
     public DateTime? FechaHoraReserva { get; set; }
+
+    [JsonPropertyName("fechaHoraReserva")]
+    public string? FechaHoraReservaStr
+    {
+        get => FechaHoraReserva?.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        set
+        {
+            if (DateTime.TryParse(value?.Replace("[UTC]", ""), out var d))
+                FechaHoraReserva = d;
+            else
+                FechaHoraReserva = null;
+        }
+    }
 
     /// <summary>
     /// true = el socio asistió a la clase.
