@@ -377,17 +377,15 @@
         };
 
         var resultadoPago = await PagoService.RegistrarAsync(nuevoPago);
-        if (resultadoPago.StartsWith("Error") || resultadoPago.ToLower().Contains("error"))
+        if (resultadoPago.Mensaje.StartsWith("Error") || resultadoPago.Mensaje.ToLower().Contains("error"))
         {
-            Mensaje = "Error al registrar el pago: " + resultadoPago;
+            Mensaje = "Error al registrar el pago: " + resultadoPago.Mensaje;
             ClaseMensaje = "renew-message error";
             return;
         }
 
         // Recuperar ID de pago recién creado
-        var pagos = await PagoService.ListarPagosAsync();
-        var ultimoPago = pagos.OrderByDescending(p => p.IdPago).FirstOrDefault();
-        int idPagoGenerado = ultimoPago?.IdPago ?? 1;
+        int idPagoGenerado = resultadoPago.IdPago ?? 1;
 
         var nuevaSuscripcion = new SuscripcionDTO
         {

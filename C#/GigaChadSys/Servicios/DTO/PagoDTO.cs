@@ -191,7 +191,7 @@ public class FlexibleNullableDateTimeConverter : JsonConverter<DateTime?>
     )
     {
         if (value.HasValue)
-            writer.WriteStringValue(value.Value.ToString("yyyy-MM-dd"));
+            writer.WriteStringValue(value.Value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
         else
             writer.WriteNullValue();
     }

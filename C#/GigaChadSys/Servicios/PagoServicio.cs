@@ -41,11 +41,18 @@ public class PagoServicio
     /// <summary>
     /// POST /PagoRS — Registra un nuevo pago.
     /// </summary>
-    public async Task<string> RegistrarAsync(PagoDTO pago)
+    public async Task<MensajeRespuesta> RegistrarAsync(PagoDTO pago)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, pago);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar pago.";
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
+            return result ?? new MensajeRespuesta { Mensaje = "Error al registrar pago." };
+        }
+        else
+        {
+            return new MensajeRespuesta { Mensaje = $"Error del servidor ({response.StatusCode}). Verifique el formato de los datos." };
+        }
     }
 
     /// <summary>
