@@ -236,7 +236,7 @@
     private string ClaseEstadoActual = "renew-inactive-dot";
     private string FechaVencimientoActual = "—";
     private string UltimoPagoTexto = "—";
-    private bool TienePlanActivo = false;
+
 
     private string NombrePlanSeleccionado =>
         PlanSeleccionado == "black" ? "Membresía Black" : "Membresía Basic";
@@ -288,7 +288,6 @@
 
             if (suscripcion != null)
             {
-                TienePlanActivo = true;
                 NombrePlanActual = $"Membresía {suscripcion.TipoPlan}";
                 EstadoActual = "Activa";
                 ClaseEstadoActual = "renew-active-dot";

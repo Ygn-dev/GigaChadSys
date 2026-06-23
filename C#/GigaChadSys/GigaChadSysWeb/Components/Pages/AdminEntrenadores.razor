@@ -1,5 +1,4 @@
 @page "/admin/entrenadores"
-@using Components.Layout
 @using System.Text.Json.Serialization
 @layout AdminLayout
 @rendermode InteractiveServer
@@ -132,7 +131,6 @@
     }
 
     private List<EntrenadorDTO> Entrenadores = new();
-    private bool cargando = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -142,7 +140,6 @@
         }
         finally
         {
-            cargando = false;
         }
     }
 

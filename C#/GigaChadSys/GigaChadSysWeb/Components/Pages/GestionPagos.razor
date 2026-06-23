@@ -181,7 +181,7 @@
         foreach (var pago in pagosResult)
         {
             var suscripcion = suscripcionesResult.FirstOrDefault(s => s.IdPago == pago.IdPago);
-            SocioDTO socio = null;
+            SocioDTO? socio = null;
             if (suscripcion != null && dictSocios.ContainsKey(suscripcion.IdUsuario))
             {
                 socio = dictSocios[suscripcion.IdUsuario];
