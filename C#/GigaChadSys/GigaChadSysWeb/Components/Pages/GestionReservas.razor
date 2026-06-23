@@ -1,8 +1,12 @@
 @page "/admin/reservas"
 @using Components.Layout
 @using System.Text.Json.Serialization
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
+@inject ReservaServicio ReservaService
+@inject SocioServicio SocioService
 
 <section class="admin-list-page">
 
@@ -161,18 +165,51 @@
               .Replace("ó", "o")
               .Replace(" ", "");
 
-    private List<ReservaVista> Reservas = new()
+    private List<ReservaVista> Reservas { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new() { Id=1, SocioNombre="Maria Gonzalez",   SocioDni="40123897", ClaseNombre="CrossFit Intenso",     ClaseTipo="CrossFit",    Entrenador="Marco Ruiz",    Fecha="2026-05-12", Horario="07:00 - 08:00", CuposOcupados=12, CuposTotal=20, Estado="Confirmadas" },
-        new() { Id=2, SocioNombre="Laura Martinez",   SocioDni="42890123", ClaseNombre="Yoga Matutino",        ClaseTipo="Yoga",        Entrenador="Pedro Sanchez", Fecha="2026-05-12", Horario="08:00 - 09:00", CuposOcupados= 8, CuposTotal=15, Estado="Confirmadas" },
-        new() { Id=3, SocioNombre="Diego Fernandez",  SocioDni="37890123", ClaseNombre="Spinning Power",       ClaseTipo="Spinning",    Entrenador="Laura Gomez",   Fecha="2026-05-12", Horario="18:30 - 19:30", CuposOcupados=18, CuposTotal=25, Estado="Asistió"     },
-        new() { Id=4, SocioNombre="Carlos Rodriguez", SocioDni="38456721", ClaseNombre="Boxeo Amateur",        ClaseTipo="Boxeo",       Entrenador="Andres Quispe", Fecha="2026-05-12", Horario="19:00 - 20:00", CuposOcupados=10, CuposTotal=12, Estado="Pendientes"  },
-        new() { Id=5, SocioNombre="Juan Perez",       SocioDni="35678912", ClaseNombre="Musculacion Avanzada", ClaseTipo="Musculacion", Entrenador="Marco Ruiz",    Fecha="2026-05-13", Horario="06:00 - 07:15", CuposOcupados=22, CuposTotal=30, Estado="Confirmadas" },
-        new() { Id=6, SocioNombre="Camila Torres",    SocioDni="44567890", ClaseNombre="CrossFit Intenso",     ClaseTipo="CrossFit",    Entrenador="Marco Ruiz",    Fecha="2026-05-13", Horario="07:00 - 08:00", CuposOcupados=17, CuposTotal=20, Estado="Confirmadas" },
-        new() { Id=7, SocioNombre="Florencia Sanchez",SocioDni="41234567", ClaseNombre="Pilates Core",         ClaseTipo="Pilates",     Entrenador="Pedro Sanchez", Fecha="2026-05-13", Horario="16:00 - 17:00", CuposOcupados= 5, CuposTotal=12, Estado="Canceladas"  },
-        new() { Id=8, SocioNombre="Martin Lopez",     SocioDni="39012345", ClaseNombre="HIIT 30",              ClaseTipo="HIIT",        Entrenador="Laura Gomez",   Fecha="2026-05-13", Horario="17:00 - 17:30", CuposOcupados=19, CuposTotal=20, Estado="Pendientes"  },
-        new() { Id=9, SocioNombre="Ana Ramirez",      SocioDni="42345678", ClaseNombre="Zumba Party",          ClaseTipo="Zumba",       Entrenador="Diana Rojas",   Fecha="2026-05-14", Horario="20:00 - 21:00", CuposOcupados=24, CuposTotal=30, Estado="Confirmadas" },
-    };
+        var reservasTask = ReservaService.ListarReservasAsync();
+        var sociosTask = SocioService.ListarSociosAsync();
+
+        await Task.WhenAll(reservasTask, sociosTask);
+
+        var reservasResult = reservasTask.Result;
+        var sociosResult = sociosTask.Result;
+
+        var dictSocios = sociosResult.ToDictionary(s => s.IdUsuario, s => s);
+
+        Reservas.Clear();
+
+        foreach (var r in reservasResult)
+        {
+            var socio = dictSocios.ContainsKey(r.IdUsuario) ? dictSocios[r.IdUsuario] : null;
+
+            var sesion = r.SesionClase;
+            var claseGrupal = sesion?.ClaseGrupal;
+            var entrenador = sesion?.Entrenador;
+
+            int cuposTotal = claseGrupal?.Vacantes ?? 0;
+            int cuposDisp = sesion?.CuposDisponibles ?? 0;
+            int cuposOcupados = cuposTotal - cuposDisp;
+            if (cuposOcupados < 0) cuposOcupados = 0;
+
+            Reservas.Add(new ReservaVista
+            {
+                Id = r.IdReserva,
+                SocioNombre = socio != null ? $"{socio.Nombres} {socio.ApellidoPaterno}" : "Desconocido",
+                SocioDni = socio != null ? socio.Dni.ToString() : "-",
+                ClaseNombre = claseGrupal != null ? claseGrupal.Nombre : "-",
+                ClaseTipo = claseGrupal != null ? claseGrupal.NivelDificultad : "-",
+                Entrenador = entrenador != null ? $"{entrenador.Nombres} {entrenador.ApellidoPaterno}" : "-",
+                Fecha = r.FechaTexto.Split(' ')[0],
+                Horario = sesion != null ? $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}" : "-",
+                CuposOcupados = cuposOcupados,
+                CuposTotal = cuposTotal,
+                Estado = r.EstadoTexto
+            });
+        }
+    }
 
     private class ReservaVista
     {

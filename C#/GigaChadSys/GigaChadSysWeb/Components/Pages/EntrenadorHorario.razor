@@ -1,7 +1,11 @@
 @page "/entrenador/horario"
-@using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout EntrenadorLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject SesionClaseServicio SesionClaseService
+@inject ReservaServicio ReservaService
 
 <section class="horario-page">
     <!-- Breadcrumb -->
@@ -36,7 +40,7 @@
 
         @foreach (var sesion in listaMostrar)
         {
-            <div class="horario-sesion-card">
+            <a href="/entrenador/sesiones/detalle/@sesion.Id" class="horario-sesion-card" style="text-decoration:none; color:inherit; cursor:pointer;">
                 <div class="horario-sesion-left">
                     <div class="horario-sesion-icon">
                         <span>📋</span>
@@ -67,10 +71,10 @@
                     <span class="horario-alumnos">@sesion.Inscritos/@sesion.Capacidad alumnos</span>
                 </div>
 
-                <button class="horario-btn-cancel" title="Cancelar sesión" @onclick="() => CancelarSesion(sesion)">
+                <button class="horario-btn-cancel" title="Cancelar sesión" @onclick="() => CancelarSesion(sesion)" @onclick:preventDefault="true">
                     ✕
                 </button>
-            </div>
+            </a>
         }
 
         @if (!listaMostrar.Any())
@@ -87,68 +91,57 @@
     private List<SesionHorario> sesionesActivas = new();
     private List<SesionHorario> sesionesHistorial = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Datos mock - se conectará con BL después
-        sesionesActivas = new List<SesionHorario>
-        {
-            new SesionHorario
-            {
-                Id = 1,
-                NombreClase = "CrossFit Intenso",
-                Categoria = "CrossFit",
-                Fecha = new DateTime(2025, 5, 12),
-                Hora = "07:00",
-                Salon = "Sala Principal",
-                Estado = "Programada",
-                Inscritos = 18,
-                Capacidad = 20
-            },
-            new SesionHorario
-            {
-                Id = 2,
-                NombreClase = "Musculación Avanzada",
-                Categoria = "Musculación",
-                Fecha = new DateTime(2025, 5, 13),
-                Hora = "06:00",
-                Salon = "Sala Musculación",
-                Estado = "Programada",
-                Inscritos = 22,
-                Capacidad = 30
-            },
-            new SesionHorario
-            {
-                Id = 3,
-                NombreClase = "CrossFit Intenso",
-                Categoria = "CrossFit",
-                Fecha = new DateTime(2025, 5, 13),
-                Hora = "07:00",
-                Salon = "Sala Principal",
-                Estado = "Programada",
-                Inscritos = 15,
-                Capacidad = 20
-            }
-        };
+        await CargarSesiones();
+    }
 
-        sesionesHistorial = new List<SesionHorario>
+    private async Task CargarSesiones()
+    {
+        if (!Session.EstaAutenticado) return;
+
+        var todasSesiones = await SesionClaseService.ListarSesionesAsync();
+        var todasReservas = await ReservaService.ListarReservasAsync();
+
+        var misSesiones = todasSesiones
+            .Where(s => s.Entrenador != null && s.Entrenador.IdUsuario == Session.IdUsuario)
+            .ToList();
+
+        sesionesActivas.Clear();
+        sesionesHistorial.Clear();
+
+        foreach (var s in misSesiones)
         {
-            new SesionHorario
+            int inscritos = todasReservas.Count(r => r.SesionClase?.IdSesion == s.IdSesion);
+            int capacidad = s.Salon?.CapacidadMax ?? 0;
+
+            var vista = new SesionHorario
             {
-                Id = 4,
-                NombreClase = "CrossFit Básico",
-                Categoria = "CrossFit",
-                Fecha = new DateTime(2025, 5, 10),
-                Hora = "08:00",
-                Salon = "Sala Principal",
-                Estado = "Finalizada",
-                Inscritos = 20,
-                Capacidad = 20
+                Id = s.IdSesion,
+                NombreClase = s.ClaseGrupal?.Nombre ?? "Sin nombre",
+                Categoria = s.ClaseGrupal?.Nombre ?? "General",
+                Fecha = s.FechaSesion,
+                Hora = $"{s.HoraInicio:HH:mm} - {s.HoraFin:HH:mm}",
+                Salon = s.Salon?.Nombre ?? "Sin asignar",
+                Estado = s.FechaSesion >= DateTime.Today ? "Programada" : "Finalizada",
+                Inscritos = inscritos,
+                Capacidad = capacidad
+            };
+
+            if (s.FechaSesion < DateTime.Today)
+            {
+                sesionesHistorial.Add(vista);
             }
-        };
+            else
+            {
+                sesionesActivas.Add(vista);
+            }
+        }
     }
 
     private void CancelarSesion(SesionHorario sesion)
     {
+        // En una implementación real, aquí se llamaría al servicio para cancelar.
         sesionesActivas.Remove(sesion);
     }
 

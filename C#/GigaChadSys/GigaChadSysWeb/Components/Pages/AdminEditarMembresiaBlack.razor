@@ -1,6 +1,10 @@
-﻿@page "/admin/membresias/black/editar"
+@page "/admin/membresias/black/editar"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
+@inject MembresiaBlackServicio MembresiaBlackService
+@inject NavigationManager Nav
 
 <section class="plan-edit-page">
 
@@ -216,13 +220,31 @@
 </section>
 
 @code {
+    private MembresiaBlackDTO membresiaActual;
+    private int idMembresia = 1; // Suponemos 1 por defecto
+
     private string NombrePlanValor { get; set; } = "Membresía Black";
-    private string PrecioMensualValor { get; set; } = "149";
+    private string PrecioMensualValor { get; set; } = "0";
 
     private string NuevoBeneficioValor { get; set; } = "";
     private string NuevaCaracteristicaValor { get; set; } = "";
 
     private bool PlanActivo { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var lista = await MembresiaBlackService.ListarMembresiasBlackAsync();
+        membresiaActual = lista.FirstOrDefault();
+
+        if (membresiaActual != null)
+        {
+            idMembresia = membresiaActual.IdMembresiaBlack;
+            NombrePlanValor = membresiaActual.Tipo ?? "Membresía Black";
+            // El backend guarda el costo anual, lo dividimos entre 12 para mostrarlo mensual
+            PrecioMensualValor = (membresiaActual.CostoMantenimientoAnual / 12.0).ToString("0.00");
+            PlanActivo = membresiaActual.Activo;
+        }
+    }
 
     private string MensajeFormulario { get; set; } = "";
     private string ClaseMensajeFormulario { get; set; } = "";
@@ -362,7 +384,25 @@
             return;
         }
 
-        MostrarExito("Cambios guardados correctamente. Por ahora es una simulación visual sin base de datos.");
+        if (membresiaActual == null) membresiaActual = new MembresiaBlackDTO();
+        
+        membresiaActual.Tipo = NombrePlanValor;
+        // El precio ingresado es mensual, lo multiplicamos por 12 para el costo anual
+        membresiaActual.CostoMantenimientoAnual = (double)(precio * 12);
+        membresiaActual.Activo = PlanActivo;
+
+        var resultado = await MembresiaBlackService.ActualizarAsync(idMembresia, membresiaActual);
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MostrarExito("Cambios guardados correctamente.");
+            await Task.Delay(1500);
+            Nav.NavigateTo("/admin/membresias");
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
     }
 
     private void MostrarError(string mensaje)

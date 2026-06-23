@@ -1,7 +1,10 @@
 @page "/socio/reservas"
-@using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout SocioLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject ReservaServicio ReservaService
 
 <section class="reservas-page">
     <div class="reservas-breadcrumb">Reservar clase / Mis Reservas</div>
@@ -84,30 +87,63 @@
 
 @code {
     private string tabActiva = "activas";
-    private List<Reserva> reservasActivas = new();
-    private List<Reserva> historial = new();
+    private List<ReservaVista> reservasActivas = new();
+    private List<ReservaVista> historial = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        reservasActivas = new List<Reserva>
-        {
-            new() { NombreClase = "Yoga Matutino", Disciplina = "Yoga", Entrenador = "Pedro Sanchez", Fecha = "2025-05-12", Hora = "08:00", Salon = "Sala Yoga", Estado = "Confirmada" },
-            new() { NombreClase = "Spinning Power", Disciplina = "Spinning", Entrenador = "Laura Gomez", Fecha = "2025-05-12", Hora = "18:30", Salon = "Sala Ciclo", Estado = "Confirmada" }
-        };
-
-        historial = new List<Reserva>
-        {
-            new() { NombreClase = "CrossFit Intenso", Disciplina = "CrossFit", Entrenador = "Marco Ruiz", Fecha = "2025-05-05", Hora = "07:00", Salon = "Sala Principal", Estado = "Completada" }
-        };
+        await CargarReservas();
     }
 
-    private void CancelarReserva(Reserva r)
+    private async Task CargarReservas()
     {
-        reservasActivas.Remove(r);
+        if (!Session.EstaAutenticado) return;
+
+        var todasReservas = await ReservaService.ListarReservasAsync();
+        var misReservas = todasReservas.Where(r => r.IdUsuario == Session.IdUsuario).ToList();
+
+        reservasActivas.Clear();
+        historial.Clear();
+
+        foreach (var r in misReservas)
+        {
+            var vista = new ReservaVista
+            {
+                IdReserva = r.IdReserva,
+                NombreClase = r.SesionClase?.ClaseGrupal?.Nombre ?? "Clase General",
+                Disciplina = r.SesionClase?.ClaseGrupal?.Nombre ?? "-",
+                Entrenador = r.SesionClase?.Entrenador != null ? $"{r.SesionClase.Entrenador.Nombres} {r.SesionClase.Entrenador.ApellidoPaterno}" : "Sin asignar",
+                Fecha = r.SesionClase != null ? r.SesionClase.FechaSesion.ToString("yyyy-MM-dd") : "-",
+                Hora = r.SesionClase != null ? $"{r.SesionClase.HoraInicio:HH:mm} - {r.SesionClase.HoraFin:HH:mm}" : "-",
+                Salon = r.SesionClase?.Salon?.Nombre ?? "Sin asignar",
+                Estado = r.EstadoTexto
+            };
+
+            // Consideramos historial si ya asistió o si la fecha ya pasó
+            if (r.Asistio || (r.SesionClase != null && r.SesionClase.FechaSesion < DateTime.Today))
+            {
+                if (r.Asistio) vista.Estado = "Completada";
+                historial.Add(vista);
+            }
+            else
+            {
+                reservasActivas.Add(vista);
+            }
+        }
     }
 
-    private class Reserva
+    private async Task CancelarReserva(ReservaVista r)
     {
+        var resultado = await ReservaService.EliminarAsync(r.IdReserva);
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            await CargarReservas(); // Recargar después de eliminar
+        }
+    }
+
+    private class ReservaVista
+    {
+        public int IdReserva { get; set; }
         public string NombreClase { get; set; } = "";
         public string Disciplina { get; set; } = "";
         public string Entrenador { get; set; } = "";

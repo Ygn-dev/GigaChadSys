@@ -286,7 +286,7 @@
 
         var resultado = await SocioService.RegistrarAsync(nuevoSocio);
 
-        if (resultado.Contains("Exito") || resultado.Contains("exitosamente"))
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
             mensajeToast = "Socio registrado correctamente.";
             mostrarToast = true;

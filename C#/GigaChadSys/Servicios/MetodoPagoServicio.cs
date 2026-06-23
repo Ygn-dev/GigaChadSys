@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class MetodoPagoServicio
     /// <summary>
     /// GET /MetodoPagoRS — Lista todos los métodos de pago.
     /// </summary>
-    public async Task<List<MetodoPago>> ListarMetodosDePagoAsync()
+    public async Task<List<MetodoPagoDTO>> ListarMetodosDePagoAsync()
     {
-        var metodos = await _httpClient.GetFromJsonAsync<List<MetodoPago>>(Endpoint);
-        return metodos ?? new List<MetodoPago>();
+        var metodos = await _httpClient.GetFromJsonAsync<List<MetodoPagoDTO>>(Endpoint);
+        return metodos ?? new List<MetodoPagoDTO>();
     }
 
     /// <summary>
     /// GET /MetodoPagoRS/{id} — Obtiene un método de pago por su ID.
     /// </summary>
-    public async Task<MetodoPago?> ObtenerPorIdAsync(int idMetodoPago)
+    public async Task<MetodoPagoDTO?> ObtenerPorIdAsync(int idMetodoPago)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idMetodoPago}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<MetodoPago>();
+            return await response.Content.ReadFromJsonAsync<MetodoPagoDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /MetodoPagoRS — Registra un nuevo método de pago.
     /// </summary>
-    public async Task<string> RegistrarAsync(MetodoPago metodoPago)
+    public async Task<string> RegistrarAsync(MetodoPagoDTO metodoPago)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, metodoPago);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class MetodoPagoServicio
     /// <summary>
     /// PUT /MetodoPagoRS/{id} — Actualiza los datos de un método de pago existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idMetodoPago, MetodoPago metodoPago)
+    public async Task<string> ActualizarAsync(int idMetodoPago, MetodoPagoDTO metodoPago)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idMetodoPago}", metodoPago);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();

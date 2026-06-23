@@ -404,7 +404,7 @@
 
         var resultado = await EntrenadorService.RegistrarAsync(nuevoEntrenador);
 
-        if (resultado.Contains("Exito") || resultado.Contains("exitosamente"))
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
             MostrarExito("Entrenador registrado correctamente.");
             await Task.Delay(1500);

@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class MembresiaBasicServicio
     /// <summary>
     /// GET /MembresiaBasicRS — Lista todas las membresías Basic.
     /// </summary>
-    public async Task<List<MembresiaBasic>> ListarMembresiasBasicAsync()
+    public async Task<List<MembresiaBasicDTO>> ListarMembresiasBasicAsync()
     {
-        var membresias = await _httpClient.GetFromJsonAsync<List<MembresiaBasic>>(Endpoint);
-        return membresias ?? new List<MembresiaBasic>();
+        var membresias = await _httpClient.GetFromJsonAsync<List<MembresiaBasicDTO>>(Endpoint);
+        return membresias ?? new List<MembresiaBasicDTO>();
     }
 
     /// <summary>
     /// GET /MembresiaBasicRS/{id} — Obtiene una membresía Basic por su ID.
     /// </summary>
-    public async Task<MembresiaBasic?> ObtenerPorIdAsync(int idMembresia)
+    public async Task<MembresiaBasicDTO?> ObtenerPorIdAsync(int idMembresia)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idMembresia}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<MembresiaBasic>();
+            return await response.Content.ReadFromJsonAsync<MembresiaBasicDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /MembresiaBasicRS — Registra una nueva membresía Basic.
     /// </summary>
-    public async Task<string> RegistrarAsync(MembresiaBasic membresia)
+    public async Task<string> RegistrarAsync(MembresiaBasicDTO membresia)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, membresia);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class MembresiaBasicServicio
     /// <summary>
     /// PUT /MembresiaBasicRS/{id} — Actualiza los datos de una membresía Basic existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idMembresia, MembresiaBasic membresia)
+    public async Task<string> ActualizarAsync(int idMembresia, MembresiaBasicDTO membresia)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idMembresia}", membresia);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();

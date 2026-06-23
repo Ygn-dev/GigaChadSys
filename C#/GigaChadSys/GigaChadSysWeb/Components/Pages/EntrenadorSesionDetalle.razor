@@ -1,8 +1,13 @@
 @page "/entrenador/sesiones/detalle"
 @page "/entrenador/sesiones/detalle/{SesionId:int}"
-@using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout EntrenadorLayout
 @rendermode InteractiveServer
+@inject SesionClaseServicio SesionClaseService
+@inject ReservaServicio ReservaService
+@inject SocioServicio SocioService
+@inject SuscripcionServicio SuscripcionService
 
 <section class="sesion-detalle">
     <!-- Breadcrumb -->
@@ -125,42 +130,61 @@
         ? (int)Math.Round((double)sesion.Ocupados / sesion.CapacidadMaxima * 100)
         : 0;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Datos de ejemplo (mock) - se conectará con BL después
-        sesion = new SesionDetalle
-        {
-            NombreClase = "CrossFit Intenso",
-            Categoria = "CrossFit",
-            Nivel = "Nivel avanzado",
-            Estado = "Programada",
-            Fecha = new DateTime(2025, 5, 12),
-            HoraInicio = "07:00",
-            HoraFin = "08:00",
-            Salon = "Sala Principal",
-            Duracion = 60,
-            CapacidadMaxima = 20,
-            Ocupados = 18,
-            Descripcion = "Entrenamiento funcional de alta intensidad con ejercicios variados"
-        };
+        if (SesionId <= 0) return;
 
-        alumnos = new List<AlumnoInscrito>
+        // Cargar sesión
+        var sesiones = await SesionClaseService.ListarSesionesAsync();
+        var sesionDTO = sesiones.FirstOrDefault(s => s.IdSesion == SesionId);
+
+        if (sesionDTO != null)
         {
-            new AlumnoInscrito
+            var todasReservas = await ReservaService.ListarReservasAsync();
+            var reservasSesion = todasReservas.Where(r => r.SesionClase?.IdSesion == SesionId).ToList();
+
+            sesion = new SesionDetalle
             {
-                Nombre = "Juan Perez",
-                Codigo = "40123123",
-                EstadoMembresia = "Activo",
-                EstadoReserva = "Confirmada"
-            },
-            new AlumnoInscrito
+                NombreClase = sesionDTO.ClaseGrupal?.Nombre ?? "Sin nombre",
+                Categoria = sesionDTO.ClaseGrupal?.Nombre ?? "General",
+                Nivel = "General", // Placeholder si no hay nivel en DTO
+                Estado = sesionDTO.FechaSesion >= DateTime.Today ? "Programada" : "Finalizada",
+                Fecha = sesionDTO.FechaSesion,
+                HoraInicio = sesionDTO.HoraInicio.ToString("HH:mm"),
+                HoraFin = sesionDTO.HoraFin.ToString("HH:mm"),
+                Salon = sesionDTO.Salon?.Nombre ?? "Sin asignar",
+                Duracion = (int)(sesionDTO.HoraFin - sesionDTO.HoraInicio).TotalMinutes,
+                CapacidadMaxima = sesionDTO.Salon?.CapacidadMax ?? 0,
+                Ocupados = reservasSesion.Count,
+                Descripcion = sesionDTO.ClaseGrupal?.Descripcion ?? ""
+            };
+
+            // Cargar alumnos inscritos
+            var listaSocios = await SocioService.ListarSociosAsync();
+            var listaSuscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+
+            alumnos.Clear();
+            foreach (var reserva in reservasSesion)
             {
-                Nombre = "Fernando Loza",
-                Codigo = "40001678",
-                EstadoMembresia = "Activo",
-                EstadoReserva = "Confirmada"
+                var socioId = reserva.IdSocio; // Necesitamos el Socio de la reserva, pero ReservaDTO solo tiene IdSocio
+                var socioDTO = listaSocios.FirstOrDefault(s => s.IdUsuario == socioId);
+                
+                string estadoMem = "Inactiva";
+                if (socioDTO != null)
+                {
+                    var sub = listaSuscripciones.FirstOrDefault(s => s.IdUsuario == socioDTO.IdUsuario && s.Activo);
+                    if (sub != null) estadoMem = "Activo";
+                }
+
+                alumnos.Add(new AlumnoInscrito
+                {
+                    Nombre = socioDTO != null ? $"{socioDTO.Nombres} {socioDTO.ApellidoPaterno}" : $"Socio #{socioId}",
+                    Codigo = socioDTO?.Dni.ToString() ?? "—",
+                    EstadoMembresia = estadoMem,
+                    EstadoReserva = "Confirmada" // Asumiendo que si está en reservas está confirmada
+                });
             }
-        };
+        }
     }
 
     private class SesionDetalle

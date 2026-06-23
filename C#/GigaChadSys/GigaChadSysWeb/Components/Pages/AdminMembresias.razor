@@ -1,6 +1,10 @@
-﻿@page "/admin/membresias"
+@page "/admin/membresias"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
+@inject MembresiaBasicServicio BasicService
+@inject MembresiaBlackServicio BlackService
 
 <section class="membership-page">
 
@@ -22,7 +26,7 @@
                 </div>
 
                 <div class="membership-price">
-                    <strong>S/ 79</strong>
+                    <strong>S/ @PrecioBasic</strong>
                     <span>/mes</span>
                 </div>
             </div>
@@ -70,7 +74,7 @@
                 </div>
 
                 <div class="membership-price">
-                    <strong>S/ 149</strong>
+                    <strong>S/ @PrecioBlack</strong>
                     <span>/mes</span>
                 </div>
             </div>
@@ -111,3 +115,25 @@
     </div>
 
 </section>
+
+@code {
+    private decimal PrecioBasic { get; set; } = 79;
+    private decimal PrecioBlack { get; set; } = 149;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var basics = await BasicService.ListarMembresiasBasicAsync();
+        var basic = basics.FirstOrDefault();
+        if (basic != null)
+        {
+            PrecioBasic = (decimal)basic.CostoMantenimientoMensual;
+        }
+
+        var blacks = await BlackService.ListarMembresiasBlackAsync();
+        var black = blacks.FirstOrDefault();
+        if (black != null)
+        {
+            PrecioBlack = Math.Round((decimal)black.CostoMantenimientoAnual / 12, 2);
+        }
+    }
+}

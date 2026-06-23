@@ -2,6 +2,12 @@
 @using System.Text.Json.Serialization
 @layout AdminLayout
 @rendermode InteractiveServer
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject PagoServicio PagoService
+@inject SuscripcionServicio SuscripcionService
+@inject SocioServicio SocioService
+@inject MetodoPagoServicio MetodoPagoService
 @inject NavigationManager Navigation
 
 <div class="admin-list-page">
@@ -151,117 +157,52 @@
     private string EstadoFiltro { get; set; } = "";
     private string MetodoFiltro { get; set; } = "";
 
-    private List<PagoItem> Pagos { get; set; } = new()
+    private List<PagoItem> Pagos { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new PagoItem
+        var pagosTask = PagoService.ListarPagosAsync();
+        var suscripcionesTask = SuscripcionService.ListarSuscripcionesAsync();
+        var sociosTask = SocioService.ListarSociosAsync();
+        var metodosTask = MetodoPagoService.ListarMetodosDePagoAsync();
+
+        await Task.WhenAll(pagosTask, suscripcionesTask, sociosTask, metodosTask);
+
+        var pagosResult = pagosTask.Result;
+        var suscripcionesResult = suscripcionesTask.Result;
+        var sociosResult = sociosTask.Result;
+        var metodosResult = metodosTask.Result;
+
+        var dictSocios = sociosResult.ToDictionary(s => s.IdUsuario, s => s);
+        var dictMetodos = metodosResult.ToDictionary(m => m.IdMetodoPago, m => m.Tipo);
+
+        Pagos.Clear();
+
+        foreach (var pago in pagosResult)
         {
-            Id = 1,
-            SocioNombre = "Lucia Torres",
-            SocioDni = "40234123",
-            Iniciales = "LT",
-            Concepto = "Membresía Black - Mayo",
-            Monto = 149,
-            Metodo = "Tarjeta Crédito",
-            Fecha = "2025-05-01",
-            Estado = "pagado"
-        },
-        new PagoItem
-        {
-            Id = 2,
-            SocioNombre = "Juan Perez",
-            SocioDni = "40123123",
-            Iniciales = "JP",
-            Concepto = "Membresía Basic - Mayo",
-            Monto = 79,
-            Metodo = "Tarjeta Débito",
-            Fecha = "2025-05-03",
-            Estado = "pagado"
-        },
-        new PagoItem
-        {
-            Id = 3,
-            SocioNombre = "Ana Garcia",
-            SocioDni = "40345234",
-            Iniciales = "AG",
-            Concepto = "Membresía Black - Abril",
-            Monto = 149,
-            Metodo = "Efectivo",
-            Fecha = "2025-04-28",
-            Estado = "pagado"
-        },
-        new PagoItem
-        {
-            Id = 4,
-            SocioNombre = "Sofia Mendez",
-            SocioDni = "40678345",
-            Iniciales = "SM",
-            Concepto = "Membresía Black - Mayo",
-            Monto = 149,
-            Metodo = "Tarjeta Crédito",
-            Fecha = "2025-05-05",
-            Estado = "pagado"
-        },
-        new PagoItem
-        {
-            Id = 5,
-            SocioNombre = "Roberto Diaz",
-            SocioDni = "40789456",
-            Iniciales = "RD",
-            Concepto = "Membresía Basic - Mayo",
-            Monto = 79,
-            Metodo = "Tarjeta Débito",
-            Fecha = "2025-05-02",
-            Estado = "pagado"
-        },
-        new PagoItem
-        {
-            Id = 6,
-            SocioNombre = "Fernando Loza",
-            SocioDni = "40901678",
-            Iniciales = "FL",
-            Concepto = "Membresía Black - Mayo",
-            Monto = 149,
-            Metodo = "Tarjeta Crédito",
-            Fecha = "2025-05-04",
-            Estado = "pagado"
-        },
-        new PagoItem
-        {
-            Id = 7,
-            SocioNombre = "Lucia Torres",
-            SocioDni = "40234123",
-            Iniciales = "LT",
-            Concepto = "Membresía Black - Abril",
-            Monto = 149,
-            Metodo = "Tarjeta Crédito",
-            Fecha = "2025-04-01",
-            Estado = "pagado"
-        },
-        new PagoItem
-        {
-            Id = 8,
-            SocioNombre = "Juan Perez",
-            SocioDni = "40123123",
-            Iniciales = "JP",
-            Concepto = "Membresía Basic - Abril",
-            Monto = 79,
-            Metodo = "Efectivo",
-            Fecha = "2025-04-02",
-            Estado = "pendiente"
-        },
-        new PagoItem
-        {
-            Id = 9,
-            SocioNombre = "Ana Garcia",
-            SocioDni = "40345234",
-            Iniciales = "AG",
-            Concepto = "Inscripción",
-            Monto = 50,
-            Metodo = "Efectivo",
-            Fecha = "2025-03-15",
-            Estado = "pendiente"
+            var suscripcion = suscripcionesResult.FirstOrDefault(s => s.IdPago == pago.IdPago);
+            SocioDTO socio = null;
+            if (suscripcion != null && dictSocios.ContainsKey(suscripcion.IdUsuario))
+            {
+                socio = dictSocios[suscripcion.IdUsuario];
+            }
+
+            var nombreMetodo = dictMetodos.ContainsKey(pago.MetodoPago) ? dictMetodos[pago.MetodoPago] : "Desconocido";
+
+            Pagos.Add(new PagoItem
+            {
+                Id = pago.IdPago,
+                SocioNombre = socio != null ? $"{socio.Nombres} {socio.ApellidoPaterno}" : "Desconocido",
+                SocioDni = socio != null ? socio.Dni.ToString() : "-",
+                Iniciales = socio != null && socio.Nombres.Length > 0 ? socio.Nombres.Substring(0, 1).ToUpper() : "?",
+                Concepto = pago.Tipo ?? "-",
+                Monto = (decimal)pago.Monto,
+                Metodo = nombreMetodo,
+                Fecha = pago.FechaPagoTexto,
+                Estado = pago.Activo ? "pagado" : "pendiente"
+            });
         }
-    };
+    }
 
     private IEnumerable<PagoItem> PagosFiltrados
     {

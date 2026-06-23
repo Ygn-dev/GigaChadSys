@@ -1,0 +1,200 @@
+CREATE DATABASE IF NOT EXISTS gygabd;
+USE gygabd;
+
+
+DROP TABLE IF EXISTS Reserva;
+DROP TABLE IF EXISTS Suscripcion;
+DROP TABLE IF EXISTS SesionClase;
+DROP TABLE IF EXISTS Pago;
+DROP TABLE IF EXISTS MetodoPago;
+DROP TABLE IF EXISTS Salon;
+DROP TABLE IF EXISTS ClaseGrupal;
+DROP TABLE IF EXISTS MembresiaBasic;
+DROP TABLE IF EXISTS MembresiaBlack;
+DROP TABLE IF EXISTS Socio;
+DROP TABLE IF EXISTS Entrenador;
+DROP TABLE IF EXISTS Administrador;
+DROP TABLE IF EXISTS Maquina;
+
+
+CREATE TABLE Socio (
+    idUsuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombreCompleto VARCHAR(150) NOT NULL,
+    dni VARCHAR(8) UNIQUE,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    telefono VARCHAR(9),
+    contrasenia VARCHAR(255) NOT NULL,
+    estadoMembresia BOOLEAN DEFAULT FALSE,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE Entrenador (
+    idUsuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombreCompleto VARCHAR(150) NOT NULL,
+    dni VARCHAR(8) UNIQUE,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    telefono VARCHAR(9),
+    contrasenia VARCHAR(255) NOT NULL,
+    especialidad VARCHAR(100),
+    sueldo DECIMAL(10,2),
+    tiempoTrabajo TIME,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE Administrador (
+    idUsuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombreCompleto VARCHAR(150) NOT NULL,
+    dni VARCHAR(8) UNIQUE,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    telefono VARCHAR(9),
+    contrasenia VARCHAR(255) NOT NULL,
+    sede VARCHAR(100),
+    sueldo DECIMAL(10,2),
+    cargo VARCHAR(100),
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE MembresiaBasic (
+    membresia_ID INT AUTO_INCREMENT PRIMARY KEY,
+    nombrePlan VARCHAR(50) DEFAULT 'Basic',
+    costoMantenimientoMensual DECIMAL(10,2) NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE MembresiaBlack (
+    membresia_ID INT AUTO_INCREMENT PRIMARY KEY,
+    nombrePlan VARCHAR(50) DEFAULT 'Black',
+    costoMantenimientoAnual DECIMAL(10,2) NOT NULL,
+    cantidadInvitadosPorMes INT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE ClaseGrupal (
+    idClase INT AUTO_INCREMENT PRIMARY KEY,
+    nombreDisciplina VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    duracionMinutos INT,
+    nivel VARCHAR(50),
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE Salon (
+    idSalon INT AUTO_INCREMENT PRIMARY KEY,
+    nombreSalon VARCHAR(100) NOT NULL,
+    aforoMaximo INT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE SesionClase (
+    idSesion INT AUTO_INCREMENT PRIMARY KEY,
+    fechaSesion DATE NOT NULL,
+    horaInicio DATETIME NOT NULL,
+    horaFin DATETIME NOT NULL,
+    cuposDisponibles INT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+
+
+    idSalon INT NOT NULL,
+    idEntrenador INT NOT NULL,
+    idClase INT NOT NULL,
+
+
+    CONSTRAINT fk_sesion_salon 
+        FOREIGN KEY (idSalon) REFERENCES Salon(idSalon),
+
+
+    CONSTRAINT fk_sesion_entrenador 
+        FOREIGN KEY (idEntrenador) REFERENCES Entrenador(idUsuario),
+
+
+    CONSTRAINT fk_sesion_clase 
+        FOREIGN KEY (idClase) REFERENCES ClaseGrupal(idClase)
+);
+
+
+CREATE TABLE Reserva (
+    idReserva INT AUTO_INCREMENT PRIMARY KEY,
+    fechaHoraReserva DATETIME DEFAULT CURRENT_TIMESTAMP,
+    asistio BOOLEAN DEFAULT FALSE,
+    idSesion INT NOT NULL,
+    idUsuario INT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+
+
+    CONSTRAINT fk_reserva_sesion 
+        FOREIGN KEY (idSesion) REFERENCES SesionClase(idSesion),
+
+
+    CONSTRAINT fk_reserva_socio 
+        FOREIGN KEY (idUsuario) REFERENCES Socio(idUsuario)
+);
+
+
+CREATE TABLE MetodoPago (
+    idMetodoPago INT AUTO_INCREMENT PRIMARY KEY,
+    tipo VARCHAR(50) NOT NULL,
+    detalle VARCHAR(255),
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE Pago (
+    idPago INT AUTO_INCREMENT PRIMARY KEY,
+    fechaPago DATE,
+    montoTotal DECIMAL(10,2) NOT NULL,
+    tipo VARCHAR(50),
+    idMetodoPago INT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+
+
+    CONSTRAINT fk_pago_metodo 
+        FOREIGN KEY (idMetodoPago) REFERENCES MetodoPago(idMetodoPago)
+);
+
+
+CREATE TABLE Suscripcion (
+    idSuscripcion INT AUTO_INCREMENT PRIMARY KEY,
+    estadoMembresia BOOLEAN DEFAULT TRUE,
+    fechaIngreso DATE NOT NULL,
+    fechaFinMembresia DATE NOT NULL,
+
+
+    idPago INT NOT NULL,
+    idUsuario INT NOT NULL,
+    membresia_ID_basic INT NULL,
+    membresia_ID_black INT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+
+
+    CONSTRAINT fk_susc_pago 
+        FOREIGN KEY (idPago) REFERENCES Pago(idPago),
+
+
+    CONSTRAINT fk_susc_socio 
+        FOREIGN KEY (idUsuario) REFERENCES Socio(idUsuario),
+
+
+    CONSTRAINT fk_susc_basic 
+        FOREIGN KEY (membresia_ID_basic) REFERENCES MembresiaBasic(membresia_ID),
+
+
+    CONSTRAINT fk_susc_black 
+        FOREIGN KEY (membresia_ID_black) REFERENCES MembresiaBlack(membresia_ID)
+);
+
+
+CREATE TABLE Maquina (
+    idMaquina INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    marca VARCHAR(50),
+    estado VARCHAR(50) DEFAULT 'Operativa',
+    fechaUltimoMantenimiento DATE,
+    activo BOOLEAN DEFAULT TRUE
+);

@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class ReservaServicio
     /// <summary>
     /// GET /ReservaRS — Lista todas las reservas.
     /// </summary>
-    public async Task<List<Reserva>> ListarReservasAsync()
+    public async Task<List<ReservaDTO>> ListarReservasAsync()
     {
-        var reservas = await _httpClient.GetFromJsonAsync<List<Reserva>>(Endpoint);
-        return reservas ?? new List<Reserva>();
+        var reservas = await _httpClient.GetFromJsonAsync<List<ReservaDTO>>(Endpoint);
+        return reservas ?? new List<ReservaDTO>();
     }
 
     /// <summary>
     /// GET /ReservaRS/{id} — Obtiene una reserva por su ID.
     /// </summary>
-    public async Task<Reserva?> ObtenerPorIdAsync(int idReserva)
+    public async Task<ReservaDTO?> ObtenerPorIdAsync(int idReserva)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idReserva}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<Reserva>();
+            return await response.Content.ReadFromJsonAsync<ReservaDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /ReservaRS — Registra una nueva reserva.
     /// </summary>
-    public async Task<string> RegistrarAsync(Reserva reserva)
+    public async Task<string> RegistrarAsync(ReservaDTO reserva)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, reserva);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class ReservaServicio
     /// <summary>
     /// PUT /ReservaRS/{id} — Actualiza los datos de una reserva existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idReserva, Reserva reserva)
+    public async Task<string> ActualizarAsync(int idReserva, ReservaDTO reserva)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idReserva}", reserva);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();

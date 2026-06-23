@@ -1,7 +1,10 @@
 @page "/entrenador/perfil"
-@using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout EntrenadorLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject EntrenadorServicio EntrenadorService
 
 <section class="perfil-page">
     <div class="perfil-header">
@@ -119,18 +122,25 @@
 @code {
     private PerfilEntrenador perfil = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        perfil = new PerfilEntrenador
+        if (Session.EstaAutenticado)
         {
-            DNI = "40567890",
-            NombreCompleto = "Marco Ruiz",
-            Telefono = "912345678",
-            Correo = "marco@gigachad.com",
-            Especialidad = "CrossFit y Musculación",
-            FechaIngreso = new DateTime(2023, 6, 15),
-            Estado = "Activo"
-        };
+            var entrenador = await EntrenadorService.ObtenerPorIdAsync(Session.IdUsuario);
+            if (entrenador != null)
+            {
+                perfil = new PerfilEntrenador
+                {
+                    DNI = entrenador.Dni.ToString(),
+                    NombreCompleto = $"{entrenador.Nombres} {entrenador.ApellidoPaterno} {entrenador.ApellidoMaterno}",
+                    Telefono = entrenador.Telefono,
+                    Correo = entrenador.CorreoElectronico,
+                    Especialidad = entrenador.Especialidad,
+                    FechaIngreso = entrenador.FechaRegistro,
+                    Estado = entrenador.Activo ? "Activo" : "Inactivo"
+                };
+            }
+        }
     }
 
     private void ToggleEditar()
@@ -140,12 +150,12 @@
 
     private class PerfilEntrenador
     {
-        public string DNI { get; set; } = "";
-        public string NombreCompleto { get; set; } = "";
-        public string Telefono { get; set; } = "";
-        public string Correo { get; set; } = "";
-        public string Especialidad { get; set; } = "";
-        public DateTime FechaIngreso { get; set; }
-        public string Estado { get; set; } = "";
+        public string DNI { get; set; } = "—";
+        public string NombreCompleto { get; set; } = "Cargando...";
+        public string Telefono { get; set; } = "—";
+        public string Correo { get; set; } = "—";
+        public string Especialidad { get; set; } = "—";
+        public DateTime FechaIngreso { get; set; } = DateTime.Today;
+        public string Estado { get; set; } = "—";
     }
 }

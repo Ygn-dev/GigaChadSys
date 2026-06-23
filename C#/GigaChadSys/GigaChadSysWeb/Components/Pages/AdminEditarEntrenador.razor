@@ -345,7 +345,7 @@
 
         var resultado = await EntrenadorService.ActualizarAsync(IdUsuarioParametro, dto);
 
-        if (resultado.Contains("Exito") || resultado.Contains("exitosamente"))
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
             MostrarExito("Cambios guardados correctamente.");
             await Task.Delay(1500);

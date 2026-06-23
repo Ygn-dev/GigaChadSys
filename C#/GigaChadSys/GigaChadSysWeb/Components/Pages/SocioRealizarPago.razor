@@ -1,6 +1,11 @@
-﻿@page "/socio/pagos/realizar/{CodigoPago}"
+@page "/socio/pagos/realizar/{CodigoPago}"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout SocioLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject PagoServicio PagoService
+@inject NavigationManager Navigation
 
 <section class="socio-pay-process-page">
 
@@ -36,22 +41,17 @@
 
                 <div class="pay-detail-row">
                     <span>Tipo</span>
-                    <strong>▭ Membresía</strong>
+                    <strong>▭ @TipoPago</strong>
                 </div>
 
                 <div class="pay-detail-row">
                     <span>Socio</span>
-                    <strong>Lucía Torres</strong>
+                    <strong>@NombreUsuario</strong>
                 </div>
 
                 <div class="pay-detail-row">
-                    <span>Membresía</span>
-                    <strong>Black</strong>
-                </div>
-
-                <div class="pay-detail-row">
-                    <span>Fecha de vencimiento</span>
-                    <strong>@FechaVencimiento</strong>
+                    <span>Fecha</span>
+                    <strong>@FechaPago</strong>
                 </div>
 
                 <div class="pay-detail-row">
@@ -61,7 +61,7 @@
 
                 <div class="pay-detail-row total">
                     <span>Monto a pagar</span>
-                    <strong>S/149</strong>
+                    <strong>S/@MontoPago.ToString("0.00")</strong>
                 </div>
             </div>
 
@@ -117,13 +117,13 @@
                 </div>
 
                 <div class="summary-pay-row">
-                    <span>Periodo</span>
-                    <strong>@Periodo</strong>
+                    <span>Fecha</span>
+                    <strong>@FechaPago</strong>
                 </div>
 
                 <div class="summary-pay-row">
                     <span>Monto</span>
-                    <strong>S/149</strong>
+                    <strong>S/@MontoPago.ToString("0.00")</strong>
                 </div>
 
                 <div class="summary-pay-row">
@@ -133,7 +133,7 @@
 
                 <div class="summary-pay-total">
                     <span>Total a pagar</span>
-                    <strong>S/149</strong>
+                    <strong>S/@MontoPago.ToString("0.00")</strong>
                 </div>
             </div>
 
@@ -143,8 +143,8 @@
                 <div>
                     <h3>@TituloAlerta</h3>
                     <p>
-                        Tu cuota de @Periodo se encuentra @EstadoTexto.ToLower().
-                        Realiza el pago para mantener tu membresía activa y seguir disfrutando
+                        Tu cuota por @Concepto se encuentra @EstadoTexto.ToLower().
+                        Realiza el pago para mantener tu acceso y seguir disfrutando
                         de todos los beneficios.
                     </p>
                 </div>
@@ -157,35 +157,43 @@
 
 @code {
     [Parameter]
-    public string CodigoPago { get; set; } = "junio";
+    public string CodigoPago { get; set; } = "";
 
     private string MetodoSeleccionado { get; set; } = "Debito";
     private string Mensaje { get; set; } = "";
     private string ClaseMensaje { get; set; } = "";
 
-    private string Concepto =>
-        CodigoPago == "julio" ? "Membresía Black - Julio" : "Membresía Black - Junio";
+    private PagoDTO? pagoActual;
+    private string Concepto => pagoActual?.Tipo ?? "-";
+    private string TipoPago => pagoActual?.Tipo ?? "-";
+    private string FechaPago => pagoActual?.FechaPagoTexto ?? "-";
+    private decimal MontoPago => pagoActual != null ? (decimal)pagoActual.Monto : 0;
+    private bool Activo => pagoActual?.Activo ?? false;
 
-    private string Periodo =>
-        CodigoPago == "julio" ? "Julio 2025" : "Junio 2025";
-
-    private string FechaVencimiento =>
-        CodigoPago == "julio" ? "2025-07-01" : "2025-06-01";
-
-    private string EstadoTexto =>
-        CodigoPago == "julio" ? "Vencido" : "Pendiente";
-
-    private string TituloAlerta =>
-        CodigoPago == "julio" ? "Pago vencido detectado" : "Pago pendiente detectado";
-
-    private string ClaseEstado =>
-        CodigoPago == "julio" ? "pay-status expired" : "pay-status pending";
+    private string EstadoTexto => Activo ? "Pagado" : "Pendiente";
+    private string TituloAlerta => Activo ? "Pago al día" : "Pago pendiente detectado";
+    private string ClaseEstado => Activo ? "pay-status paid" : "pay-status pending";
+    
+    private string NombreUsuario => Session.EstaAutenticado ? Session.NombreUsuario : "Socio Invitado";
 
     private string ClaseDebito =>
         MetodoSeleccionado == "Debito" ? "pay-method-option selected" : "pay-method-option";
 
     private string ClaseCredito =>
         MetodoSeleccionado == "Credito" ? "pay-method-option selected" : "pay-method-option";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(CodigoPago, out int idPago))
+        {
+            pagoActual = await PagoService.ObtenerPorIdAsync(idPago);
+            if (pagoActual == null)
+            {
+                Mensaje = "No se encontró el pago especificado.";
+                ClaseMensaje = "pay-process-message error";
+            }
+        }
+    }
 
     private void SeleccionarDebito()
     {
@@ -197,9 +205,33 @@
         MetodoSeleccionado = "Credito";
     }
 
-    private void ConfirmarPago()
+    private async Task ConfirmarPago()
     {
-        Mensaje = $"Pago confirmado correctamente con tarjeta {MetodoSeleccionado}. Por ahora es una simulación visual.";
-        ClaseMensaje = "pay-process-message success";
+        if (pagoActual == null) return;
+        if (Activo)
+        {
+            Mensaje = "Este pago ya fue realizado.";
+            ClaseMensaje = "pay-process-message warning";
+            return;
+        }
+
+        // Metodo: 1 Efectivo, 2 Debito, 3 Credito
+        pagoActual.MetodoPago = MetodoSeleccionado == "Debito" ? 2 : 3;
+        pagoActual.Activo = true;
+
+        var resultado = await PagoService.ActualizarAsync(pagoActual.IdPago, pagoActual);
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            Mensaje = $"¡Pago confirmado correctamente con tarjeta {MetodoSeleccionado}!";
+            ClaseMensaje = "pay-process-message success";
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/socio/pagos");
+        }
+        else
+        {
+            Mensaje = resultado;
+            ClaseMensaje = "pay-process-message error";
+        }
     }
 }

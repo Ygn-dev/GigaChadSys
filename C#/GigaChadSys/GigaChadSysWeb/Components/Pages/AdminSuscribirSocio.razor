@@ -1,6 +1,13 @@
-﻿@page "/admin/suscripciones/nuevo/{PlanTipo}"
+@page "/admin/suscripciones/nuevo/{PlanTipo}"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
+@inject SocioServicio SocioService
+@inject SuscripcionServicio SuscripcionService
+@inject MembresiaBasicServicio MembresiaBasicService
+@inject MembresiaBlackServicio MembresiaBlackService
+@inject NavigationManager Nav
 
 <section class="subscribe-page">
 
@@ -176,8 +183,8 @@
 
             <div class="subscribe-summary-row">
                 <span>Fechas</span>
-                <strong>Inicio: @FechaInicio</strong>
-                <strong>Vencimiento: @FechaVencimiento</strong>
+                <strong>Inicio: @FechaInicioTexto</strong>
+                <strong>Vencimiento: @FechaVencimientoTexto</strong>
             </div>
 
             <div class="subscribe-summary-row">
@@ -202,9 +209,12 @@
     public string PlanTipo { get; set; } = "basic";
 
     private string TextoBusqueda { get; set; } = "";
-    private string FechaInicio { get; set; } = "2026-05-10";
-    private string FechaVencimiento { get; set; } = "2026-06-10";
+    private DateTime FechaInicio { get; set; } = DateTime.Today;
+    private DateTime FechaVencimiento { get; set; } = DateTime.Today.AddMonths(1);
     private bool SuscripcionActiva { get; set; } = true;
+
+    private string FechaInicioTexto => FechaInicio.ToString("yyyy-MM-dd");
+    private string FechaVencimientoTexto => FechaVencimiento.ToString("yyyy-MM-dd");
 
     private string MensajeFormulario { get; set; } = "";
     private string ClaseMensajeFormulario { get; set; } = "";
@@ -212,7 +222,9 @@
     private SocioVista? SocioSeleccionado { get; set; }
 
     private string NombrePlan => PlanTipo.ToLower() == "black" ? "Membresía Black" : "Membresía Basic";
-    private string PrecioPlan => PlanTipo.ToLower() == "black" ? "149" : "79";
+    private string PrecioPlan { get; set; } = "0.00";
+    private int IdPlanSeleccionado { get; set; } = 1;
+    
     private string IconoPlan => PlanTipo.ToLower() == "black" ? "♛" : "◎";
 
     private string ClaseEstadoActiva => SuscripcionActiva ? "subscribe-status-button active" : "subscribe-status-button";
@@ -249,37 +261,51 @@
             "Sin zona de spa"
         };
 
-    private List<SocioVista> Socios { get; set; } = new()
+    private List<SocioVista> Socios { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new SocioVista
+        // Cargar precios reales
+        if (PlanTipo.ToLower() == "black")
         {
-            Dni = "40234123",
-            NombreCompleto = "Lucía Torres",
-            Email = "lucia@email.com",
-            EstadoMembresia = "Sin membresía"
-        },
-        new SocioVista
-        {
-            Dni = "40123888",
-            NombreCompleto = "Juan Pérez",
-            Email = "juan@email.com",
-            EstadoMembresia = "Sin membresía"
-        },
-        new SocioVista
-        {
-            Dni = "40987654",
-            NombreCompleto = "Sofía Méndez",
-            Email = "sofia@email.com",
-            EstadoMembresia = "Membresía vencida"
-        },
-        new SocioVista
-        {
-            Dni = "40777111",
-            NombreCompleto = "Ana García",
-            Email = "ana@email.com",
-            EstadoMembresia = "Sin membresía"
+            var planes = await MembresiaBlackService.ListarMembresiasBlackAsync();
+            var plan = planes.FirstOrDefault();
+            if (plan != null)
+            {
+                IdPlanSeleccionado = plan.IdMembresiaBlack;
+                PrecioPlan = (plan.CostoMantenimientoAnual / 12.0).ToString("0.00");
+            }
         }
-    };
+        else
+        {
+            var planes = await MembresiaBasicService.ListarMembresiasBasicAsync();
+            var plan = planes.FirstOrDefault();
+            if (plan != null)
+            {
+                IdPlanSeleccionado = plan.IdMembresiaBasic;
+                PrecioPlan = plan.CostoMantenimientoMensual.ToString("0.00");
+            }
+        }
+
+        // Cargar socios reales y sus suscripciones
+        var listaSocios = await SocioService.ListarSociosAsync();
+        var listaSuscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+
+        foreach (var s in listaSocios)
+        {
+            var sub = listaSuscripciones.FirstOrDefault(x => x.IdUsuario == s.IdUsuario && x.Activo);
+            string estado = sub != null ? sub.TipoPlan : "Sin membresía";
+
+            Socios.Add(new SocioVista
+            {
+                IdUsuario = s.IdUsuario,
+                Dni = s.Dni.ToString(),
+                NombreCompleto = $"{s.Nombres} {s.ApellidoPaterno}",
+                Email = s.CorreoElectronico,
+                EstadoMembresia = estado
+            });
+        }
+    }
 
     private IEnumerable<SocioVista> SociosFiltrados
     {
@@ -305,12 +331,18 @@
 
     private void CambiarFechaInicio(ChangeEventArgs e)
     {
-        FechaInicio = e.Value?.ToString() ?? "";
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime dt))
+        {
+            FechaInicio = dt;
+        }
     }
 
     private void CambiarFechaVencimiento(ChangeEventArgs e)
     {
-        FechaVencimiento = e.Value?.ToString() ?? "";
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime dt))
+        {
+            FechaVencimiento = dt;
+        }
     }
 
     private void SeleccionarSocio(SocioVista socio)
@@ -340,7 +372,7 @@
         SuscripcionActiva = false;
     }
 
-    private void RegistrarSuscripcion()
+    private async Task RegistrarSuscripcion()
     {
         if (SocioSeleccionado == null)
         {
@@ -348,19 +380,37 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(FechaInicio))
+        var nuevaSuscripcion = new SuscripcionDTO
         {
-            MostrarError("La fecha de inicio es obligatoria.");
-            return;
+            IdUsuario = SocioSeleccionado.IdUsuario,
+            EstadoMembresia = SuscripcionActiva ? "activa" : "inactiva",
+            FechaIngreso = FechaInicio,
+            FechaFinMembresia = FechaVencimiento,
+            Activo = SuscripcionActiva,
+            IdPago = 1 // Hardcodeado por ahora ya que no hay pago vinculado en este formulario
+        };
+
+        if (PlanTipo.ToLower() == "black")
+        {
+            nuevaSuscripcion.IdMembresiaBlack = IdPlanSeleccionado;
+        }
+        else
+        {
+            nuevaSuscripcion.IdMembresiaBasic = IdPlanSeleccionado;
         }
 
-        if (string.IsNullOrWhiteSpace(FechaVencimiento))
-        {
-            MostrarError("La fecha de vencimiento es obligatoria.");
-            return;
-        }
+        var resultado = await SuscripcionService.RegistrarAsync(nuevaSuscripcion);
 
-        MostrarExito("Suscripción registrada correctamente. Por ahora es una simulación visual sin base de datos.");
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MostrarExito("Suscripción registrada correctamente.");
+            await Task.Delay(1500);
+            Nav.NavigateTo("/admin/membresias");
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
     }
 
     private void MostrarError(string mensaje)
@@ -377,6 +427,7 @@
 
     private class SocioVista
     {
+        public int IdUsuario { get; set; }
         public string Dni { get; set; } = "";
         public string NombreCompleto { get; set; } = "";
         public string Email { get; set; } = "";

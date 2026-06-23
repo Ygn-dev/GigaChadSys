@@ -1,7 +1,10 @@
 @page "/entrenador/pagos"
-@using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout EntrenadorLayout
 @rendermode InteractiveServer
+@inject PagoServicio PagoService
+@inject MetodoPagoServicio MetodoPagoService
 
 <section class="pagos-page">
     <div class="pagos-header">
@@ -152,48 +155,37 @@
         ? pagos.Where(p => p.Estado == "Pagado").OrderByDescending(p => p.Fecha).First().Fecha.ToString("yyyy-MM-dd")
         : "---";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Datos mock - se conectará con BL después
-        pagos = new List<PagoEntrenador>
+        var todosPagos = await PagoService.ListarPagosAsync();
+        var listaMetodos = await MetodoPagoService.ListarMetodosPagoAsync();
+        
+        var pagosSueldo = todosPagos
+            .Where(p => p.Tipo != null && (p.Tipo.ToLower().Contains("sueldo") || p.Tipo.ToLower().Contains("bono")))
+            .OrderByDescending(p => p.FechaPago)
+            .ToList();
+
+        pagos.Clear();
+        foreach (var p in pagosSueldo)
         {
-            new PagoEntrenador
+            var metodo = listaMetodos.FirstOrDefault(m => m.IdMetodoPago == p.MetodoPago);
+            pagos.Add(new PagoEntrenador
             {
-                Concepto = "Sueldo Abril 2025",
-                Tipo = "Sueldo",
-                Metodo = "Transferencia",
-                Monto = 2200,
-                Fecha = new DateTime(2025, 4, 1),
-                Estado = "Pagado"
-            },
-            new PagoEntrenador
-            {
-                Concepto = "Sueldo Mayo 2025",
-                Tipo = "Sueldo",
-                Metodo = "Transferencia",
-                Monto = 2200,
-                Fecha = new DateTime(2025, 5, 1),
-                Estado = "Pagado"
-            },
-            new PagoEntrenador
-            {
-                Concepto = "Bono por clases extra",
-                Tipo = "Bono",
-                Metodo = "Transferencia",
-                Monto = 450,
-                Fecha = new DateTime(2025, 5, 10),
-                Estado = "Pagado"
-            },
-            new PagoEntrenador
-            {
-                Concepto = "Sueldo Junio 2025",
-                Tipo = "Sueldo",
-                Metodo = "Transferencia",
-                Monto = 2200,
-                Fecha = new DateTime(2025, 6, 1),
-                Estado = "Pendiente"
-            }
-        };
+                Concepto = p.Tipo ?? "Sueldo",
+                Tipo = p.Tipo?.Contains("Bono", StringComparison.OrdinalIgnoreCase) == true ? "Bono" : "Sueldo",
+                Metodo = metodo?.Nombre ?? "Desconocido",
+                Monto = (decimal)p.Monto,
+                Fecha = p.FechaPago ?? DateTime.Now,
+                Estado = p.Activo ? "Pagado" : "Pendiente"
+            });
+        }
+        
+        // Si no hay pagos reales de sueldo, agreamos los de la maqueta como placeholder 
+        if (!pagos.Any())
+        {
+            pagos.Add(new PagoEntrenador { Concepto = "Sueldo Abril 2025", Tipo = "Sueldo", Metodo = "Transferencia", Monto = 2200, Fecha = new DateTime(2025, 4, 1), Estado = "Pagado" });
+            pagos.Add(new PagoEntrenador { Concepto = "Bono especial", Tipo = "Bono", Metodo = "Transferencia", Monto = 450, Fecha = new DateTime(2025, 5, 10), Estado = "Pagado" });
+        }
     }
 
     private class PagoEntrenador

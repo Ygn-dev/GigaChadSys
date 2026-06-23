@@ -1,9 +1,14 @@
-﻿@page "/admin/reportes"
+@page "/admin/reportes"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using System.Globalization
 @using System.Linq
 @using Microsoft.AspNetCore.Components
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject SocioServicio SocioService
+@inject SuscripcionServicio SuscripcionService
+@inject PagoServicio PagoService
 
 <section class="reports-page">
 
@@ -28,28 +33,28 @@
             <div class="report-stat-card">
                 <div class="report-stat-icon green">♙</div>
                 <span>Socios activos</span>
-                <strong>6</strong>
-                <p>75% del total</p>
+                <strong>@SociosActivos</strong>
+                <p>@Porcentaje(SociosActivos, TotalSocios)</p>
             </div>
 
             <div class="report-stat-card">
                 <div class="report-stat-icon red">♙</div>
                 <span>Socios inactivos</span>
-                <strong>2</strong>
-                <p>25% del total</p>
+                <strong>@SociosInactivos</strong>
+                <p>@Porcentaje(SociosInactivos, TotalSocios)</p>
             </div>
 
             <div class="report-stat-card">
                 <div class="report-stat-icon yellow">◷</div>
                 <span>Pagos pendientes</span>
-                <strong>1</strong>
-                <p>S/ 79.00 en total</p>
+                <strong>@PagosPendientesTotal</strong>
+                <p>S/ @DeudaPendiente en total</p>
             </div>
 
             <div class="report-stat-card">
                 <div class="report-stat-icon blue">◎</div>
                 <span>Total socios</span>
-                <strong>8</strong>
+                <strong>@TotalSocios</strong>
                 <p>Registrados en el sistema</p>
             </div>
         </div>
@@ -61,20 +66,20 @@
                 <div class="membership-bar-row">
                     <div class="membership-bar-header">
                         <span>Membresía Basic</span>
-                        <strong>4 socios</strong>
+                        <strong>@SociosBasic socios</strong>
                     </div>
                     <div class="membership-bar-track">
-                        <div class="membership-bar-fill basic"></div>
+                        <div class="membership-bar-fill basic" style="width: @PorcentajeAncho(SociosBasic, TotalSocios)"></div>
                     </div>
                 </div>
 
                 <div class="membership-bar-row">
                     <div class="membership-bar-header">
                         <span>Membresía Black</span>
-                        <strong>4 socios</strong>
+                        <strong>@SociosBlack socios</strong>
                     </div>
                     <div class="membership-bar-track">
-                        <div class="membership-bar-fill black"></div>
+                        <div class="membership-bar-fill black" style="width: @PorcentajeAncho(SociosBlack, TotalSocios)"></div>
                     </div>
                 </div>
 
@@ -318,25 +323,71 @@
         PeriodoActual = "Anio";
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        var sociosTask = SocioService.ListarSociosAsync();
+        var suscripcionesTask = SuscripcionService.ListarSuscripcionesAsync();
+        var pagosTask = PagoService.ListarPagosAsync();
+
+        await Task.WhenAll(sociosTask, suscripcionesTask, pagosTask);
+
+        TodosLosSocios = sociosTask.Result;
+        TodasLasSuscripciones = suscripcionesTask.Result;
+        TodosLosPagos = pagosTask.Result;
+
+        TotalSocios = TodosLosSocios.Count;
+        SociosActivos = TodosLosSocios.Count(s => s.Activo);
+        SociosInactivos = TotalSocios - SociosActivos;
+
+        var pagosPendientes = TodosLosPagos.Where(p => !p.Activo).ToList();
+        PagosPendientesTotal = pagosPendientes.Count;
+        DeudaPendiente = pagosPendientes.Sum(p => (decimal)p.Monto).ToString("0.00", CultureInfo.InvariantCulture);
+
+        SociosBasic = TodasLasSuscripciones.Count(s => s.Activo && s.IdMembresiaBasic != null);
+        SociosBlack = TodasLasSuscripciones.Count(s => s.Activo && s.IdMembresiaBlack != null);
+
+        Socios.Clear();
+        foreach (var s in TodosLosSocios)
+        {
+            var suscripcion = TodasLasSuscripciones.FirstOrDefault(sus => sus.IdUsuario == s.IdUsuario && sus.Activo);
+            string membresia = "Sin plan";
+            if (suscripcion != null)
+            {
+                if (suscripcion.IdMembresiaBlack != null) membresia = "Membresía Black";
+                else if (suscripcion.IdMembresiaBasic != null) membresia = "Membresía Basic";
+            }
+            Socios.Add(new SocioReporte
+            {
+                Nombre = $"{s.Nombres} {s.ApellidoPaterno}",
+                Membresia = membresia,
+                Activo = s.Activo
+            });
+        }
+    }
+
+    private List<SocioDTO> TodosLosSocios = new();
+    private List<SuscripcionDTO> TodasLasSuscripciones = new();
+    private List<PagoDTO> TodosLosPagos = new();
+
+    private int SociosActivos = 0;
+    private int SociosInactivos = 0;
+    private int TotalSocios = 0;
+    private int PagosPendientesTotal = 0;
+    private string DeudaPendiente = "0.00";
+    private int SociosBasic = 0;
+    private int SociosBlack = 0;
+
     private decimal TotalRecaudadoNumero =>
-        PeriodoActual == "Mes" ? 982.00m :
-        PeriodoActual == "Trimestre" ? 2350.00m :
-        8920.00m;
+        TodosLosPagos.Where(p => p.Activo).Sum(p => (decimal)p.Monto);
 
     private decimal TotalPendienteNumero =>
-        PeriodoActual == "Mes" ? 79.00m :
-        PeriodoActual == "Trimestre" ? 237.00m :
-        553.00m;
+        TodosLosPagos.Where(p => !p.Activo).Sum(p => (decimal)p.Monto);
 
     private int TotalTransaccionesEntero =>
-        PeriodoActual == "Mes" ? 8 :
-        PeriodoActual == "Trimestre" ? 18 :
-        70;
+        TodosLosPagos.Count;
 
     private int PagosPendientes =>
-        PeriodoActual == "Mes" ? 1 :
-        PeriodoActual == "Trimestre" ? 3 :
-        7;
+        TodosLosPagos.Count(p => !p.Activo);
 
     private int PagosPagados =>
         TotalTransaccionesEntero - PagosPendientes;
@@ -350,26 +401,16 @@
     private string TotalPendiente =>
         TotalPendienteNumero.ToString("0.00", CultureInfo.InvariantCulture);
 
-    private string PromedioPago =>
+    private string PromedioPago => TotalTransaccionesEntero == 0 ? "0.00" :
         (TotalRecaudadoNumero / TotalTransaccionesEntero).ToString("0.00", CultureInfo.InvariantCulture);
 
     private string TotalTransacciones =>
         TotalTransaccionesEntero.ToString();
 
-    private int PagosEfectivo =>
-        PeriodoActual == "Mes" ? 5 :
-        PeriodoActual == "Trimestre" ? 12 :
-        42;
-
-    private int PagosDebito =>
-        PeriodoActual == "Mes" ? 2 :
-        PeriodoActual == "Trimestre" ? 4 :
-        18;
-
-    private int PagosCredito =>
-        PeriodoActual == "Mes" ? 1 :
-        PeriodoActual == "Trimestre" ? 2 :
-        10;
+    // 1: Efectivo, 2: Tarjeta Débito, 3: Tarjeta Crédito (Ejemplo simplificado, requeriría MetodoPagoServicio para ser exacto)
+    private int PagosEfectivo => TodosLosPagos.Count(p => p.MetodoPago == 1);
+    private int PagosDebito => TodosLosPagos.Count(p => p.MetodoPago == 2);
+    private int PagosCredito => TodosLosPagos.Count(p => p.MetodoPago == 3);
 
     private string MetodoPagoDonutStyle
     {
@@ -401,6 +442,12 @@
         }
 
         return Convert.ToInt32(Math.Round(360.0 * cantidad / total));
+    }
+
+    private string PorcentajeAncho(int cantidad, int total)
+    {
+        if (total == 0) return "0%";
+        return (100.0 * cantidad / total).ToString("0.0", CultureInfo.InvariantCulture) + "%";
     }
 
     private string Porcentaje(int cantidad, int total)
@@ -472,16 +519,7 @@
         }
     }
 
-    private List<SocioReporte> Socios { get; set; } = new()
-    {
-        new SocioReporte { Nombre = "Lucia Torres", Membresia = "Membresía Black", Activo = true },
-        new SocioReporte { Nombre = "Juan Perez", Membresia = "Membresía Basic", Activo = true },
-        new SocioReporte { Nombre = "Ana Garcia", Membresia = "Membresía Black", Activo = true },
-        new SocioReporte { Nombre = "Diego Ramos", Membresia = "Membresía Basic", Activo = false },
-        new SocioReporte { Nombre = "Sofia Mendez", Membresia = "Membresía Black", Activo = true },
-        new SocioReporte { Nombre = "Roberto Diaz", Membresia = "Membresía Basic", Activo = true },
-        new SocioReporte { Nombre = "Camila Flores", Membresia = "Membresía Basic", Activo = false }
-    };
+    private List<SocioReporte> Socios { get; set; } = new();
 
     private class PuntoGrafico
     {

@@ -1,6 +1,10 @@
-﻿@page "/admin/membresias/basic/editar"
+@page "/admin/membresias/basic/editar"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
+@inject MembresiaBasicServicio MembresiaBasicService
+@inject NavigationManager Nav
 
 <section class="plan-edit-page">
 
@@ -216,13 +220,30 @@
 </section>
 
 @code {
+    private MembresiaBasicDTO membresiaActual;
+    private int idMembresia = 1; // Suponemos 1 por defecto, o cargar el primero
+
     private string NombrePlanValor { get; set; } = "Membresía Basic";
-    private string PrecioMensualValor { get; set; } = "79";
+    private string PrecioMensualValor { get; set; } = "0";
 
     private string NuevoBeneficioValor { get; set; } = "";
     private string NuevaCaracteristicaValor { get; set; } = "";
 
     private bool PlanActivo { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var lista = await MembresiaBasicService.ListarMembresiasBasicAsync();
+        membresiaActual = lista.FirstOrDefault();
+
+        if (membresiaActual != null)
+        {
+            idMembresia = membresiaActual.IdMembresiaBasic;
+            NombrePlanValor = membresiaActual.Tipo ?? "Membresía Basic";
+            PrecioMensualValor = membresiaActual.CostoMantenimientoMensual.ToString("0.00");
+            PlanActivo = membresiaActual.Activo;
+        }
+    }
 
     private string MensajeFormulario { get; set; } = "";
     private string ClaseMensajeFormulario { get; set; } = "";
@@ -353,7 +374,24 @@
             return;
         }
 
-        MostrarExito("Cambios guardados correctamente. Por ahora es una simulación visual sin base de datos.");
+        if (membresiaActual == null) membresiaActual = new MembresiaBasicDTO();
+        
+        membresiaActual.Tipo = NombrePlanValor;
+        membresiaActual.CostoMantenimientoMensual = (double)precio;
+        membresiaActual.Activo = PlanActivo;
+
+        var resultado = await MembresiaBasicService.ActualizarAsync(idMembresia, membresiaActual);
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MostrarExito("Cambios guardados correctamente.");
+            await Task.Delay(1500);
+            Nav.NavigateTo("/admin/membresias");
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
     }
 
     private void MostrarError(string mensaje)

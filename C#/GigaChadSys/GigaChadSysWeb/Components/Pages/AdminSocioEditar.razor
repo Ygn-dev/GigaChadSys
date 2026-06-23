@@ -359,7 +359,7 @@
 
         var resultado = await SocioService.ActualizarAsync(Id, dto);
 
-        if (resultado.Contains("Exito") || resultado.Contains("exitosamente"))
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
             mensajeToast = "Cambios guardados correctamente.";
             mostrarToast = true;

@@ -1,6 +1,11 @@
 @page "/socio/reservar"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout SocioLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject SesionClaseServicio SesionClaseService
+@inject ReservaServicio ReservaService
 
 <section class="reservar-page">
 
@@ -98,14 +103,21 @@
                     </div>
                 </div>
 
-                <a class="reserve-class-button"
-                   href="@($"/socio/reservar/confirmada/{clase.Codigo}")">
+                <button class="reserve-class-button"
+                        @onclick="() => ReservarClase(clase.Codigo)">
                     Reservar
-                </a>
+                </button>
 
             </div>
         }
     </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeReserva))
+    {
+        <div class="socios-toast @ClaseMensajeReserva" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+            @MensajeReserva
+        </div>
+    }
 
 </section>
 
@@ -141,107 +153,39 @@
         }
     }
 
-    protected override void OnInitialized()
+    private string MensajeReserva { get; set; } = "";
+    private string ClaseMensajeReserva { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
     {
-        Clases = new List<ClaseDisponible>
+        var sesiones = await SesionClaseService.ListarSesionesAsync();
+        var reservas = await ReservaService.ListarReservasAsync();
+
+        Clases.Clear();
+
+        foreach (var sesion in sesiones)
         {
-            new ClaseDisponible
+            int inscritos = reservas.Count(r => r.SesionClase?.IdSesion == sesion.IdSesion);
+            int capacidad = sesion.Salon?.CapacidadMax ?? 0;
+            int cuposDisponibles = capacidad > 0 ? capacidad - inscritos : sesion.CuposDisponibles;
+
+            Clases.Add(new ClaseDisponible
             {
-                Codigo = "crossfit-intenso",
-                Nombre = "CrossFit Intenso",
-                Disciplina = "CrossFit",
-                Descripcion = "Entrenamiento funcional de alta intensidad con ejercicios variados.",
-                Fecha = "2025-05-12",
-                Horario = "07:00 - 08:00",
-                Entrenador = "Marco Ruiz",
-                Salon = "Sala Principal",
-                Capacidad = 20,
-                Inscritos = 18,
-                Nivel = "avanzado",
-                Duracion = 60,
-                CuposDisponibles = 2
-            },
-            new ClaseDisponible
-            {
-                Codigo = "yoga-matutino",
-                Nombre = "Yoga Matutino",
-                Disciplina = "Yoga",
-                Descripcion = "Sesión de yoga para mejorar flexibilidad y reducir estrés.",
-                Fecha = "2025-05-12",
-                Horario = "08:00 - 08:45",
-                Entrenador = "Pedro Sanchez",
-                Salon = "Sala Yoga",
-                Capacidad = 15,
-                Inscritos = 12,
-                Nivel = "principiante",
-                Duracion = 45,
-                CuposDisponibles = 3
-            },
-            new ClaseDisponible
-            {
-                Codigo = "spinning-power",
-                Nombre = "Spinning Power",
-                Disciplina = "Spinning",
-                Descripcion = "Clase de ciclismo indoor con música motivadora.",
-                Fecha = "2025-05-12",
-                Horario = "18:30 - 19:15",
-                Entrenador = "Laura Gomez",
-                Salon = "Sala Ciclo",
-                Capacidad = 25,
-                Inscritos = 22,
-                Nivel = "intermedio",
-                Duracion = 45,
-                CuposDisponibles = 3
-            },
-            new ClaseDisponible
-            {
-                Codigo = "boxeo-amateur",
-                Nombre = "Boxeo Amateur",
-                Disciplina = "Boxeo",
-                Descripcion = "Técnicas básicas de boxeo y acondicionamiento físico.",
-                Fecha = "2025-05-12",
-                Horario = "19:00 - 20:00",
-                Entrenador = "Carlos Diaz",
-                Salon = "Sala Box",
-                Capacidad = 15,
-                Inscritos = 13,
-                Nivel = "principiante",
-                Duracion = 60,
-                CuposDisponibles = 2
-            },
-            new ClaseDisponible
-            {
-                Codigo = "crossfit-intenso-2",
-                Nombre = "CrossFit Intenso",
-                Disciplina = "CrossFit",
-                Descripcion = "Entrenamiento funcional de alta intensidad con ejercicios variados.",
-                Fecha = "2025-05-13",
-                Horario = "07:00 - 08:00",
-                Entrenador = "Marco Ruiz",
-                Salon = "Sala Principal",
-                Capacidad = 20,
-                Inscritos = 15,
-                Nivel = "avanzado",
-                Duracion = 60,
-                CuposDisponibles = 5
-            },
-            new ClaseDisponible
-            {
-                Codigo = "pilates-core",
-                Nombre = "Pilates Core",
-                Disciplina = "Pilates",
-                Descripcion = "Fortalecimiento del core y control postural.",
-                Fecha = "2025-05-13",
-                Horario = "18:00 - 18:50",
-                Entrenador = "Ana Flores",
-                Salon = "Sala Yoga",
-                Capacidad = 12,
-                Inscritos = 11,
-                Nivel = "intermedio",
-                Duracion = 50,
-                CuposDisponibles = 1
-            }
-        };
+                Codigo = sesion.IdSesion.ToString(),
+                Nombre = sesion.ClaseGrupal?.Nombre ?? "Sesión sin nombre",
+                Disciplina = sesion.ClaseGrupal?.Nombre ?? "-",
+                Descripcion = sesion.ClaseGrupal?.Descripcion ?? "",
+                Fecha = sesion.FechaSesion.ToString("yyyy-MM-dd"),
+                Horario = $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}",
+                Entrenador = sesion.Entrenador != null ? $"{sesion.Entrenador.Nombres} {sesion.Entrenador.ApellidoPaterno}" : "Sin asignar",
+                Salon = sesion.Salon?.Nombre ?? "Sin asignar",
+                Capacidad = capacidad,
+                Inscritos = inscritos,
+                Nivel = "Todos", // O el que venga en el modelo
+                Duracion = (int)(sesion.HoraFin - sesion.HoraInicio).TotalMinutes,
+                CuposDisponibles = cuposDisponibles
+            });
+        }
     }
 
     private void CambiarDisciplina(ChangeEventArgs e)
@@ -264,6 +208,46 @@
         FiltroDisciplina = "";
         FiltroFecha = "";
         FiltroHora = "";
+    }
+
+    private async Task ReservarClase(string codigoSesion)
+    {
+        if (!Session.EstaAutenticado)
+        {
+            MensajeReserva = "Debes iniciar sesión para reservar.";
+            ClaseMensajeReserva = "socios-toast-err";
+            return;
+        }
+
+        if (int.TryParse(codigoSesion, out int idSesion))
+        {
+            var nuevaReserva = new ReservaDTO
+            {
+                IdUsuario = Session.IdUsuario,
+                FechaHoraReserva = DateTime.Now,
+                Asistio = false,
+                SesionClase = new SesionClaseDTO { IdSesion = idSesion }
+            };
+
+            var resultado = await ReservaService.RegistrarAsync(nuevaReserva);
+
+            if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+            {
+                MensajeReserva = "¡Clase reservada con éxito!";
+                ClaseMensajeReserva = "socios-toast-ok";
+                
+                // Refrescar datos
+                await OnInitializedAsync();
+                
+                // Ocultar mensaje luego de 3 segundos
+                _ = Task.Delay(3000).ContinueWith(_ => { MensajeReserva = ""; InvokeAsync(StateHasChanged); });
+            }
+            else
+            {
+                MensajeReserva = resultado;
+                ClaseMensajeReserva = "socios-toast-err";
+            }
+        }
     }
 
     private string ObtenerClaseCupos(int cupos)

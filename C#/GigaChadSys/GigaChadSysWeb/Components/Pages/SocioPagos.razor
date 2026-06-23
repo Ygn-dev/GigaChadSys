@@ -1,6 +1,12 @@
-﻿@page "/socio/pagos"
+@page "/socio/pagos"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout SocioLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject SuscripcionServicio SuscripcionService
+@inject PagoServicio PagoService
+@inject MetodoPagoServicio MetodoPagoService
 
 <section class="socio-payments-page">
 
@@ -15,8 +21,8 @@
 
             <div>
                 <span>Total pagado</span>
-                <strong>S/298</strong>
-                <p>2 pagos realizados</p>
+                <strong>S/@TotalPagado.ToString("0.00")</strong>
+                <p>@TotalPagosRealizados pagos realizados</p>
             </div>
         </div>
 
@@ -25,8 +31,8 @@
 
             <div>
                 <span>Pendiente</span>
-                <strong>S/149</strong>
-                <p>1 pago pendiente</p>
+                <strong>S/@TotalPendiente.ToString("0.00")</strong>
+                <p>@CantidadPendientes pago(s) pendiente(s)</p>
             </div>
         </div>
 
@@ -35,8 +41,8 @@
 
             <div>
                 <span>Vencido</span>
-                <strong>S/149</strong>
-                <p>1 pago vencido</p>
+                <strong>S/0.00</strong>
+                <p>0 pagos vencidos</p>
             </div>
         </div>
 
@@ -45,7 +51,7 @@
 
             <div>
                 <span>Monto promedio</span>
-                <strong>S/149</strong>
+                <strong>S/@PromedioPago.ToString("0.00")</strong>
                 <p>Por pago</p>
             </div>
         </div>
@@ -128,49 +134,47 @@
 </section>
 
 @code {
-    private List<PagoSocioVista> Pagos { get; set; } = new()
+    private List<PagoSocioVista> Pagos { get; set; } = new();
+
+    private decimal TotalPagado => Pagos.Where(p => p.Estado == "pagado").Sum(p => decimal.TryParse(p.Monto, out decimal m) ? m : 0);
+    private int TotalPagosRealizados => Pagos.Count(p => p.Estado == "pagado");
+    
+    private decimal TotalPendiente => Pagos.Where(p => p.Estado == "pendiente").Sum(p => decimal.TryParse(p.Monto, out decimal m) ? m : 0);
+    private int CantidadPendientes => Pagos.Count(p => p.Estado == "pendiente");
+
+    private decimal PromedioPago => TotalPagosRealizados > 0 ? TotalPagado / TotalPagosRealizados : 0;
+
+    protected override async Task OnInitializedAsync()
     {
-        new PagoSocioVista
+        if (!Session.EstaAutenticado) return;
+
+        var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+        var misSuscripciones = suscripciones.Where(s => s.IdUsuario == Session.IdUsuario).ToList();
+        var misIdsPagos = misSuscripciones.Select(s => s.IdPago).ToList();
+
+        var todosPagos = await PagoService.ListarPagosAsync();
+        var metodos = await MetodoPagoService.ListarMetodosDePagoAsync();
+        var dictMetodos = metodos.ToDictionary(m => m.IdMetodoPago, m => m.Tipo);
+
+        Pagos.Clear();
+
+        foreach (var pago in todosPagos.Where(p => misIdsPagos.Contains(p.IdPago)))
         {
-            Codigo = "abril",
-            Concepto = "Membresía Black - Abril",
-            Tipo = "Membresía",
-            Metodo = "Crédito",
-            Monto = "149",
-            Fecha = "2025-04-01",
-            Estado = "pagado"
-        },
-        new PagoSocioVista
-        {
-            Codigo = "mayo",
-            Concepto = "Membresía Black - Mayo",
-            Tipo = "Membresía",
-            Metodo = "Crédito",
-            Monto = "149",
-            Fecha = "2025-05-01",
-            Estado = "pagado"
-        },
-        new PagoSocioVista
-        {
-            Codigo = "junio",
-            Concepto = "Membresía Black - Junio",
-            Tipo = "Membresía",
-            Metodo = "Pendiente",
-            Monto = "149",
-            Fecha = "2025-06-01",
-            Estado = "pendiente"
-        },
-        new PagoSocioVista
-        {
-            Codigo = "julio",
-            Concepto = "Membresía Black - Julio",
-            Tipo = "Membresía",
-            Metodo = "",
-            Monto = "149",
-            Fecha = "2025-07-01",
-            Estado = "vencido"
+            var nombreMetodo = dictMetodos.ContainsKey(pago.MetodoPago) ? dictMetodos[pago.MetodoPago] : "Desconocido";
+            var sub = misSuscripciones.FirstOrDefault(s => s.IdPago == pago.IdPago);
+            
+            Pagos.Add(new PagoSocioVista
+            {
+                Codigo = pago.IdPago.ToString(),
+                Concepto = pago.Tipo ?? "-",
+                Tipo = sub != null ? sub.TipoPlan : "Membresía",
+                Metodo = nombreMetodo,
+                Monto = pago.Monto.ToString("0.00"),
+                Fecha = pago.FechaPagoTexto,
+                Estado = pago.Activo ? "pagado" : "pendiente"
+            });
         }
-    };
+    }
 
     private string ObtenerClaseEstado(string estado)
     {

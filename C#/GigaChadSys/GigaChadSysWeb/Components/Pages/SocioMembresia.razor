@@ -1,7 +1,13 @@
 @page "/socio/membresia"
-@using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout SocioLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject SuscripcionServicio SuscripcionService
+@inject PagoServicio PagoService
+@inject MembresiaBasicServicio MembresiaBasicService
+@inject MembresiaBlackServicio MembresiaBlackService
 
 <section class="membresia-page">
     <div class="membresia-header">
@@ -158,7 +164,7 @@
                     <div>
                         <h4>Membresía Basic</h4>
                         <div class="plan-card-precio">
-                            <span class="plan-card-valor">S/79</span>
+                            <span class="plan-card-valor">S/@precioBasic</span>
                             <span class="plan-card-periodo"> /mes</span>
                         </div>
                     </div>
@@ -181,7 +187,7 @@
                     <div>
                         <h4>Membresía Black</h4>
                         <div class="plan-card-precio">
-                            <span class="plan-card-valor">S/149</span>
+                            <span class="plan-card-valor">S/@precioBlack</span>
                             <span class="plan-card-periodo"> /mes</span>
                         </div>
                     </div>
@@ -206,23 +212,61 @@
 </section>
 
 @code {
-    private bool tieneMembresia = true;
-    private string planActual = "Black";
-    private int precioMensual = 149;
-    private string fechaInicio = "2025-02-01";
-    private string fechaFin = "2025-06-01";
-    private string ultimoPago = "2025-05-01";
+    private bool tieneMembresia = false;
+    private string planActual = "";
+    private string precioMensual = "0.00";
+    private string fechaInicio = "—";
+    private string fechaFin = "—";
+    private string ultimoPago = "—";
 
-    private List<string> beneficiosIncluidos = new()
-    {
-        "Todo lo de Basic", "Clases grupales ilimitadas",
-        "Acceso 24/7", "Zona de spa",
-        "Entrenador personal 2x/mes"
-    };
+    private string precioBasic = "0.00";
+    private string precioBlack = "0.00";
 
-    private List<string> caracteristicas = new()
+    private List<string> beneficiosIncluidos = new();
+    private List<string> caracteristicas = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        "Acceso total a horarios", "Reserva de clases preferencial",
-        "Invitados gratuitos (2/mes)"
-    };
+        // Cargar precios de planes disponibles
+        var basicos = await MembresiaBasicService.ListarMembresiasBasicAsync();
+        var basic = basicos.FirstOrDefault();
+        if (basic != null) precioBasic = basic.CostoMantenimientoMensual.ToString("0.00");
+
+        var blacks = await MembresiaBlackService.ListarMembresiasBlackAsync();
+        var black = blacks.FirstOrDefault();
+        if (black != null) precioBlack = (black.CostoMantenimientoAnual / 12.0).ToString("0.00");
+
+        if (!Session.EstaAutenticado) return;
+
+        // Cargar suscripción del socio
+        var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+        var suscripcion = suscripciones.FirstOrDefault(s => s.IdUsuario == Session.IdUsuario && s.Activo);
+
+        if (suscripcion != null)
+        {
+            tieneMembresia = true;
+            planActual = suscripcion.TipoPlan;
+            fechaInicio = suscripcion.FechaInicioTexto;
+            fechaFin = suscripcion.FechaFinTexto;
+
+            // Cargar precio de su plan actual
+            precioMensual = planActual == "Black" ? precioBlack : precioBasic;
+
+            // Obtener último pago asociado
+            var pagos = await PagoService.ListarPagosAsync();
+            var pagoAsociado = pagos.FirstOrDefault(p => p.IdPago == suscripcion.IdPago);
+            if (pagoAsociado != null) ultimoPago = pagoAsociado.FechaPagoTexto;
+
+            if (planActual == "Black")
+            {
+                beneficiosIncluidos = new List<string> { "Todo lo de Basic", "Clases grupales ilimitadas", "Acceso 24/7", "Zona de spa", "Entrenador personal 2x/mes" };
+                caracteristicas = new List<string> { "Acceso total a horarios", "Reserva de clases preferencial", "Invitados gratuitos (2/mes)" };
+            }
+            else
+            {
+                beneficiosIncluidos = new List<string> { "Acceso a sala de musculación", "Acceso a cardio", "Vestuario incluido", "App móvil" };
+                caracteristicas = new List<string> { "Sin clases grupales", "Acceso limitado a horario diurno", "Sin zona de spa" };
+            }
+        }
+    }
 }

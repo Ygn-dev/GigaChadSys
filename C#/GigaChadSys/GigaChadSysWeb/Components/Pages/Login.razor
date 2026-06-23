@@ -6,6 +6,7 @@
 @layout AuthLayout
 @rendermode InteractiveServer
 @inject AuthServicio AuthService
+@inject SessionServicio Session
 @inject NavigationManager Nav
 
 <div class="auth-page">
@@ -97,6 +98,9 @@
 
             if (resultado.Exito)
             {
+                // Guardar el usuario en la sesión para que lo usen todas las páginas
+                Session.IniciarSesion(resultado);
+
                 // Navegar según el rol del usuario
                 switch (resultado.Rol)
                 {

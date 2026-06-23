@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class SuscripcionServicio
     /// <summary>
     /// GET /SuscripcionRS — Lista todas las suscripciones.
     /// </summary>
-    public async Task<List<Suscripcion>> ListarSuscripcionesAsync()
+    public async Task<List<SuscripcionDTO>> ListarSuscripcionesAsync()
     {
-        var suscripciones = await _httpClient.GetFromJsonAsync<List<Suscripcion>>(Endpoint);
-        return suscripciones ?? new List<Suscripcion>();
+        var suscripciones = await _httpClient.GetFromJsonAsync<List<SuscripcionDTO>>(Endpoint);
+        return suscripciones ?? new List<SuscripcionDTO>();
     }
 
     /// <summary>
     /// GET /SuscripcionRS/{id} — Obtiene una suscripción por su ID.
     /// </summary>
-    public async Task<Suscripcion?> ObtenerPorIdAsync(int idSuscripcion)
+    public async Task<SuscripcionDTO?> ObtenerPorIdAsync(int idSuscripcion)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idSuscripcion}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<Suscripcion>();
+            return await response.Content.ReadFromJsonAsync<SuscripcionDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /SuscripcionRS — Registra una nueva suscripción (asocia socio con membresía).
     /// </summary>
-    public async Task<string> RegistrarAsync(Suscripcion suscripcion)
+    public async Task<string> RegistrarAsync(SuscripcionDTO suscripcion)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, suscripcion);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class SuscripcionServicio
     /// <summary>
     /// PUT /SuscripcionRS/{id} — Actualiza los datos de una suscripción existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idSuscripcion, Suscripcion suscripcion)
+    public async Task<string> ActualizarAsync(int idSuscripcion, SuscripcionDTO suscripcion)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idSuscripcion}", suscripcion);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();

@@ -1,6 +1,10 @@
 @page "/admin/pagos/registrar"
-@using Microsoft.AspNetCore.Components
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @inject NavigationManager Navigation
+@inject SocioServicio SocioService
+@inject SuscripcionServicio SuscripcionService
+@inject PagoServicio PagoService
 
 <div class="admin-shell">
     <!-- ===== SIDEBAR ===== -->
@@ -330,16 +334,35 @@
         public string UltimoPago{ get; set; } = "";
     }
 
-    /* ── Datos de ejemplo (reemplazar con servicio real) ── */
-    private List<SocioDto> TodosLosSocios = new()
+    /* ── Datos Reales del Backend ── */
+    private List<SocioDto> TodosLosSocios = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new() { Id=1, Nombre="Lucia Torres",  Dni="40234123", Email="lucia@mail.com",  Iniciales="LT", Membresia="Black", UltimoPago="2025-04-01" },
-        new() { Id=2, Nombre="Juan Perez",    Dni="40123123", Email="juan@mail.com",   Iniciales="JP", Membresia="Basic", UltimoPago="2025-04-02" },
-        new() { Id=3, Nombre="Ana Garcia",    Dni="40345234", Email="ana@mail.com",    Iniciales="AG", Membresia="Black", UltimoPago="2025-04-28" },
-        new() { Id=4, Nombre="Sofia Mendez",  Dni="40678345", Email="sofia@mail.com",  Iniciales="SM", Membresia="Black", UltimoPago="2025-05-05" },
-        new() { Id=5, Nombre="Roberto Diaz",  Dni="40789456", Email="roberto@mail.com",Iniciales="RD", Membresia="Basic", UltimoPago="2025-05-02" },
-        new() { Id=6, Nombre="Fernando Loza", Dni="40901678", Email="floza@mail.com",  Iniciales="FL", Membresia="Black", UltimoPago="2025-05-04" },
-    };
+        var socios = await SocioService.ListarSociosAsync();
+        var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+        var pagos = await PagoService.ListarPagosAsync();
+
+        foreach (var s in socios)
+        {
+            var sub = suscripciones.FirstOrDefault(x => x.IdUsuario == s.IdUsuario && x.Activo);
+            var pagoAsociado = sub != null ? pagos.FirstOrDefault(p => p.IdPago == sub.IdPago) : null;
+            
+            string membresia = sub != null ? sub.TipoPlan : "Sin membresía";
+            string ultimoPago = pagoAsociado != null ? pagoAsociado.FechaPagoTexto : "N/A";
+
+            TodosLosSocios.Add(new SocioDto
+            {
+                Id = s.IdUsuario,
+                Nombre = $"{s.Nombres} {s.ApellidoPaterno}",
+                Dni = s.Dni.ToString(),
+                Email = s.CorreoElectronico,
+                Iniciales = s.Nombres.Length > 0 ? s.Nombres[0].ToString().ToUpper() : "S",
+                Membresia = membresia,
+                UltimoPago = ultimoPago
+            });
+        }
+    }
 
     private IEnumerable<SocioDto> SociosFiltrados =>
         string.IsNullOrWhiteSpace(SocioBusqueda)
@@ -377,7 +400,7 @@
     }
 
     /* ── Registrar pago ── */
-    private void Registrar()
+    private async Task Registrar()
     {
         MensajeError  = "";
         MensajeExito  = "";
@@ -388,9 +411,29 @@
             return;
         }
 
-        // TODO: llamar al servicio real para guardar el pago
-        MensajeExito = $"✅ Pago de {Concepto} registrado correctamente.";
-        // Navigation.NavigateTo("/admin/pagos");
+        int idMetodo = MetodoPago == "efectivo" ? 1 : MetodoPago == "debito" ? 2 : 3;
+
+        var nuevoPago = new PagoDTO
+        {
+            FechaPago = FechaPago,
+            Monto = (double)Monto,
+            Tipo = Concepto,
+            MetodoPago = idMetodo,
+            Activo = EstadoPago == "pagado"
+        };
+
+        var resultado = await PagoService.RegistrarAsync(nuevoPago);
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MensajeExito = $"✅ Pago de {Concepto} registrado correctamente.";
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/admin/pagos");
+        }
+        else
+        {
+            MensajeError = resultado;
+        }
     }
 
     private void Cancelar()
