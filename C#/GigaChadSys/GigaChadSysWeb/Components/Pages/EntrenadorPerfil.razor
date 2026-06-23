@@ -133,10 +133,10 @@
                 {
                     DNI = entrenador.Dni.ToString(),
                     NombreCompleto = $"{entrenador.Nombres} {entrenador.ApellidoPaterno} {entrenador.ApellidoMaterno}",
-                    Telefono = entrenador.Telefono,
-                    Correo = entrenador.CorreoElectronico,
+                    Telefono = entrenador.Telefono.ToString(), // Telefono es int en UsuarioDTO
+                    Correo = entrenador.Email, // El campo es Email en UsuarioDTO (no CorreoElectronico)
                     Especialidad = entrenador.Especialidad,
-                    FechaIngreso = entrenador.FechaRegistro,
+                    FechaIngreso = DateTime.Today, // EntrenadorDTO no tiene FechaRegistro
                     Estado = entrenador.Activo ? "Activo" : "Inactivo"
                 };
             }

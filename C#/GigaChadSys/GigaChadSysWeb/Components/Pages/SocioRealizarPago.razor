@@ -174,7 +174,7 @@
     private string TituloAlerta => Activo ? "Pago al día" : "Pago pendiente detectado";
     private string ClaseEstado => Activo ? "pay-status paid" : "pay-status pending";
     
-    private string NombreUsuario => Session.EstaAutenticado ? Session.NombreUsuario : "Socio Invitado";
+    private string NombreUsuario => Session.EstaAutenticado ? Session.Nombres : "Socio Invitado"; // Session.Nombres (no NombreUsuario)
 
     private string ClaseDebito =>
         MetodoSeleccionado == "Debito" ? "pay-method-option selected" : "pay-method-option";

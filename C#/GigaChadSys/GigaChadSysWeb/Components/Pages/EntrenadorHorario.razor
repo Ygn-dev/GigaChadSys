@@ -113,16 +113,16 @@
         foreach (var s in misSesiones)
         {
             int inscritos = todasReservas.Count(r => r.SesionClase?.IdSesion == s.IdSesion);
-            int capacidad = s.Salon?.CapacidadMax ?? 0;
+            int capacidad = s.Salon?.AforoMaximo ?? 0;
 
             var vista = new SesionHorario
             {
                 Id = s.IdSesion,
-                NombreClase = s.ClaseGrupal?.Nombre ?? "Sin nombre",
-                Categoria = s.ClaseGrupal?.Nombre ?? "General",
+                NombreClase = s.ClaseGrupal?.NombreDisciplina ?? "Sin nombre",
+                Categoria = s.ClaseGrupal?.NombreDisciplina ?? "General",
                 Fecha = s.FechaSesion,
                 Hora = $"{s.HoraInicio:HH:mm} - {s.HoraFin:HH:mm}",
-                Salon = s.Salon?.Nombre ?? "Sin asignar",
+                Salon = s.Salon?.NombreSalon ?? "Sin asignar",
                 Estado = s.FechaSesion >= DateTime.Today ? "Programada" : "Finalizada",
                 Inscritos = inscritos,
                 Capacidad = capacidad

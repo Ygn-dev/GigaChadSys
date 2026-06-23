@@ -158,7 +158,7 @@
     protected override async Task OnInitializedAsync()
     {
         var todosPagos = await PagoService.ListarPagosAsync();
-        var listaMetodos = await MetodoPagoService.ListarMetodosPagoAsync();
+        var listaMetodos = await MetodoPagoService.ListarMetodosDePagoAsync(); // Nombre correcto del método
         
         var pagosSueldo = todosPagos
             .Where(p => p.Tipo != null && (p.Tipo.ToLower().Contains("sueldo") || p.Tipo.ToLower().Contains("bono")))
@@ -173,7 +173,7 @@
             {
                 Concepto = p.Tipo ?? "Sueldo",
                 Tipo = p.Tipo?.Contains("Bono", StringComparison.OrdinalIgnoreCase) == true ? "Bono" : "Sueldo",
-                Metodo = metodo?.Nombre ?? "Desconocido",
+                Metodo = metodo?.Tipo ?? "Desconocido", // MetodoPagoDTO tiene Tipo, no Nombre
                 Monto = (decimal)p.Monto,
                 Fecha = p.FechaPago ?? DateTime.Now,
                 Estado = p.Activo ? "Pagado" : "Pendiente"

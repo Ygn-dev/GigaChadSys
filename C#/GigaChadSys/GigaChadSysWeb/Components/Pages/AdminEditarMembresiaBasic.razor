@@ -342,7 +342,7 @@
         PlanActivo = false;
     }
 
-    private void GuardarCambios()
+    private async Task GuardarCambios()
     {
         if (string.IsNullOrWhiteSpace(NombrePlanValor))
         {
@@ -376,9 +376,9 @@
 
         if (membresiaActual == null) membresiaActual = new MembresiaBasicDTO();
         
-        membresiaActual.Tipo = NombrePlanValor;
+        membresiaActual.Nombre = NombrePlanValor; // Campo real en MembresiaBasicDTO
         membresiaActual.CostoMantenimientoMensual = (double)precio;
-        membresiaActual.Activo = PlanActivo;
+        membresiaActual.Activa = PlanActivo; // Campo real (Activa, no Activo)
 
         var resultado = await MembresiaBasicService.ActualizarAsync(idMembresia, membresiaActual);
 

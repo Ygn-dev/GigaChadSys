@@ -21,5 +21,15 @@ namespace GigaChadSys.Servicios.DTO
 
         [JsonPropertyName("activo")]
         public bool Activo { get; set; }
+
+        // ── Alias de compatibilidad para código existente ──────────────────
+        [JsonIgnore]
+        public string Nombre => NombreDisciplina;
+
+        [JsonIgnore]
+        public string NivelDificultad => Nivel;
+
+        [JsonIgnore]
+        public int Vacantes => 0; // Placeholder: calculado en el frontend
     }
 }
