@@ -1,64 +1,97 @@
 @inherits LayoutComponentBase
+
 @inject GigaChadSys.Servicios.SessionServicio Session
+
 <div class="socio-shell">
     <aside class="socio-sidebar">
-        <div class="socio-logo">
-            <div class="logo-mark">GC</div>
-            <div>
-                <h2>GIGACHAD</h2>
-                <span>SOCIO</span>
-            </div>
+
+        <!-- LOGO -->
+        <div class="socio-logo admin-logo-image-box">
+            <img src="/img/logo-gigachad-sidebar.png"
+                 alt="GigaChad"
+                 class="admin-brand-logo" />
         </div>
 
+        <!-- MENÚ -->
         <nav class="socio-nav">
+
             <NavLink href="/socio/inicio" Match="NavLinkMatch.All">
-                <span class="nav-icon">⌂</span> Inicio
+                <i class="bi bi-house-door nav-bi"></i>
+                <span>Inicio</span>
             </NavLink>
 
             <NavLink href="/socio/membresia">
-                <span class="nav-icon">♛</span> Mi Membresía
+                <i class="bi bi-gem nav-bi"></i>
+                <span>Mi Membresía</span>
             </NavLink>
 
             <NavLink href="/socio/reservar">
-                <span class="nav-icon">＋</span> Reservar Clase
+                <i class="bi bi-calendar-plus nav-bi"></i>
+                <span>Reservar Clase</span>
             </NavLink>
 
             <NavLink href="/socio/reservas">
-                <span class="nav-icon">✓</span> Mis Reservas
+                <i class="bi bi-calendar-check nav-bi"></i>
+                <span>Mis Reservas</span>
             </NavLink>
 
             <NavLink href="/socio/pagos">
-                <span class="nav-icon">$</span> Mis Pagos
+                <i class="bi bi-cash-coin nav-bi"></i>
+                <span>Mis Pagos</span>
             </NavLink>
 
             <NavLink href="/socio/perfil">
-                <span class="nav-icon">◎</span> Mi Perfil
+                <i class="bi bi-person-circle nav-bi"></i>
+                <span>Mi Perfil</span>
             </NavLink>
+
         </nav>
 
+        <!-- PERFIL ABAJO -->
         <div class="socio-bottom">
             <div class="socio-profile">
-                <div class="profile-avatar">@(Session.EstaAutenticado && Session.Nombres.Length > 0 ? Session.Nombres[0].ToString() : "S")</div>
+                <div class="profile-avatar">
+                    @(Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
+                        ? Session.Nombres[0].ToString()
+                        : "S")
+                </div>
+
                 <div>
                     <strong>@(Session.EstaAutenticado ? Session.Nombres : "Socio")</strong>
-                    <span class="profile-role">@(Session.EstaAutenticado ? Session.Rol : "Miembro")</span>
+                    <span class="profile-role">
+                        @(Session.EstaAutenticado ? Session.Rol : "Miembro")
+                    </span>
                 </div>
             </div>
         </div>
+
     </aside>
 
+    <!-- CONTENIDO -->
     <div class="socio-content-area">
+
         <header class="entrenador-topbar">
             <div></div>
+
             <div class="topbar-actions">
-                <button class="topbar-btn" title="Notificaciones">🔔</button>
-                <button class="topbar-btn" title="Buscar">🔍</button>
-                <a class="topbar-btn topbar-logout" href="/login" title="Salir">⏻ Salir</a>
+                <button class="topbar-btn" title="Notificaciones">
+                    <i class="bi bi-bell"></i>
+                </button>
+
+                <button class="topbar-btn" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+
+                <a class="topbar-btn topbar-logout" href="/login" title="Salir">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Salir</span>
+                </a>
             </div>
         </header>
 
         <main class="socio-main">
             @Body
         </main>
+
     </div>
 </div>

@@ -3,53 +3,97 @@
 @layout SocioLayout
 @rendermode InteractiveServer
 
-<section class="socio-home">
-    <div class="socio-hero">
-        <div>
-            <h1>¡Bienvenida, Lucia!</h1>
-            <p>Desde aquí puedes gestionar tu experiencia en GigaChad.</p>
-        </div>
+@inject GigaChadSys.Servicios.SessionServicio Session
+
+<section class="admin-home">
+
+    <div class="welcome-card">
+        <div class="welcome-label">Panel de Socio</div>
+
+        <h1>¡Bienvenido, @NombreSocio!</h1>
+
+        <div class="welcome-red-line"></div>
+
+        <p>
+            Desde aquí puedes gestionar tu experiencia en GigaChad.
+        </p>
     </div>
 
-    <div class="socio-grid">
-        <a class="socio-card" href="/socio/membresia">
-            <div class="socio-icon">♛</div>
-            <h3>Mi Membresía</h3>
-            <p>Consulta los detalles de tu membresía actual, vigencia y beneficios.</p>
-            <span>Ver Membresía</span>
+    <div class="admin-grid">
+
+        <a class="admin-option-card admin-card-with-icon" href="/socio/membresia">
+            <div class="admin-card-icon">
+                <i class="bi bi-gem"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Mi Membresía</h3>
+                <p>Consulta los detalles de tu membresía actual, vigencia y beneficios.</p>
+            </div>
         </a>
 
-        <a class="socio-card" href="/socio/reservar">
-            <div class="socio-icon">＋</div>
-            <h3>Reservar Clase</h3>
-            <p>Explora las clases disponibles y reserva tu cupo fácilmente.</p>
-            <span>Reservar Ahora</span>
+        <a class="admin-option-card admin-card-with-icon" href="/socio/reservar">
+            <div class="admin-card-icon">
+                <i class="bi bi-calendar-plus"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Reservar Clase</h3>
+                <p>Explora las clases disponibles y reserva tu cupo fácilmente.</p>
+            </div>
         </a>
 
-        <a class="socio-card" href="/socio/reservas">
-            <div class="socio-icon">✓</div>
-            <h3>Mis Reservas</h3>
-            <p>Consulta tus reservas confirmadas y tu historial de clases.</p>
-            <span>Ver Reservas</span>
+        <a class="admin-option-card admin-card-with-icon" href="/socio/reservas">
+            <div class="admin-card-icon">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Mis Reservas</h3>
+                <p>Consulta tus reservas confirmadas y tu historial de clases.</p>
+            </div>
         </a>
 
-        <a class="socio-card" href="/socio/pagos">
-            <div class="socio-icon">$</div>
-            <h3>Mis Pagos</h3>
-            <p>Revisa tu historial de pagos y comprobantes.</p>
-            <span>Ver Pagos</span>
+        <a class="admin-option-card admin-card-with-icon" href="/socio/pagos">
+            <div class="admin-card-icon">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Mis Pagos</h3>
+                <p>Revisa tu historial de pagos y comprobantes.</p>
+            </div>
         </a>
 
-        <a class="socio-card" href="/socio/perfil">
-            <div class="socio-icon">◎</div>
-            <h3>Mi Perfil</h3>
-            <p>Actualiza tu información personal y configuración de cuenta.</p>
-            <span>Editar Perfil</span>
+        <a class="admin-option-card admin-card-with-icon" href="/socio/perfil">
+            <div class="admin-card-icon">
+                <i class="bi bi-person-circle"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Mi Perfil</h3>
+                <p>Actualiza tu información personal y configuración de cuenta.</p>
+            </div>
         </a>
 
-        <div class="socio-card motivacion-card">
-            <h3>¡Sigue entrenando y alcanza tus metas!</h3>
-            <p>La constancia hoy, son los resultados mañana.</p>
+        <div class="admin-option-card admin-card-with-icon">
+            <div class="admin-card-icon">
+                <i class="bi bi-lightning-charge"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>¡Sigue entrenando!</h3>
+                <p>La constancia de hoy son los resultados de mañana.</p>
+            </div>
         </div>
+
     </div>
+
 </section>
+
+@code {
+    private string NombreSocio =>
+        Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
+            ? Session.Nombres
+            : "Socio";
+}

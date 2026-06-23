@@ -16,7 +16,8 @@
             <p class="socios-subtitle">Administra los socios del gimnasio</p>
         </div>
         <button class="btn-socios-primary" @onclick='() => Nav.NavigateTo("/admin/socios/nuevo")'>
-            ＋ Nuevo Socio
+            <i class="bi bi-plus-lg"></i>
+            <span>Nuevo Socio</span>
         </button>
 
     </div>
@@ -24,31 +25,42 @@
     <!-- Stats Row -->
     <div class="socios-stats-row">
         <div class="socios-stat-card">
-            <div class="socios-stat-icon icon-red">👥</div>
+            <div class="socios-stat-icon icon-red">
+                <i class="bi bi-people-fill"></i>
+            </div>
             <div class="socios-stat-body">
                 <span class="socios-stat-label">TOTAL SOCIOS</span>
                 <span class="socios-stat-value">@socios.Count</span>
                 <span class="socios-stat-hint">Registrados</span>
             </div>
         </div>
+
         <div class="socios-stat-card">
-            <div class="socios-stat-icon icon-green">✅</div>
+            <div class="socios-stat-icon icon-green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
             <div class="socios-stat-body">
                 <span class="socios-stat-label">ACTIVOS</span>
                 <span class="socios-stat-value">@socios.Count(s => s.Activo)</span>
                 <span class="socios-stat-hint">En el sistema</span>
             </div>
         </div>
+
         <div class="socios-stat-card">
-            <div class="socios-stat-icon icon-yellow">⏸</div>
+            <div class="socios-stat-icon icon-yellow">
+                <i class="bi bi-pause-circle-fill"></i>
+            </div>
             <div class="socios-stat-body">
                 <span class="socios-stat-label">INACTIVOS</span>
                 <span class="socios-stat-value">@socios.Count(s => !s.Activo)</span>
                 <span class="socios-stat-hint">Deshabilitados</span>
             </div>
         </div>
+
         <div class="socios-stat-card">
-            <div class="socios-stat-icon icon-blue">♛</div>
+            <div class="socios-stat-icon icon-blue">
+                <i class="bi bi-gem"></i>
+            </div>
             <div class="socios-stat-body">
                 <span class="socios-stat-label">CON MEMBRESÍA</span>
                 <span class="socios-stat-value">@socios.Count(s => s.EstadoMembresia)</span>
@@ -60,7 +72,9 @@
     <!-- Toolbar -->
     <div class="socios-toolbar">
         <div class="socios-search-box">
-            <span class="search-icon-s">🔍</span>
+            <span class="search-icon-s">
+                <i class="bi bi-search"></i>
+            </span>
             <input type="text"
                    placeholder="Buscar por DNI, nombre o correo..."
                    @bind="textoBusqueda"
@@ -114,11 +128,17 @@
                             <td>
                                 @if (socio.EstadoMembresia)
                                 {
-                                    <span class="badge-s badge-s-black">♛ Activa</span>
+                                    <span class="badge-s badge-s-black">
+                                        <i class="bi bi-gem"></i>
+                                        Activa
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="badge-s badge-s-basic">◎ Inactiva</span>
+                                    <span class="badge-s badge-s-basic">
+                                        <i class="bi bi-info-circle"></i>
+                                        Inactiva
+                                    </span>
                                 }
                             </td>
                             <td>
@@ -139,7 +159,9 @@
                             <td>
                                 <div class="td-s-actions">
                                     <button class="btn-s-action" title="Editar"
-                                            @onclick="() => AbrirModalEditar(socio)">✏️</button>
+                                            @onclick="() => AbrirModalEditar(socio)">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
