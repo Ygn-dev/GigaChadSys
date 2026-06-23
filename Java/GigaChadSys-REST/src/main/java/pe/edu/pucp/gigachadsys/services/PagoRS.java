@@ -48,7 +48,7 @@ public class PagoRS {
         String mensaje = pagoBL.registrar(pago);
 
         return Response.status(Response.Status.CREATED)
-                .entity(Map.of("mensaje", mensaje))
+                .entity(Map.of("mensaje", mensaje, "idPago", pago.getIdPago()))
                 .build();
     }
 

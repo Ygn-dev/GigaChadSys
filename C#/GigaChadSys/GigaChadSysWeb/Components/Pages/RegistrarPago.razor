@@ -98,7 +98,7 @@
                         <!-- 1. Información del Socio -->
                         <div class="sf-section-card">
                             <div class="sf-section-head">
-                                <span class="sf-section-icon">👤</span>
+                                <span class="sf-section-icon">USR</span>
                                 Informacion del Socio
                                 <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">Busque y seleccione el socio</span>
                             </div>
@@ -145,7 +145,7 @@
                         <!-- 2. Información del Pago -->
                         <div class="sf-section-card">
                             <div class="sf-section-head">
-                                <span class="sf-section-icon">💳</span>
+                                <span class="sf-section-icon">PAG</span>
                                 Informacion del Pago
                                 <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">Detalles de la transaccion</span>
                             </div>
@@ -156,15 +156,15 @@
                                 <div class="rp-radio-group">
                                     <button class="rp-radio-btn @(TipoPago == "mensualidad" ? "rp-radio-active" : "")"
                                             @onclick='() => TipoPago = "mensualidad"'>
-                                        📅 Mensualidad
+                                        Mensualidad
                                     </button>
                                     <button class="rp-radio-btn @(TipoPago == "inscripcion" ? "rp-radio-active" : "")"
                                             @onclick='() => TipoPago = "inscripcion"'>
-                                        👤 Inscripción
+                                        Inscripción
                                     </button>
                                     <button class="rp-radio-btn @(TipoPago == "renovacion" ? "rp-radio-active" : "")"
                                             @onclick='() => TipoPago = "renovacion"'>
-                                        🔄 Renovación
+                                        Renovación
                                     </button>
                                 </div>
                             </div>
@@ -175,15 +175,15 @@
                                 <div class="rp-radio-group">
                                     <button class="rp-radio-btn @(MetodoPago == "efectivo" ? "rp-radio-active" : "")"
                                             @onclick='() => MetodoPago = "efectivo"'>
-                                        💵 Efectivo
+                                        Efectivo
                                     </button>
                                     <button class="rp-radio-btn @(MetodoPago == "debito" ? "rp-radio-active" : "")"
                                             @onclick='() => MetodoPago = "debito"'>
-                                        💳 Tarjeta Débito
+                                        Tarjeta Débito
                                     </button>
                                     <button class="rp-radio-btn @(MetodoPago == "credito" ? "rp-radio-active" : "")"
                                             @onclick='() => MetodoPago = "credito"'>
-                                        💳 Tarjeta Crédito
+                                        Tarjeta Crédito
                                     </button>
                                 </div>
                             </div>
@@ -223,17 +223,17 @@
                         <!-- 3. Mini info cards (monto sugerido / membresía / último pago) -->
                         <div class="rp-info-trio">
                             <div class="rp-info-card">
-                                <div class="rp-info-icon rp-icon-red">💰</div>
+                                <div class="rp-info-icon rp-icon-red">S/</div>
                                 <div class="rp-info-label">MONTO SUGERIDO</div>
                                 <div class="rp-info-val">@(SocioSeleccionado != null ? MontoSugerido : "--")</div>
                             </div>
                             <div class="rp-info-card">
-                                <div class="rp-info-icon rp-icon-green">👑</div>
+                                <div class="rp-info-icon rp-icon-green">M</div>
                                 <div class="rp-info-label">MEMBRESÍA ACTUAL</div>
                                 <div class="rp-info-val">@(SocioSeleccionado != null ? SocioSeleccionado.Membresia : "--")</div>
                             </div>
                             <div class="rp-info-card">
-                                <div class="rp-info-icon rp-icon-yellow">🕐</div>
+                                <div class="rp-info-icon rp-icon-yellow">T</div>
                                 <div class="rp-info-label">ÚLTIMO PAGO</div>
                                 <div class="rp-info-val">@(SocioSeleccionado != null ? SocioSeleccionado.UltimoPago : "--")</div>
                             </div>
@@ -242,40 +242,39 @@
                         <!-- 4. Estado del Pago -->
                         <div class="sf-section-card">
                             <div class="sf-section-head">
-                                <span class="sf-section-icon">✅</span>
+                                <span class="sf-section-icon">EST</span>
                                 Estado del Pago
                                 <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">Define el estado actual de la transaccion</span>
                             </div>
                             <div class="rp-radio-group">
                                 <button class="rp-radio-btn rp-radio-green @(EstadoPago == "pagado" ? "rp-radio-active-green" : "")"
                                         @onclick='() => EstadoPago = "pagado"'>
-                                    ✅ Pagado
+                                    Pagado
                                 </button>
                                 <button class="rp-radio-btn @(EstadoPago == "pendiente" ? "rp-radio-active" : "")"
                                         @onclick='() => EstadoPago = "pendiente"'>
-                                    ⏳ Pendiente
+                                    Pendiente
                                 </button>
                             </div>
                         </div>
 
                         <!-- Actions -->
                         <div class="rp-actions">
-                            <button class="rp-btn-primary" @onclick="Registrar" disabled="@(!FormularioValido)">
-                                ✔ Registrar Pago
+                            <button class="rp-btn-primary" @onclick="Registrar">
+                                Registrar Pago
                             </button>
                             <button class="rp-btn-secondary" @onclick="Cancelar">
                                 Cancelar
                             </button>
-                            <a href="/admin/pagos" class="rp-btn-back">← Volver al listado</a>
                         </div>
 
                         @if (!string.IsNullOrEmpty(MensajeExito))
                         {
-                            <div class="socios-toast socios-toast-ok">@MensajeExito</div>
+                            <div class="socios-toast socios-toast-ok" style="margin-top:16px;">@MensajeExito</div>
                         }
                         @if (!string.IsNullOrEmpty(MensajeError))
                         {
-                            <div class="socios-toast socios-toast-err">@MensajeError</div>
+                            <div class="socios-toast socios-toast-err" style="margin-top:16px;">@MensajeError</div>
                         }
 
                     </div>
@@ -300,19 +299,11 @@
     private string MetodoPago  { get; set; } = "efectivo";
     private string EstadoPago  { get; set; } = "pagado";
     private decimal Monto      { get; set; } = 0;
-    private DateTime FechaPago { get; set; } = DateTime.Today;
+    private DateTime FechaPago { get; set; } = DateTime.UtcNow;
     private string Concepto    { get; set; } = "";
 
     private string MensajeExito { get; set; } = "";
     private string MensajeError { get; set; } = "";
-
-    /* ── Validación ── */
-    private bool FormularioValido =>
-        SocioSeleccionado != null &&
-        !string.IsNullOrWhiteSpace(TipoPago) &&
-        !string.IsNullOrWhiteSpace(MetodoPago) &&
-        Monto > 0 &&
-        !string.IsNullOrWhiteSpace(Concepto);
 
     /* ── Monto sugerido derivado de membresía ── */
     private string MontoSugerido => SocioSeleccionado?.Membresia switch
@@ -405,17 +396,29 @@
         MensajeError  = "";
         MensajeExito  = "";
 
-        if (!FormularioValido)
+        if (SocioSeleccionado == null)
         {
-            MensajeError = "Complete todos los campos requeridos.";
+            MensajeError = "Debe buscar y seleccionar un socio para registrar el pago.";
+            return;
+        }
+        if (Monto <= 0)
+        {
+            MensajeError = "El monto debe ser mayor a 0.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(Concepto))
+        {
+            MensajeError = "Debe ingresar un concepto para el pago.";
             return;
         }
 
         int idMetodo = MetodoPago == "efectivo" ? 1 : MetodoPago == "debito" ? 2 : 3;
 
+        var fechaSegura = DateTime.SpecifyKind(FechaPago, DateTimeKind.Utc);
+
         var nuevoPago = new PagoDTO
         {
-            FechaPago = FechaPago,
+            FechaPago = fechaSegura,
             Monto = (double)Monto,
             Tipo = Concepto,
             MetodoPago = idMetodo,
@@ -424,15 +427,26 @@
 
         var resultado = await PagoService.RegistrarAsync(nuevoPago);
 
-        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        if (!resultado.Mensaje.StartsWith("Error") && !resultado.Mensaje.ToLower().Contains("error"))
         {
-            MensajeExito = $"✅ Pago de {Concepto} registrado correctamente.";
+            if (resultado.IdPago.HasValue)
+            {
+                var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+                var sub = suscripciones.FirstOrDefault(x => x.IdUsuario == SocioSeleccionado.Id && x.Activo);
+                if (sub != null)
+                {
+                    sub.IdPago = resultado.IdPago.Value;
+                    await SuscripcionService.ActualizarAsync(sub.IdSuscripcion, sub);
+                }
+            }
+
+            MensajeExito = $"Pago de {Concepto} registrado correctamente.";
             await Task.Delay(1500);
             Navigation.NavigateTo("/admin/pagos");
         }
         else
         {
-            MensajeError = resultado;
+            MensajeError = resultado.Mensaje;
         }
     }
 

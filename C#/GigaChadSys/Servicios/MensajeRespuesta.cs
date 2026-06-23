@@ -10,4 +10,7 @@ public class MensajeRespuesta
 {
     [JsonPropertyName("mensaje")]
     public string Mensaje { get; set; } = string.Empty;
+
+    [JsonPropertyName("idPago")]
+    public int? IdPago { get; set; }
 }

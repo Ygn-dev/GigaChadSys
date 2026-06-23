@@ -72,14 +72,18 @@ public class PagoDAOImpl implements PagoDAO {
         String sql = "INSERT INTO Pago(fechaPago, montoTotal, tipo, idMetodoPago, activo) VALUES (?,?,?,?,1)";
 
         try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setDate(1, new java.sql.Date(p.getFechaPago().getTime()));
             ps.setDouble(2, p.getMonto());
             ps.setString(3, p.getTipo());
-            ps.setInt(4, p.getIdPago());
+            ps.setInt(4, p.getMetodoPago());
 
             ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if(rs.next()){
+                p.setIdPago(rs.getInt(1));
+            }
 
         } catch(SQLException e){
             throw new RuntimeException(e);
