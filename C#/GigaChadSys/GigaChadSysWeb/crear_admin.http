@@ -1,0 +1,17 @@
+POST http://localhost:8080/GigaChadSys-REST/webresources/AdministradorRS
+Content-Type: application/json
+
+{
+  "nombres": "Piero",
+  "apellidoPaterno": "Pastor",
+  "apellidoMaterno": "",
+  "edad": 28,
+  "dni": 10203040,
+  "email": "piero.pastor@gigachad.com",
+  "telefono": 999888111,
+  "contrasenia": "admin1234",
+  "activo": true,
+  "sede": "Sede Norte",
+  "cargo": "Asistente",
+  "sueldo": 3000.0
+}

@@ -1,7 +1,10 @@
-﻿@page "/admin/entrenadores/nuevo"
+@page "/admin/entrenadores/nuevo"
 @layout AdminLayout
 @rendermode InteractiveServer
-
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject EntrenadorServicio EntrenadorService
+@inject NavigationManager Nav
 <section class="trainer-form-page">
 
     <div class="trainer-breadcrumb">
@@ -277,7 +280,7 @@
         EntrenadorActivo = false;
     }
 
-    private void RegistrarEntrenador()
+    private async Task RegistrarEntrenador()
     {
         MensajeFormulario = "";
         ClaseMensajeFormulario = "";
@@ -384,7 +387,33 @@
             return;
         }
 
-        MostrarExito("Entrenador registrado correctamente. Por ahora está en modo visual sin base de datos.");
+        var nuevoEntrenador = new EntrenadorDTO
+        {
+            Dni = int.TryParse(DniValor, out var dni) ? dni : 0,
+            Nombres = NombresValor,
+            ApellidoPaterno = ApellidosValor,
+            ApellidoMaterno = "",
+            Telefono = int.TryParse(TelefonoValor, out var tel) ? tel : 0,
+            Email = CorreoValor,
+            Contrasenia = ContraseniaValor,
+            Especialidad = EspecialidadValor,
+            Sueldo = (double)sueldoConvertido,
+            TiempoTrabajado = TiempoTrabajoValor,
+            Activo = EntrenadorActivo
+        };
+
+        var resultado = await EntrenadorService.RegistrarAsync(nuevoEntrenador);
+
+        if (resultado.Contains("Exito") || resultado.Contains("exitosamente"))
+        {
+            MostrarExito("Entrenador registrado correctamente.");
+            await Task.Delay(1500);
+            Nav.NavigateTo("/admin/entrenadores");
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
     }
 
     private void MostrarError(string mensaje)

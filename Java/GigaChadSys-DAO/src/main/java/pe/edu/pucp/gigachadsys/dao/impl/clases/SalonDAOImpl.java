@@ -62,18 +62,17 @@ public class SalonDAOImpl implements SalonDAO {
 
     @Override
     public Salon save(Salon s) {
-        String sql = "INSERT INTO Salon(idSalon, nombreSalon, aforoMaximo) VALUES (?,?,?)";
+        String sql = "INSERT INTO Salon(nombreSalon, aforoMaximo, activo) VALUES (?,?,?)";
 
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1, s.getIdSalon());
-            ps.setString(2, s.getNombreSalon());
-            ps.setInt(3, s.getAforoMaximo());
-            s.setActive(true);
+            ps.setString(1, s.getNombreSalon());
+            ps.setInt(2, s.getAforoMaximo());
+            ps.setBoolean(3, s.isActive());
 
             int affectedRows = ps.executeUpdate();
-            /*
+            
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
@@ -82,16 +81,10 @@ public class SalonDAOImpl implements SalonDAO {
                     }
                 }
             }
-            */
-
-            if (affectedRows > 0) {
-                s.setActive(true);
-            }
 
             return s;
 
         } catch(SQLException e){ throw new RuntimeException(e); }
-
     }
 
     @Override

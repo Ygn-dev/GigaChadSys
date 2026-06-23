@@ -65,10 +65,15 @@ public class ClaseGrupal {
 	}
 
 	public void setActive(boolean activo) {
+		this.activo = activo;
 	}
 
 	public void setActivo(Boolean activo) {
 		this.activo = activo;
+	}
+
+	public boolean isActive() {
+		return activo != null ? activo : false;
 	}
 
     //Metodos

@@ -1,13 +1,11 @@
 @page "/admin/socios"
-@using GigaChadSysModel
 @using GigaChadSysWeb.Components.Layout
-@using System.Text.Json.Serialization
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
 @inject NavigationManager Nav
-@using GigaChadSys_Business_Logic
-
-
+@inject SocioServicio SocioService
 
 <section class="socios-page">
 
@@ -37,24 +35,24 @@
             <div class="socios-stat-icon icon-green">✅</div>
             <div class="socios-stat-body">
                 <span class="socios-stat-label">ACTIVOS</span>
-                <span class="socios-stat-value">@socios.Count(s => s.Estado == "Activo")</span>
-                <span class="socios-stat-hint">Con membresía vigente</span>
+                <span class="socios-stat-value">@socios.Count(s => s.Activo)</span>
+                <span class="socios-stat-hint">En el sistema</span>
             </div>
         </div>
         <div class="socios-stat-card">
             <div class="socios-stat-icon icon-yellow">⏸</div>
             <div class="socios-stat-body">
                 <span class="socios-stat-label">INACTIVOS</span>
-                <span class="socios-stat-value">@socios.Count(s => s.Estado == "Inactivo")</span>
-                <span class="socios-stat-hint">Sin membresía activa</span>
+                <span class="socios-stat-value">@socios.Count(s => !s.Activo)</span>
+                <span class="socios-stat-hint">Deshabilitados</span>
             </div>
         </div>
         <div class="socios-stat-card">
             <div class="socios-stat-icon icon-blue">♛</div>
             <div class="socios-stat-body">
-                <span class="socios-stat-label">MEMBRESÍA BLACK</span>
-                <span class="socios-stat-value">@socios.Count(s => s.Membresia.Contains("Black"))</span>
-                <span class="socios-stat-hint">Plan premium</span>
+                <span class="socios-stat-label">CON MEMBRESÍA</span>
+                <span class="socios-stat-value">@socios.Count(s => s.EstadoMembresia)</span>
+                <span class="socios-stat-hint">Membresía pagada</span>
             </div>
         </div>
     </div>
@@ -92,7 +90,7 @@
                         <th>DNI</th>
                         <th>Nombre</th>
                         <th>Contacto</th>
-                        <th>Membresía</th>
+                        <th>Suscripción</th>
                         <th>Estado</th>
                         <th>Último Pago</th>
                         <th>Acciones</th>
@@ -105,26 +103,26 @@
                             <td class="td-s-dni">@socio.Dni</td>
                             <td>
                                 <div class="td-s-name-cell">
-                                    <div class="td-s-avatar">@Iniciales(socio.Nombre)</div>
+                                    <div class="td-s-avatar">@Iniciales(socio.NombreCompleto)</div>
                                     <div>
-                                        <strong>@socio.Nombre</strong>
+                                        <strong>@socio.NombreCompleto</strong>
                                         <span>@socio.Email</span>
                                     </div>
                                 </div>
                             </td>
                             <td>@socio.Telefono</td>
                             <td>
-                                @if (socio.Membresia.Contains("Black"))
+                                @if (socio.EstadoMembresia)
                                 {
-                                    <span class="badge-s badge-s-black">♛ @socio.Membresia</span>
+                                    <span class="badge-s badge-s-black">♛ Activa</span>
                                 }
                                 else
                                 {
-                                    <span class="badge-s badge-s-basic">◎ @socio.Membresia</span>
+                                    <span class="badge-s badge-s-basic">◎ Inactiva</span>
                                 }
                             </td>
                             <td>
-                                @if (socio.Estado == "Activo")
+                                @if (socio.Activo)
                                 {
                                     <span class="badge-s badge-s-activo">
                                         <span class="bdot bdot-green"></span> Activo
@@ -137,7 +135,7 @@
                                     </span>
                                 }
                             </td>
-                            <td class="td-s-pago">@socio.UltimoPago</td>
+                            <td class="td-s-pago">—</td>
                             <td>
                                 <div class="td-s-actions">
                                     <button class="btn-s-action" title="Editar"
@@ -151,7 +149,9 @@
 
             @if (!SociosFiltrados.Any())
             {
-                <div class="socios-empty">No se encontraron socios.</div>
+                <div class="socios-empty">
+                    @(cargando ? "Cargando socios..." : "No se encontraron socios.")
+                </div>
             }
         </div>
 
@@ -169,65 +169,6 @@
 
 </section>
 
-<!-- ── MODAL NUEVO / EDITAR ── -->
-@if (mostrarModal)
-{
-    <div class="socios-modal-overlay" @onclick="CerrarModal">
-        <div class="socios-modal" @onclick:stopPropagation="true">
-            <div class="socios-modal-header">
-                <h3>@(modoEditar ? "Editar Socio" : "Nuevo Socio")</h3>
-                <button class="socios-modal-close" @onclick="CerrarModal">✕</button>
-            </div>
-
-            <div class="socios-form-grid">
-                <div class="socios-form-group">
-                    <label>NOMBRE COMPLETO</label>
-                    <input type="text" @bind="form.Nombre" placeholder="Ej: Juan Pérez" />
-                </div>
-                <div class="socios-form-group">
-                    <label>DNI</label>
-                    <input type="text" @bind="form.Dni" placeholder="12345678" maxlength="8" />
-                </div>
-                <div class="socios-form-group socios-form-full">
-                    <label>CORREO ELECTRÓNICO</label>
-                    <input type="email" @bind="form.Email" placeholder="juan@email.com" />
-                </div>
-                <div class="socios-form-group">
-                    <label>TELÉFONO</label>
-                    <input type="text" @bind="form.Telefono" placeholder="987654321" maxlength="9" />
-                </div>
-                <div class="socios-form-group">
-                    <label>MEMBRESÍA</label>
-                    <select @bind="form.Membresia">
-                        <option value="">Sin membresía</option>
-                        <option value="Membresía Basic">Membresía Basic</option>
-                        <option value="Membresía Black">Membresía Black</option>
-                    </select>
-                </div>
-                @if (!modoEditar)
-                {
-                    <div class="socios-form-group socios-form-full">
-                        <label>CONTRASEÑA INICIAL</label>
-                        <input type="password" placeholder="Mínimo 6 caracteres" />
-                    </div>
-                }
-            </div>
-
-            @if (!string.IsNullOrEmpty(mensajeError))
-            {
-                <p class="socios-form-error">⚠ @mensajeError</p>
-            }
-
-            <div class="socios-modal-footer">
-                <button class="btn-s-cancel" @onclick="CerrarModal">Cancelar</button>
-                <button class="btn-socios-primary" @onclick="GuardarSocio">
-                    @(modoEditar ? "Guardar Cambios" : "Guardar Socio")
-                </button>
-            </div>
-        </div>
-    </div>
-}
-
 <!-- ── TOAST ── -->
 @if (mostrarToast)
 {
@@ -238,104 +179,45 @@
 }
 
 @code {
-
-    // ── Modelo interno ──
-    private class SocioItem
-    {
-        [JsonPropertyName("dni")]
-        public string Dni { get; set; } = "";
-        
-        [JsonPropertyName("nombres")]
-        public string Nombre { get; set; } = "";
-        
-        [JsonPropertyName("email")]
-        public string Email { get; set; } = "";
-        
-        [JsonPropertyName("telefono")]
-        public string Telefono { get; set; } = "";
-        
-        [JsonPropertyName("membresia")]
-        public string Membresia { get; set; } = "";
-        
-        [JsonPropertyName("activo")]
-        public string Estado { get; set; } = "";
-        
-        [JsonPropertyName("ultimoPago")]
-        public string UltimoPago { get; set; } = "";
-    }
-
-    // ── Datos hardcodeados ──
-    private List<SocioItem> socios = new()
-    {
-        new() { Dni="40234123", Nombre="Lucia Torres",   Email="lucia@email.com",    Telefono="987654321", Membresia="Membresía Black", Estado="Activo",   UltimoPago="2025-05-01" },
-        new() { Dni="40123123", Nombre="Juan Perez",     Email="juan@email.com",     Telefono="987123456", Membresia="Membresía Basic", Estado="Activo",   UltimoPago="2025-05-03" },
-        new() { Dni="40345234", Nombre="Ana Garcia",     Email="ana@email.com",      Telefono="986543210", Membresia="Membresía Black", Estado="Activo",   UltimoPago="2025-04-28" },
-        new() { Dni="40567234", Nombre="Diego Ramos",    Email="diego@email.com",    Telefono="985678901", Membresia="Membresía Basic", Estado="Inactivo", UltimoPago="2025-03-01" },
-        new() { Dni="40678345", Nombre="Sofia Mendez",   Email="sofia@email.com",    Telefono="984567012", Membresia="Membresía Black", Estado="Activo",   UltimoPago="2025-05-05" },
-        new() { Dni="40789456", Nombre="Roberto Diaz",   Email="roberto@email.com",  Telefono="983456123", Membresia="Membresía Basic", Estado="Activo",   UltimoPago="2025-05-02" },
-        new() { Dni="40890567", Nombre="Camila Flores",  Email="camila@email.com",   Telefono="982345234", Membresia="Membresía Basic", Estado="Inactivo", UltimoPago="2025-02-01" },
-        new() { Dni="40901678", Nombre="Fernando Loza",  Email="fernando@email.com", Telefono="981234345", Membresia="Membresía Black", Estado="Activo",   UltimoPago="2025-05-04" },
-    };
+    private List<SocioDTO> socios = new();
+    private bool cargando = true;
 
     // ── Filtros / búsqueda ──
     private string textoBusqueda = "";
     private string filtroActivo = "todos";
 
-    private IEnumerable<SocioItem> SociosFiltrados => socios
-        .Where(s => filtroActivo == "todos" || s.Estado.ToLower() == filtroActivo)
+    private IEnumerable<SocioDTO> SociosFiltrados => socios
+        .Where(s => filtroActivo == "todos" || (filtroActivo == "activo" ? s.Activo : !s.Activo))
         .Where(s => string.IsNullOrWhiteSpace(textoBusqueda)
-            || s.Dni.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)
-            || s.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)
+            || s.Dni.ToString().Contains(textoBusqueda)
+            || s.NombreCompleto.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)
             || s.Email.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase));
 
-    // ── Modal ──
-    private bool mostrarModal = false;
-    private bool modoEditar = false;
-    private SocioItem form = new();
-    private SocioItem? socioEditando = null;
-    private string mensajeError = "";
-
-    private void AbrirModalNuevo()
+    protected override async Task OnInitializedAsync()
     {
-        Nav.NavigateTo($"/admin/socios/nuevo");
+        await CargarSocios();
     }
 
-    private void AbrirModalEditar(SocioItem s)
+    private async Task CargarSocios()
     {
-        Nav.NavigateTo($"/admin/socios/editar");
+        cargando = true;
+        try
+        {
+            socios = await SocioService.ListarSociosAsync();
+        }
+        catch (Exception ex)
+        {
+            MostrarToast("❌", "Error al cargar socios: " + ex.Message);
+        }
+        finally
+        {
+            cargando = false;
+        }
     }
 
-    private void CerrarModal() => mostrarModal = false;
-
-    private void GuardarSocio()
+    private void AbrirModalEditar(SocioDTO s)
     {
-        if (string.IsNullOrWhiteSpace(form.Nombre))   { mensajeError = "El nombre es obligatorio."; return; }
-        if (string.IsNullOrWhiteSpace(form.Email))    { mensajeError = "El correo es obligatorio."; return; }
-        if (string.IsNullOrWhiteSpace(form.Dni) || form.Dni.Length != 8) { mensajeError = "El DNI debe tener 8 dígitos."; return; }
-
-        if (modoEditar && socioEditando != null)
-        {
-            socioEditando.Nombre    = form.Nombre;
-            socioEditando.Email     = form.Email;
-            socioEditando.Telefono  = form.Telefono;
-            socioEditando.Membresia = form.Membresia;
-        }
-        else
-        {
-            socios.Insert(0, new SocioItem
-            {
-                Dni       = form.Dni,
-                Nombre    = form.Nombre,
-                Email     = form.Email,
-                Telefono  = form.Telefono,
-                Membresia = form.Membresia,
-                Estado    = "Activo",
-                UltimoPago = "—"
-            });
-        }
-
-        CerrarModal();
-        MostrarToast("✅", modoEditar ? "Socio actualizado correctamente" : "Socio registrado correctamente");
+        Nav.NavigateTo($"/admin/socios/editar/{s.IdUsuario}");
     }
 
     // ── Toast ──
@@ -345,7 +227,7 @@
 
     private async void MostrarToast(string icono, string msg)
     {
-        iconoToast   = icono;
+        iconoToast = icono;
         mensajeToast = msg;
         mostrarToast = true;
         StateHasChanged();
@@ -355,7 +237,12 @@
     }
 
     // ── Helpers ──
-    private static string Iniciales(string nombre) =>
-        string.Concat(nombre.Split(' ').Take(2).Select(p => p[0])).ToUpper();
+    private static string Iniciales(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre)) return "??";
+        var parts = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2 
+            ? $"{parts[0][0]}{parts[1][0]}".ToUpper() 
+            : nombre[..Math.Min(2, nombre.Length)].ToUpper();
+    }
 }
-

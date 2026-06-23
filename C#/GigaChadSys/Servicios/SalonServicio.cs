@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class SalonServicio
     /// <summary>
     /// GET /SalonRS — Lista todos los salones.
     /// </summary>
-    public async Task<List<Salon>> ListarSalonesAsync()
+    public async Task<List<SalonDTO>> ListarSalonesAsync()
     {
-        var salones = await _httpClient.GetFromJsonAsync<List<Salon>>(Endpoint);
-        return salones ?? new List<Salon>();
+        var salones = await _httpClient.GetFromJsonAsync<List<SalonDTO>>(Endpoint);
+        return salones ?? new List<SalonDTO>();
     }
 
     /// <summary>
     /// GET /SalonRS/{id} — Obtiene un salón por su ID.
     /// </summary>
-    public async Task<Salon?> ObtenerPorIdAsync(int idSalon)
+    public async Task<SalonDTO?> ObtenerPorIdAsync(int idSalon)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idSalon}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<Salon>();
+            return await response.Content.ReadFromJsonAsync<SalonDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /SalonRS — Registra un nuevo salón.
     /// </summary>
-    public async Task<string> RegistrarAsync(Salon salon)
+    public async Task<string> RegistrarAsync(SalonDTO salon)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, salon);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class SalonServicio
     /// <summary>
     /// PUT /SalonRS/{id} — Actualiza los datos de un salón existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idSalon, Salon salon)
+    public async Task<string> ActualizarAsync(int idSalon, SalonDTO salon)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idSalon}", salon);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();

@@ -1247,7 +1247,7 @@ h1:focus {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    overflow-x: auto;
     background: #0D0D0D;
 }
 
@@ -1294,8 +1294,10 @@ h1:focus {
 .entrenador-main {
     margin-left: 0;
     width: 100%;
+    max-width: 100%;
     padding: 0 38px 38px;
     flex: 1;
+    min-width: 0;
 }
 
 .entrenador-bottom {
@@ -2171,15 +2173,17 @@ h1:focus {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    overflow-x: auto;
     background: #0D0D0D;
 }
 
 .socio-main {
     margin-left: 0;
     width: 100%;
+    max-width: 100%;
     padding: 0 38px 38px;
     flex: 1;
+    min-width: 0;
 }
 
 .socio-bottom {
@@ -2202,15 +2206,17 @@ h1:focus {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    overflow-x: auto;
     background: #0D0D0D;
 }
 
 .admin-main {
     margin-left: 0;
     width: 100%;
+    max-width: 100%;
     padding: 0 38px 38px;
     flex: 1;
+    min-width: 0;
 }
 
 /* ===== MI PERFIL PAGE (SHARED) ===== */
@@ -4001,7 +4007,7 @@ h1:focus {
     background: #161616;
     border: 1px solid #2A2A2A;
     border-radius: 18px;
-    overflow: hidden;
+    overflow-x: auto;
 }
 
 .admin-table {

@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class EntrenadorServicio
     /// <summary>
     /// GET /EntrenadorRS — Lista todos los entrenadores.
     /// </summary>
-    public async Task<List<Entrenador>> ListarEntrenadoresAsync()
+    public async Task<List<EntrenadorDTO>> ListarEntrenadoresAsync()
     {
-        var entrenadores = await _httpClient.GetFromJsonAsync<List<Entrenador>>(Endpoint);
-        return entrenadores ?? new List<Entrenador>();
+        var entrenadores = await _httpClient.GetFromJsonAsync<List<EntrenadorDTO>>(Endpoint);
+        return entrenadores ?? new List<EntrenadorDTO>();
     }
 
     /// <summary>
     /// GET /EntrenadorRS/{id} — Obtiene un entrenador por su ID.
     /// </summary>
-    public async Task<Entrenador?> ObtenerPorIdAsync(int idUsuario)
+    public async Task<EntrenadorDTO?> ObtenerPorIdAsync(int idUsuario)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idUsuario}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<Entrenador>();
+            return await response.Content.ReadFromJsonAsync<EntrenadorDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /EntrenadorRS — Registra un nuevo entrenador.
     /// </summary>
-    public async Task<string> RegistrarAsync(Entrenador entrenador)
+    public async Task<string> RegistrarAsync(EntrenadorDTO entrenador)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, entrenador);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class EntrenadorServicio
     /// <summary>
     /// PUT /EntrenadorRS/{id} — Actualiza los datos de un entrenador existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idUsuario, Entrenador entrenador)
+    public async Task<string> ActualizarAsync(int idUsuario, EntrenadorDTO entrenador)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", entrenador);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();

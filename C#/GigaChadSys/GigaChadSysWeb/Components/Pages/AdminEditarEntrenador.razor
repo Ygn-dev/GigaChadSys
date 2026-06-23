@@ -1,7 +1,10 @@
-﻿@page "/admin/entrenadores/editar/{DniParametro}"
+@page "/admin/entrenadores/editar/{IdUsuarioParametro:int}"
 @layout AdminLayout
 @rendermode InteractiveServer
-
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject EntrenadorServicio EntrenadorService
+@inject NavigationManager Nav
 <section class="trainer-edit-page">
 
     <div class="trainer-breadcrumb">
@@ -225,7 +228,7 @@
 
 @code {
     [Parameter]
-    public string DniParametro { get; set; } = "";
+    public int IdUsuarioParametro { get; set; }
 
     private string DniValor { get; set; } = "";
     private string FechaNacimientoValor { get; set; } = "";
@@ -245,82 +248,25 @@
     private string MensajeFormulario { get; set; } = "";
     private string ClaseMensajeFormulario { get; set; } = "";
 
-    protected override void OnParametersSet()
+    protected override async Task OnInitializedAsync()
     {
-        CargarDatosEntrenador();
+        await CargarDatosEntrenador();
     }
 
-    private void CargarDatosEntrenador()
+    private async Task CargarDatosEntrenador()
     {
-        if (DniParametro == "40567234")
+        var entrenador = await EntrenadorService.ObtenerPorIdAsync(IdUsuarioParametro);
+        if (entrenador != null)
         {
-            DniValor = "40567234";
-            FechaNacimientoValor = "1992-05-12";
-            NombresValor = "Pedro";
-            ApellidosValor = "Sánchez";
-            TelefonoValor = "998877666";
-            CorreoValor = "pedro@email.com";
-            EspecialidadValor = "Yoga y Pilates";
-            SueldoMensualValor = "2800.00";
-            HorarioDisponibleValor = "Lunes a Viernes 16:00 - 21:00";
-            TiempoTrabajoValor = "Medio tiempo";
-            EntrenadorActivo = true;
-        }
-        else if (DniParametro == "40678345")
-        {
-            DniValor = "40678345";
-            FechaNacimientoValor = "1994-08-20";
-            NombresValor = "Laura";
-            ApellidosValor = "Gómez";
-            TelefonoValor = "997766555";
-            CorreoValor = "laura@email.com";
-            EspecialidadValor = "Spinning y Cardio";
-            SueldoMensualValor = "3000.00";
-            HorarioDisponibleValor = "Martes a Domingo 07:00 - 13:00";
-            TiempoTrabajoValor = "Tiempo completo";
-            EntrenadorActivo = true;
-        }
-        else if (DniParametro == "40789456")
-        {
-            DniValor = "40789456";
-            FechaNacimientoValor = "1990-11-03";
-            NombresValor = "Andrés";
-            ApellidosValor = "Quispe";
-            TelefonoValor = "996655444";
-            CorreoValor = "andres@email.com";
-            EspecialidadValor = "Boxeo y MMA";
-            SueldoMensualValor = "3200.00";
-            HorarioDisponibleValor = "Lunes a Sábado 18:00 - 22:00";
-            TiempoTrabajoValor = "Tiempo completo";
-            EntrenadorActivo = true;
-        }
-        else if (DniParametro == "40890567")
-        {
-            DniValor = "40890567";
-            FechaNacimientoValor = "1995-03-18";
-            NombresValor = "Diana";
-            ApellidosValor = "Rojas";
-            TelefonoValor = "995544333";
-            CorreoValor = "diana@email.com";
-            EspecialidadValor = "Zumba y Baile";
-            SueldoMensualValor = "2400.00";
-            HorarioDisponibleValor = "Lunes a Viernes 17:00 - 20:00";
-            TiempoTrabajoValor = "Por horas";
-            EntrenadorActivo = false;
-        }
-        else
-        {
-            DniValor = "40123123";
-            FechaNacimientoValor = "1991-01-20";
-            NombresValor = "Marco";
-            ApellidosValor = "Ruiz";
-            TelefonoValor = "999888777";
-            CorreoValor = "marco@email.com";
-            EspecialidadValor = "CrossFit y Musculación";
-            SueldoMensualValor = "3500.00";
-            HorarioDisponibleValor = "Lunes a Sábado 06:00 - 14:00";
-            TiempoTrabajoValor = "Tiempo completo";
-            EntrenadorActivo = true;
+            DniValor = entrenador.Dni.ToString();
+            NombresValor = entrenador.Nombres;
+            ApellidosValor = $"{entrenador.ApellidoPaterno} {entrenador.ApellidoMaterno}".Trim();
+            TelefonoValor = entrenador.Telefono.ToString();
+            CorreoValor = entrenador.Email;
+            EspecialidadValor = entrenador.Especialidad;
+            SueldoMensualValor = entrenador.Sueldo.ToString();
+            TiempoTrabajoValor = entrenador.TiempoTrabajado ?? "";
+            EntrenadorActivo = entrenador.Activo;
         }
     }
 
@@ -346,17 +292,11 @@
         EntrenadorActivo = false;
     }
 
-    private void GuardarCambios()
+    private async Task GuardarCambios()
     {
         if (string.IsNullOrWhiteSpace(DniValor))
         {
             MostrarError("El DNI es obligatorio.");
-            return;
-        }
-
-        if (DniValor.Length != 8)
-        {
-            MostrarError("El DNI debe tener 8 dígitos.");
             return;
         }
 
@@ -378,19 +318,43 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(EspecialidadValor))
-        {
-            MostrarError("Debe seleccionar una especialidad.");
-            return;
-        }
-
         if (!string.IsNullOrWhiteSpace(NuevaContraseniaValor) && NuevaContraseniaValor.Length < 6)
         {
             MostrarError("La nueva contraseña debe tener mínimo 6 caracteres.");
             return;
         }
+        
+        decimal sueldoConvertido = 0;
+        decimal.TryParse(SueldoMensualValor, out sueldoConvertido);
 
-        MostrarExito("Cambios guardados correctamente. Por ahora es una simulación visual sin base de datos.");
+        var dto = new EntrenadorDTO
+        {
+            IdUsuario = IdUsuarioParametro,
+            Dni = int.TryParse(DniValor, out var dni) ? dni : 0,
+            Nombres = NombresValor,
+            ApellidoPaterno = ApellidosValor,
+            ApellidoMaterno = "",
+            Telefono = int.TryParse(TelefonoValor, out var tel) ? tel : 0,
+            Email = CorreoValor,
+            Contrasenia = NuevaContraseniaValor, // Podría ser vacía, el backend decide si la actualiza
+            Especialidad = EspecialidadValor,
+            Sueldo = (double)sueldoConvertido,
+            TiempoTrabajado = TiempoTrabajoValor,
+            Activo = EntrenadorActivo
+        };
+
+        var resultado = await EntrenadorService.ActualizarAsync(IdUsuarioParametro, dto);
+
+        if (resultado.Contains("Exito") || resultado.Contains("exitosamente"))
+        {
+            MostrarExito("Cambios guardados correctamente.");
+            await Task.Delay(1500);
+            Nav.NavigateTo("/admin/entrenadores");
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
     }
 
     private void MostrarError(string mensaje)

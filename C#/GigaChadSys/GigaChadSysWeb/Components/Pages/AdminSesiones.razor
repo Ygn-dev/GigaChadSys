@@ -1,5 +1,8 @@
-﻿@page "/admin/sesiones"
+@page "/admin/sesiones"
 @using Components.Layout
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject SesionClaseServicio SesionService
 @layout AdminLayout
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
@@ -36,89 +39,109 @@
         </div>
     </div>
 
-    @{
-        var sesiones = SesionesFiltradas.ToList();
+    @if (Cargando)
+    {
+        <p>Cargando sesiones...</p>
     }
+    else
+    {
+        var sesiones = SesionesFiltradas.ToList();
 
-    <div class="admin-table-card">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Clase</th>
-                    <th>Entrenador</th>
-                    <th>Salón</th>
-                    <th>Cupos</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (sesiones.Count == 0)
-                {
+        <div class="admin-table-card">
+            <table class="admin-table">
+                <thead>
                     <tr>
-                        <td colspan="8" class="empty-row">No se encontraron sesiones.</td>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Clase</th>
+                        <th>Entrenador</th>
+                        <th>Salón</th>
+                        <th>Cupos</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
-                }
-                else
-                {
-                    @foreach (var sesion in sesiones)
+                </thead>
+                <tbody>
+                    @if (sesiones.Count == 0)
                     {
                         <tr>
-                            <td>@sesion.Fecha.ToString("yyyy-MM-dd")</td>
-                            <td>@sesion.HoraInicio - @sesion.HoraFin</td>
-
-                            <td>
-                                <div class="sesion-clase-cell">
-                                    <strong>@sesion.NombreClase</strong>
-                                    <span>@sesion.Disciplina</span>
-                                </div>
-                            </td>
-
-                            <td>@sesion.Entrenador</td>
-                            <td>@sesion.Salon</td>
-
-                            <td>
-                                <div class="cupos-cell">
-                                    <span>@sesion.CuposOcupados / @sesion.CuposMaximos</span>
-                                    <div class="cupos-bar">
-                                        <div class="cupos-fill" style="width: @(sesion.PorcentajeCupos)%"></div>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td>
-                                @if (sesion.Estado == "Programada")
-                                {
-                                    <span class="status-badge active">Programada</span>
-                                }
-                                else if (sesion.Estado == "Cancelada")
-                                {
-                                    <span class="status-badge inactive">Cancelada</span>
-                                }
-                                else
-                                {
-                                    <span class="status-badge finished">Finalizada</span>
-                                }
-                            </td>
-
-                            <td>
-                                <button type="button" class="action-button" title="Ver">👁</button>
-                                <button type="button" class="action-button" title="Editar" @onclick="() => IrAEditarSesion(sesion.Id)">✎</button>
-                            </td>
+                            <td colspan="8" class="empty-row">No se encontraron sesiones.</td>
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
-    </div>
+                    else
+                    {
+                        @foreach (var sesion in sesiones)
+                        {
+                            var salon = sesion.Salon;
+                            var clase = sesion.ClaseGrupal;
+                            var entrenador = sesion.Entrenador;
+
+                            var cuposMaximos = salon?.AforoMaximo ?? 0;
+                            var cuposOcupados = cuposMaximos - sesion.CuposDisponibles;
+                            var porcentajeCupos = cuposMaximos > 0 ? (int)((double)cuposOcupados / cuposMaximos * 100) : 0;
+                            var estado = sesion.HoraFin < DateTime.Now ? "Finalizada" : "Programada";
+                            var nombreClase = clase?.NombreDisciplina ?? "Sin Clase";
+                            var nombreEntrenador = entrenador != null ? entrenador.NombreCompleto : "Sin Entrenador";
+                            var nombreSalon = salon?.NombreSalon ?? "Sin Salón";
+
+                            <tr>
+                                <td>@sesion.FechaSesion.ToString("yyyy-MM-dd")</td>
+                                <td>@sesion.HoraInicio.ToString("HH:mm") - @sesion.HoraFin.ToString("HH:mm")</td>
+
+                                <td>
+                                    <div class="sesion-clase-cell">
+                                        <strong>@nombreClase</strong>
+                                        <span></span>
+                                    </div>
+                                </td>
+
+                                <td>@nombreEntrenador</td>
+                                <td>@nombreSalon</td>
+
+                                <td>
+                                    <div class="cupos-cell">
+                                        <span>@cuposOcupados / @cuposMaximos</span>
+                                        <div class="cupos-bar">
+                                            <div class="cupos-fill" style="width: @(porcentajeCupos)%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @if (estado == "Programada")
+                                    {
+                                        <span class="status-badge active">Programada</span>
+                                    }
+                                    else if (estado == "Cancelada")
+                                    {
+                                        <span class="status-badge inactive">Cancelada</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge finished">Finalizada</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <button type="button" class="action-button" title="Ver">👁</button>
+                                    <button type="button" class="action-button" title="Editar" @onclick="() => IrAEditarSesion(sesion.IdSesion)">✎</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </section>
 
 @code {
     private string TextoBusqueda { get; set; } = "";
     private string FiltroEstado { get; set; } = "Todos";
     private DateTime? FechaFiltro { get; set; } = null;
+    private bool Cargando { get; set; } = true;
+
+    private List<SesionClaseDTO> ListaSesiones = new();
 
     private string FiltroClaseTodos => FiltroEstado == "Todos" ? "filter-button active" : "filter-button";
     private string FiltroClaseProgramadas => FiltroEstado == "Programada" ? "filter-button active" : "filter-button";
@@ -130,69 +153,56 @@
     private void MostrarCanceladas() => FiltroEstado = "Cancelada";
     private void MostrarFinalizadas() => FiltroEstado = "Finalizada";
 
-    // 🔥 Método para navegar a la edición
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ListaSesiones = await SesionService.ListarSesionesAsync();
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
     private void IrAEditarSesion(int id)
     {
         Navigation.NavigateTo($"/admin/sesiones/editar/{id}");
     }
 
-    // 🔥 Agregado el 'Id' a los datos falsos para que funcione la redirección
-    private List<SesionVista> ListaSesiones = new()
-    {
-        new SesionVista { Id = 1, Fecha = new DateTime(2025,5,12), HoraInicio = "07:00", HoraFin = "08:00", NombreClase = "CrossFit Intenso",    Disciplina = "CrossFit",    Entrenador = "Marco Ruiz",    Salon = "Sala Principal",   CuposOcupados = 2,  CuposMaximos = 20, Estado = "Programada" },
-        new SesionVista { Id = 2, Fecha = new DateTime(2025,5,12), HoraInicio = "08:00", HoraFin = "08:45", NombreClase = "Yoga Matutino",        Disciplina = "Yoga",        Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 3,  CuposMaximos = 15, Estado = "Programada" },
-        new SesionVista { Id = 3, Fecha = new DateTime(2025,5,12), HoraInicio = "18:30", HoraFin = "19:15", NombreClase = "Spinning Power",       Disciplina = "Spinning",    Entrenador = "Laura Gomez",   Salon = "Sala Ciclo",       CuposOcupados = 3,  CuposMaximos = 25, Estado = "Programada" },
-        new SesionVista { Id = 4, Fecha = new DateTime(2025,5,12), HoraInicio = "19:00", HoraFin = "20:00", NombreClase = "Boxeo Amateur",        Disciplina = "Boxeo",       Entrenador = "Andres Quispe", Salon = "Ring Boxeo",       CuposOcupados = 2,  CuposMaximos = 12, Estado = "Programada" },
-        new SesionVista { Id = 5, Fecha = new DateTime(2025,5,13), HoraInicio = "06:00", HoraFin = "07:15", NombreClase = "Musculacion Avanzada", Disciplina = "Musculacion", Entrenador = "Marco Ruiz",    Salon = "Sala Musculacion", CuposOcupados = 8,  CuposMaximos = 30, Estado = "Programada" },
-        new SesionVista { Id = 6, Fecha = new DateTime(2025,5,13), HoraInicio = "07:00", HoraFin = "08:00", NombreClase = "CrossFit Intenso",    Disciplina = "CrossFit",    Entrenador = "Marco Ruiz",    Salon = "Sala Principal",   CuposOcupados = 5,  CuposMaximos = 20, Estado = "Programada" },
-        new SesionVista { Id = 7, Fecha = new DateTime(2025,5,13), HoraInicio = "18:00", HoraFin = "18:50", NombreClase = "Pilates Core",         Disciplina = "Pilates",     Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 1,  CuposMaximos = 12, Estado = "Programada" },
-        new SesionVista { Id = 8, Fecha = new DateTime(2025,5,14), HoraInicio = "07:00", HoraFin = "07:30", NombreClase = "HIIT 30",              Disciplina = "HIIT",        Entrenador = "Laura Gomez",   Salon = "Sala Ciclo",       CuposOcupados = 10, CuposMaximos = 20, Estado = "Programada" },
-        new SesionVista { Id = 9, Fecha = new DateTime(2025,5,14), HoraInicio = "10:00", HoraFin = "11:00", NombreClase = "Zumba Fitness",        Disciplina = "Zumba",       Entrenador = "Diana Rojas",   Salon = "Sala Principal",   CuposOcupados = 15, CuposMaximos = 30, Estado = "Cancelada"  },
-        new SesionVista { Id = 10, Fecha = new DateTime(2025,5,11), HoraInicio = "09:00", HoraFin = "10:00", NombreClase = "Yoga Matutino",        Disciplina = "Yoga",        Entrenador = "Pedro Sanchez", Salon = "Sala Yoga",        CuposOcupados = 12, CuposMaximos = 15, Estado = "Finalizada" },
-    };
-
-    private IEnumerable<SesionVista> SesionesFiltradas
+    private IEnumerable<SesionClaseDTO> SesionesFiltradas
     {
         get
         {
-            IEnumerable<SesionVista> resultado = ListaSesiones;
+            IEnumerable<SesionClaseDTO> resultado = ListaSesiones;
 
             if (FiltroEstado != "Todos")
-                resultado = resultado.Where(s => s.Estado == FiltroEstado);
+            {
+                if (FiltroEstado == "Finalizada")
+                {
+                    resultado = resultado.Where(s => s.HoraFin < DateTime.Now);
+                }
+                else if (FiltroEstado == "Programada")
+                {
+                    resultado = resultado.Where(s => s.HoraFin >= DateTime.Now);
+                }
+            }
 
             if (FechaFiltro.HasValue)
-                resultado = resultado.Where(s => s.Fecha.Date == FechaFiltro.Value.Date);
+                resultado = resultado.Where(s => s.FechaSesion.Date == FechaFiltro.Value.Date);
 
             if (!string.IsNullOrWhiteSpace(TextoBusqueda))
             {
                 string texto = TextoBusqueda.Trim();
                 resultado = resultado.Where(s =>
-                    s.NombreClase.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                    s.Entrenador.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                    s.Salon.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                    s.Disciplina.Contains(texto, StringComparison.OrdinalIgnoreCase)
+                    (s.ClaseGrupal?.NombreDisciplina?.Contains(texto, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (s.Entrenador?.Nombres?.Contains(texto, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (s.Entrenador?.ApellidoPaterno?.Contains(texto, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (s.Salon?.NombreSalon?.Contains(texto, StringComparison.OrdinalIgnoreCase) ?? false)
                 );
             }
 
-            return resultado.OrderBy(s => s.Fecha).ThenBy(s => s.HoraInicio);
+            return resultado.OrderBy(s => s.FechaSesion).ThenBy(s => s.HoraInicio);
         }
-    }
-
-    private class SesionVista
-    {
-        public int Id { get; set; } // 🔥 Propiedad añadida
-        public DateTime Fecha { get; set; }
-        public string HoraInicio { get; set; } = "";
-        public string HoraFin { get; set; } = "";
-        public string NombreClase { get; set; } = "";
-        public string Disciplina { get; set; } = "";
-        public string Entrenador { get; set; } = "";
-        public string Salon { get; set; } = "";
-        public int CuposOcupados { get; set; }
-        public int CuposMaximos { get; set; }
-        public string Estado { get; set; } = "Programada";
-
-        public int PorcentajeCupos =>
-            CuposMaximos > 0 ? (int)((double)CuposOcupados / CuposMaximos * 100) : 0;
     }
 }

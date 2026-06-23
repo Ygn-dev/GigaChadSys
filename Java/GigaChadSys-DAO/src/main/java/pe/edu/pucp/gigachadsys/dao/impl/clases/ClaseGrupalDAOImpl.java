@@ -63,22 +63,31 @@ public class ClaseGrupalDAOImpl implements ClaseGrupalDAO {
 
     @Override
     public ClaseGrupal save(ClaseGrupal c) {
-        String sql = "INSERT INTO ClaseGrupal(idClase,nombreDisciplina, descripcion, duracionMinutos, nivel) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO ClaseGrupal(nombreDisciplina, descripcion, duracionMinutos, nivel, activo) VALUES (?,?,?,?,?)";
 
         try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1, c.getIdClase());
-            ps.setString(2, c.getNombreDisciplina());
-            ps.setString(3, c.getDescripcion());
-            ps.setInt(4, c.getDuracionMinutos());
-            ps.setString(5, c.getNivel());
+            ps.setString(1, c.getNombreDisciplina());
+            ps.setString(2, c.getDescripcion());
+            ps.setInt(3, c.getDuracionMinutos());
+            ps.setString(4, c.getNivel());
+            ps.setBoolean(5, c.isActive());
 
-            ps.executeUpdate();
+            int affectedRows = ps.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int newId = generatedKeys.getInt(1);
+                        c.setIdClase(newId);
+                    }
+                }
+            }
+
+            return c;
 
         } catch(SQLException e){ throw new RuntimeException(e); }
-
-        return c;
     }
 
     @Override

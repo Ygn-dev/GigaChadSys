@@ -3,7 +3,9 @@
 @layout AdminLayout
 @rendermode InteractiveServer
 @using System.Text.Json.Serialization
-@inject HttpClient Http
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject ClaseGrupalServicio ClaseService
 
 
 <section class="admin-list-page">
@@ -70,14 +72,13 @@
                     <!-- Top badges -->
                     <div class="gc-card-top">
                         <span class="gc-nivel-badge gc-nivel-@c.Nivel.ToLower()">@c.Nivel</span>
-                        <span class="gc-activa-badge @(c.Activa ? "gc-badge-activa" : "gc-badge-inactiva")">
-                            @(c.Activa ? "Activa" : "Inactiva")
+                        <span class="gc-activa-badge @(c.Activo ? "gc-badge-activa" : "gc-badge-inactiva")">
+                            @(c.Activo ? "Activa" : "Inactiva")
                         </span>
                     </div>
 
-                    <!-- Nombre y disciplina -->
-                    <h3 class="gc-card-nombre">@c.Nombre</h3>
-                    <p class="gc-card-disciplina">@c.Disciplina</p>
+                    <!-- Nombre -->
+                    <h3 class="gc-card-nombre">@c.NombreDisciplina</h3>
 
                     <!-- Descripción -->
                     <p class="gc-card-desc">@c.Descripcion</p>
@@ -85,15 +86,15 @@
                     <!-- Duración -->
                     <div class="gc-card-duracion">
                         <span class="gc-clock-icon">🕐</span>
-                        <span>@c.DuracionMin min</span>
+                        <span>@c.DuracionMinutos min</span>
                     </div>
 
                     <!-- Botones -->
                     <div class="gc-card-actions">
-                        <a class="gc-btn-ver" href="/admin/clases/@c.Id">
+                        <a class="gc-btn-ver" href="/admin/clases/@c.IdClase">
                             👁 Ver
                         </a>
-                        <a class="gc-btn-editar" href="/admin/clases/editar/@c.Id">
+                        <a class="gc-btn-editar" href="/admin/clases/editar/@c.IdClase">
                             ✏ Editar
                         </a>
                     </div>
@@ -114,39 +115,35 @@
         "Zumba", "Pilates", "Musculacion", "HIIT"
     };
 
-    private IEnumerable<ClaseVista> ClasesFiltradas
+    private IEnumerable<ClaseGrupalDTO> ClasesFiltradas
     {
         get
         {
-            IEnumerable<ClaseVista> resultado = Clases;
+            IEnumerable<ClaseGrupalDTO> resultado = Clases;
 
             if (!string.IsNullOrWhiteSpace(DisciplinaFiltro))
-                resultado = resultado.Where(c => c.Disciplina == DisciplinaFiltro);
+                resultado = resultado.Where(c => c.NombreDisciplina.Contains(DisciplinaFiltro, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrWhiteSpace(TextoBusqueda))
             {
                 string t = TextoBusqueda.Trim();
                 resultado = resultado.Where(c =>
-                    c.Nombre.Contains(t, StringComparison.OrdinalIgnoreCase) ||
-                    c.Disciplina.Contains(t, StringComparison.OrdinalIgnoreCase));
+                    c.NombreDisciplina.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                    c.Descripcion.Contains(t, StringComparison.OrdinalIgnoreCase));
             }
 
             return resultado;
         }
     }
 
-    private List<ClaseVista> Clases = new();
+    private List<ClaseGrupalDTO> Clases = new();
     private bool Cargando = true;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<List<ClaseVista>>("ClaseGrupalRS");
-            if (response != null)
-            {
-                Clases = response;
-            }
+            Clases = await ClaseService.ListarClasesGrupalesAsync();
         }
         catch (Exception ex)
         {
@@ -156,29 +153,5 @@
         {
             Cargando = false;
         }
-    }
-
-    private class ClaseVista
-    {
-        [JsonPropertyName("idClase")]
-        public int    Id          { get; set; }
-        
-        [JsonPropertyName("nombre")]
-        public string Nombre      { get; set; } = "";
-        
-        [JsonPropertyName("nombreDisciplina")]
-        public string Disciplina  { get; set; } = "";
-        
-        [JsonPropertyName("nivelClase")]
-        public string Nivel       { get; set; } = "";
-        
-        [JsonPropertyName("duracionMinutos")]
-        public int    DuracionMin { get; set; }
-        
-        [JsonPropertyName("activo")]
-        public bool   Activa      { get; set; }
-        
-        [JsonPropertyName("descripcion")]
-        public string Descripcion { get; set; } = "";
     }
 }

@@ -71,15 +71,27 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
         String sql = "INSERT INTO SesionClase(fechaSesion, horaInicio, horaFin, cuposDisponibles, idSalon, idEntrenador, idClase, activo) VALUES (?,?,?,?,?,?,?,1)";
 
         try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setDate(1, new java.sql.Date(s.getFechaSesion().getTime()));
             ps.setTimestamp(2, s.getHoraInicio());
             ps.setTimestamp(3, s.getHoraFin());
             ps.setInt(4, s.getCuposDisponibles());
-            ps.setInt(5, s.getIdSesion());
+            
+            ps.setInt(5, s.getSalon() != null ? s.getSalon().getIdSalon() : 0);
+            ps.setInt(6, s.getEntrenador() != null ? s.getEntrenador().getIdUsuario() : 0);
+            ps.setInt(7, s.getClaseGrupal() != null ? s.getClaseGrupal().getIdClase() : 0);
 
-            ps.executeUpdate();
+            int affectedRows = ps.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int newId = generatedKeys.getInt(1);
+                        s.setIdSesion(newId);
+                    }
+                }
+            }
 
         } catch(SQLException e){ throw new RuntimeException(e); }
 
@@ -97,7 +109,12 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
             ps.setTimestamp(2, s.getHoraInicio());
             ps.setTimestamp(3, s.getHoraFin());
             ps.setInt(4, s.getCuposDisponibles());
-            ps.setInt(5, s.getIdSesion());
+            
+            ps.setInt(5, s.getSalon() != null ? s.getSalon().getIdSalon() : 0);
+            ps.setInt(6, s.getEntrenador() != null ? s.getEntrenador().getIdUsuario() : 0);
+            ps.setInt(7, s.getClaseGrupal() != null ? s.getClaseGrupal().getIdClase() : 0);
+            
+            ps.setInt(8, s.getIdSesion());
 
             ps.executeUpdate();
 

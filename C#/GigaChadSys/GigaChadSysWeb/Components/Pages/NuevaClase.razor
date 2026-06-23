@@ -2,6 +2,10 @@
 @using Components.Layout
 @layout AdminLayout
 @rendermode InteractiveServer
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject ClaseGrupalServicio ClaseService
+@inject NavigationManager Navigation
 
 <section class="admin-form-page">
 
@@ -248,11 +252,22 @@
             DuracionMin <= 0)
             return;
 
+        var nuevaClase = new ClaseGrupalDTO
+        {
+            NombreDisciplina = $"{Disciplina} - {Nombre.Trim()}",
+            Nivel = Nivel,
+            DuracionMinutos = DuracionMin,
+            Descripcion = Descripcion.Trim(),
+            Activo = Activa
+        };
+
+        var msj = await ClaseService.RegistrarAsync(nuevaClase);
+
         MostrarToast = true;
         StateHasChanged();
-        await Task.Delay(2800);
+        await Task.Delay(1500);
         MostrarToast = false;
-        LimpiarFormulario();
+        Navigation.NavigateTo("/admin/clases");
     }
 
     private void LimpiarFormulario()

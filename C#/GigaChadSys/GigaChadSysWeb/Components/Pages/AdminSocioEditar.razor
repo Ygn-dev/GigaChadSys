@@ -3,6 +3,10 @@
 @using GigaChadSysWeb.Components.Layout
 @layout AdminLayout
 @rendermode InteractiveServer
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject SocioServicio SocioService
+@inject NavigationManager Nav
 
 <section class="socio-form-page">
 
@@ -295,26 +299,25 @@
 
     private FormEditarSocio form = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Datos de ejemplo (mock) - se conectará con BL después
-        form = new FormEditarSocio
+        var socio = await SocioService.ObtenerPorIdAsync(Id);
+        if (socio != null)
         {
-            Dni = "40234123",
-            Nombres = "Lucia Maria",
-            Apellidos = "Torres García",
-            FechaNacimiento = new DateTime(1998, 5, 14),
-            Telefono = "987654321",
-            Email = "lucia@email.com",
-            PlanSeleccionado = "black",
-            FechaInicio = new DateTime(2025, 2, 1),
-            FechaVencimiento = new DateTime(2025, 8, 1),
-            EstadoMembresia = "Activa",
-            Motivo = "Corrección administrativa"
-        };
+            form = new FormEditarSocio
+            {
+                Dni = socio.Dni.ToString(),
+                Nombres = socio.Nombres,
+                Apellidos = $"{socio.ApellidoPaterno} {socio.ApellidoMaterno}".Trim(),
+                Telefono = socio.Telefono.ToString(),
+                Email = socio.Email,
+                PlanSeleccionado = socio.EstadoMembresia ? "basic" : "",
+                EstadoMembresia = socio.EstadoMembresia ? "Activa" : "Vencida"
+            };
+        }
     }
 
-    private async void GuardarCambios()
+    private async Task GuardarCambios()
     {
         errores.Clear();
 
@@ -340,13 +343,36 @@
             return;
         }
 
-        // Aquí se conectará con BL
-        mensajeToast = "Cambios guardados correctamente.";
-        mostrarToast = true;
-        StateHasChanged();
-        await Task.Delay(2800);
-        mostrarToast = false;
-        StateHasChanged();
+        var dto = new SocioDTO
+        {
+            IdUsuario = this.Id,
+            Dni = int.Parse(form.Dni),
+            Nombres = form.Nombres,
+            ApellidoPaterno = form.Apellidos,
+            ApellidoMaterno = "",
+            Telefono = int.TryParse(form.Telefono, out var tel) ? tel : 0,
+            Email = form.Email,
+            Contrasenia = form.Contrasenia,
+            Activo = true,
+            EstadoMembresia = form.EstadoMembresia == "Activa"
+        };
+
+        var resultado = await SocioService.ActualizarAsync(Id, dto);
+
+        if (resultado.Contains("Exito") || resultado.Contains("exitosamente"))
+        {
+            mensajeToast = "Cambios guardados correctamente.";
+            mostrarToast = true;
+            StateHasChanged();
+            await Task.Delay(1500);
+            mostrarToast = false;
+            Nav.NavigateTo("/admin/socios");
+        }
+        else
+        {
+            errores["dni"] = resultado;
+            StateHasChanged();
+        }
     }
 
     private void QuitarMembresia()

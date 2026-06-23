@@ -3,7 +3,9 @@
 @using System.Text.Json.Serialization
 @layout AdminLayout
 @rendermode InteractiveServer
-
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject EntrenadorServicio EntrenadorService
 <section class="admin-list-page">
     <div class="admin-list-header">
         <div>
@@ -67,11 +69,11 @@
                             <td>
                                 <div class="trainer-cell">
                                     <div class="trainer-avatar">
-                                        @entrenador.Iniciales
+                                        @if(!string.IsNullOrEmpty(entrenador.NombreCompleto)) { @entrenador.NombreCompleto[0] } else { @("E") }
                                     </div>
 
                                     <div>
-                                        <strong>@entrenador.Nombre</strong>
+                                        <strong>@entrenador.NombreCompleto</strong>
                                         <span>@entrenador.Email</span>
                                     </div>
                                 </div>
@@ -79,7 +81,7 @@
 
                             <td>@entrenador.Especialidad</td>
                             <td>@entrenador.Telefono</td>
-                            <td>@entrenador.Horario</td>
+                            <td>—</td>
 
                             <td>
                                 @if (entrenador.Activo)
@@ -94,7 +96,7 @@
 
                             <td>
                                 <a class="action-button"
-                                   href="@($"/admin/entrenadores/editar/{entrenador.Dni}")">
+                                   href="@($"/admin/entrenadores/editar/{entrenador.IdUsuario}")">
                                     ✎
                                 </a>
                             </td>
@@ -129,65 +131,26 @@
         FiltroEstado = "Inactivos";
     }
 
-    private List<EntrenadorVista> Entrenadores = new()
-    {
-        new EntrenadorVista
-        {
-            Dni = "40123123",
-            Nombre = "Marco Ruiz",
-            Email = "marco@email.com",
-            Especialidad = "CrossFit y Musculación",
-            Telefono = "999888777",
-            Horario = "Lunes a Sábado 06:00 - 14:00",
-            Activo = true
-        },
-        new EntrenadorVista
-        {
-            Dni = "40567234",
-            Nombre = "Pedro Sánchez",
-            Email = "pedro@email.com",
-            Especialidad = "Yoga y Pilates",
-            Telefono = "998877666",
-            Horario = "Lunes a Viernes 16:00 - 21:00",
-            Activo = true
-        },
-        new EntrenadorVista
-        {
-            Dni = "40678345",
-            Nombre = "Laura Gómez",
-            Email = "laura@email.com",
-            Especialidad = "Spinning y Cardio",
-            Telefono = "997766555",
-            Horario = "Martes a Domingo 07:00 - 13:00",
-            Activo = true
-        },
-        new EntrenadorVista
-        {
-            Dni = "40789456",
-            Nombre = "Andrés Quispe",
-            Email = "andres@email.com",
-            Especialidad = "Boxeo y MMA",
-            Telefono = "996655444",
-            Horario = "Lunes a Sábado 18:00 - 22:00",
-            Activo = true
-        },
-        new EntrenadorVista
-        {
-            Dni = "40890567",
-            Nombre = "Diana Rojas",
-            Email = "diana@email.com",
-            Especialidad = "Zumba y Baile",
-            Telefono = "995544333",
-            Horario = "Lunes a Viernes 17:00 - 20:00",
-            Activo = false
-        }
-    };
+    private List<EntrenadorDTO> Entrenadores = new();
+    private bool cargando = true;
 
-    private IEnumerable<EntrenadorVista> EntrenadoresFiltrados
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Entrenadores = await EntrenadorService.ListarEntrenadoresAsync();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private IEnumerable<EntrenadorDTO> EntrenadoresFiltrados
     {
         get
         {
-            IEnumerable<EntrenadorVista> resultado = Entrenadores;
+            IEnumerable<EntrenadorDTO> resultado = Entrenadores;
 
             if (FiltroEstado == "Activos")
             {
@@ -203,9 +166,9 @@
                 string texto = TextoBusqueda.Trim();
 
                 resultado = resultado.Where(e =>
-                    e.Dni.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                    e.Nombre.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                    e.Especialidad.Contains(texto, StringComparison.OrdinalIgnoreCase)
+                    e.Dni.ToString().Contains(texto) ||
+                    e.NombreCompleto.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(e.Especialidad) && e.Especialidad.Contains(texto, StringComparison.OrdinalIgnoreCase))
                 );
             }
 
@@ -213,42 +176,4 @@
         }
     }
 
-    private class EntrenadorVista
-    {
-        [JsonPropertyName("dni")]
-        public string Dni { get; set; } = "";
-        
-        [JsonPropertyName("nombres")]
-        public string Nombre { get; set; } = "";
-        
-        [JsonPropertyName("email")]
-        public string Email { get; set; } = "";
-        
-        [JsonPropertyName("especialidad")]
-        public string Especialidad { get; set; } = "";
-        
-        [JsonPropertyName("telefono")]
-        public string Telefono { get; set; } = "";
-        
-        [JsonPropertyName("horario")]
-        public string Horario { get; set; } = "";
-        
-        [JsonPropertyName("activo")]
-        public bool Activo { get; set; }
-
-        public string Iniciales
-        {
-            get
-            {
-                string[] partes = Nombre.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-
-                if (partes.Length >= 2)
-                {
-                    return $"{partes[0][0]}{partes[1][0]}".ToUpper();
-                }
-
-                return Nombre.Length > 0 ? Nombre[0].ToString().ToUpper() : "E";
-            }
-        }
-    }
 }

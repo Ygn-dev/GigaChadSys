@@ -2,6 +2,10 @@
 @using GigaChadSysWeb.Components.Layout
 @layout AdminLayout
 @rendermode InteractiveServer
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject SocioServicio SocioService
+@inject NavigationManager Nav
 
 <section class="socio-form-page">
 
@@ -236,7 +240,7 @@
 
     private FormNuevoSocio form = new();
 
-    private async void Registrar()
+    private async Task Registrar()
     {
         errores.Clear();
 
@@ -267,13 +271,35 @@
             return;
         }
 
-        // Aquí se conectará con BL
-        mensajeToast = "Socio registrado correctamente.";
-        mostrarToast = true;
-        StateHasChanged();
-        await Task.Delay(2800);
-        mostrarToast = false;
-        StateHasChanged();
+        var nuevoSocio = new SocioDTO
+        {
+            Dni = int.Parse(form.Dni),
+            Nombres = form.Nombres,
+            ApellidoPaterno = form.Apellidos, // Se asume que en el formulario se ingresa todo en Apellidos o se puede dividir
+            ApellidoMaterno = "", 
+            Telefono = int.TryParse(form.Telefono, out var tel) ? tel : 0,
+            Email = form.Email,
+            Contrasenia = form.Contrasenia,
+            Activo = form.Activo,
+            EstadoMembresia = form.PlanSeleccionado == "black" || form.PlanSeleccionado == "basic"
+        };
+
+        var resultado = await SocioService.RegistrarAsync(nuevoSocio);
+
+        if (resultado.Contains("Exito") || resultado.Contains("exitosamente"))
+        {
+            mensajeToast = "Socio registrado correctamente.";
+            mostrarToast = true;
+            StateHasChanged();
+            await Task.Delay(1500);
+            mostrarToast = false;
+            Nav.NavigateTo("/admin/socios");
+        }
+        else
+        {
+            errores["dni"] = resultado; // Mostrar error general
+            StateHasChanged();
+        }
     }
 
     private class FormNuevoSocio

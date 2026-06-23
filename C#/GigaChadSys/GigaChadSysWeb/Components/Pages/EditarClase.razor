@@ -1,6 +1,10 @@
 @page "/admin/clases/editar/{Id:int}"
 @layout AdminLayout
-
+@rendermode InteractiveServer
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject ClaseGrupalServicio ClaseService
+@inject NavigationManager Navigation
 <div class="socio-form-page">
 
     <!-- Breadcrumb -->
@@ -199,32 +203,30 @@
 
     private async Task CargarClase()
     {
-        // TODO: reemplazar con llamada real al servicio
-        // var clase = await ClaseService.GetByIdAsync(Id);
-        // Datos de ejemplo sincronizados con la vista de Clases:
-        var ejemplos = new Dictionary<int, (string, string, int, string, string, string)>
-        {
-            { 1, ("CrossFit Intenso",  "CrossFit",    60, "Avanzado",     "Entrenamiento funcional de alta intensidad con ejercicios variados.", "Activa") },
-            { 2, ("Yoga Matutino",     "Yoga",        45, "Principiante", "Sesion de yoga para mejorar flexibilidad y reducir estres.",           "Activa") },
-            { 3, ("Spinning Power",    "Spinning",    45, "Intermedio",   "Clase de ciclismo indoor con musica motivadora.",                       "Activa") },
-            { 4, ("Boxeo Amateur",     "Boxeo",       60, "Intermedio",   "Tecnicas basicas de boxeo y acondicionamiento fisico.",                 "Activa") },
-            { 5, ("Zumba Party",       "Zumba",       50, "Principiante", "Baile fitness latino con ritmos divertidos.",                           "Activa") },
-            { 6, ("Pilates Core",      "Pilates",     50, "Intermedio",   "Fortalecimiento del core y control postural.",                          "Activa") },
-            { 7, ("Musculacion Avanzada","Musculacion",75,"Avanzado",     "Entrenamiento de fuerza con tecnicas avanzadas.",                      "Activa") },
-            { 8, ("HIIT 30",           "HIIT",        30, "Intermedio",   "Entrenamiento intervalico de alta intensidad de 30 minutos.",           "Activa") },
-        };
+        var clase = await ClaseService.ObtenerPorIdAsync(Id);
 
-        if (ejemplos.TryGetValue(Id, out var c))
+        if (clase == null)
         {
-            nombre      = c.Item1;
-            disciplina  = c.Item2;
-            duracion    = c.Item3;
-            nivel       = c.Item4;
-            descripcion = c.Item5;
-            estado      = c.Item6;
+            Navigation.NavigateTo("/admin/clases");
+            return;
         }
 
-        await Task.CompletedTask;
+        if (!string.IsNullOrWhiteSpace(clase.NombreDisciplina) && clase.NombreDisciplina.Contains(" - "))
+        {
+            var parts = clase.NombreDisciplina.Split(new[] { " - " }, 2, StringSplitOptions.None);
+            disciplina = parts[0];
+            nombre = parts[1];
+        }
+        else
+        {
+            nombre = clase.NombreDisciplina ?? "";
+            disciplina = "";
+        }
+
+        duracion = clase.DuracionMinutos;
+        nivel = clase.Nivel;
+        descripcion = clase.Descripcion;
+        estado = clase.Activo ? "Activa" : "Inactiva";
     }
 
     private bool Validar()
@@ -241,9 +243,18 @@
         if (!Validar()) return;
 
         guardando = true;
-        await Task.Delay(800); // simula llamada al servicio
 
-        // TODO: await ClaseService.UpdateAsync(Id, nombre, disciplina, duracion, nivel, descripcion, estado);
+        var claseEditada = new ClaseGrupalDTO
+        {
+            IdClase = Id,
+            NombreDisciplina = $"{disciplina} - {nombre.Trim()}",
+            Nivel = nivel,
+            DuracionMinutos = duracion,
+            Descripcion = descripcion.Trim(),
+            Activo = estado == "Activa"
+        };
+
+        var msj = await ClaseService.ActualizarAsync(Id, claseEditada);
 
         guardando    = false;
         toastIsError = false;
@@ -255,8 +266,8 @@
     {
         toastVisible = true;
         StateHasChanged();
-        await Task.Delay(3200);
+        await Task.Delay(1500);
         toastVisible = false;
-        StateHasChanged();
+        Navigation.NavigateTo("/admin/clases");
     }
 }

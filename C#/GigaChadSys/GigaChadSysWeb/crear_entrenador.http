@@ -1,0 +1,16 @@
+POST http://localhost:8080/GigaChadSys-REST/webresources/EntrenadorRS
+Content-Type: application/json
+
+{
+  "nombres": "Arnold",
+  "apellidoPaterno": "Schwarzenegger",
+  "apellidoMaterno": "",
+  "edad": 35,
+  "dni": 87654321,
+  "email": "arnold@gigachad.com",
+  "telefono": 999111222,
+  "contrasenia": "entrenador123",
+  "activo": true,
+  "especialidad": "CrossFit y Musculación",
+  "sueldo": 4500.0
+}

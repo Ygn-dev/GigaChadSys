@@ -14,6 +14,6 @@ public class EntrenadorDTO : UsuarioDTO
     [JsonPropertyName("sueldo")]
     public double Sueldo { get; set; }
 
-    [JsonPropertyName("tiempoTrabajado")]
+    [JsonIgnore]
     public string? TiempoTrabajado { get; set; }
 }

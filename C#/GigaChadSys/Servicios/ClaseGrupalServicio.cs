@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class ClaseGrupalServicio
     /// <summary>
     /// GET /ClaseGrupalRS — Lista todas las clases grupales.
     /// </summary>
-    public async Task<List<ClaseGrupal>> ListarClasesGrupalesAsync()
+    public async Task<List<ClaseGrupalDTO>> ListarClasesGrupalesAsync()
     {
-        var clases = await _httpClient.GetFromJsonAsync<List<ClaseGrupal>>(Endpoint);
-        return clases ?? new List<ClaseGrupal>();
+        var clases = await _httpClient.GetFromJsonAsync<List<ClaseGrupalDTO>>(Endpoint);
+        return clases ?? new List<ClaseGrupalDTO>();
     }
 
     /// <summary>
     /// GET /ClaseGrupalRS/{id} — Obtiene una clase grupal por su ID.
     /// </summary>
-    public async Task<ClaseGrupal?> ObtenerPorIdAsync(int idClase)
+    public async Task<ClaseGrupalDTO?> ObtenerPorIdAsync(int idClase)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idClase}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<ClaseGrupal>();
+            return await response.Content.ReadFromJsonAsync<ClaseGrupalDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /ClaseGrupalRS — Registra una nueva clase grupal.
     /// </summary>
-    public async Task<string> RegistrarAsync(ClaseGrupal claseGrupal)
+    public async Task<string> RegistrarAsync(ClaseGrupalDTO claseGrupal)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, claseGrupal);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class ClaseGrupalServicio
     /// <summary>
     /// PUT /ClaseGrupalRS/{id} — Actualiza los datos de una clase grupal existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idClase, ClaseGrupal claseGrupal)
+    public async Task<string> ActualizarAsync(int idClase, ClaseGrupalDTO claseGrupal)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idClase}", claseGrupal);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();

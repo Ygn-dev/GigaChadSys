@@ -1,9 +1,11 @@
-﻿@page "/admin/salones/nuevo"
+@page "/admin/salones/nuevo"
 @layout AdminLayout
 @rendermode InteractiveServer
 
 @inject NavigationManager Navigation
-
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject SalonServicio SalonService
 <section class="salon-form-page">
 
     <nav class="salon-form-breadcrumb">
@@ -172,15 +174,23 @@
         Navigation.NavigateTo("/admin/salones");
     }
 
-    private void RegistrarSalon()
+    private async Task RegistrarSalon()
     {
         if (string.IsNullOrWhiteSpace(nombreSalon) || capacidad is null or <= 0)
         {
             return;
         }
 
-        // Por ahora solo volvemos al listado.
-        // Luego aquí conectamos con servicio, API o base de datos.
+        var nuevoSalon = new SalonDTO
+        {
+            NombreSalon = nombreSalon.Trim(),
+            AforoMaximo = capacidad.Value,
+            Estado = estado == "Activo"
+        };
+
+        var msj = await SalonService.RegistrarAsync(nuevoSalon);
+        
+        // TODO: Could display a toast with msj, but for now just go back
         Navigation.NavigateTo("/admin/salones");
     }
 }

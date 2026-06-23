@@ -1,6 +1,10 @@
 @page "/admin/salones"
 @using System.Text.Json.Serialization
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject SalonServicio SalonService
 @layout AdminLayout
+@rendermode InteractiveServer
 
 <section class="salones-page">
 
@@ -26,48 +30,55 @@
         </div>
     </div>
 
-    <div class="salones-grid">
-        @foreach (var salon in SalonesFiltrados)
-        {
-            <article class="salon-card">
-                <div class="salon-card-top">
-                    <div class="salon-icon">
-                        ⊞
+    @if (cargando)
+    {
+        <p>Cargando salones...</p>
+    }
+    else
+    {
+        <div class="salones-grid">
+            @foreach (var salon in SalonesFiltrados)
+            {
+                <article class="salon-card">
+                    <div class="salon-card-top">
+                        <div class="salon-icon">
+                            ⊞
+                        </div>
+
+                        <span class="salon-status @GetSalonEstadoClass(salon.Estado)">
+                            @(salon.Estado ? "Activo" : "Inactivo")
+                        </span>
                     </div>
 
-                    <span class="salon-status @GetSalonEstadoClass(salon.Estado)">
-                        @salon.Estado
-                    </span>
-                </div>
+                    <div class="salon-info">
+                        <h3>@salon.NombreSalon</h3>
 
-                <div class="salon-info">
-                    <h3>@salon.Nombre</h3>
+                        <p>
+                            <span class="salon-info-icon">♙</span>
+                            Capacidad máxima:
+                            <strong>@salon.AforoMaximo</strong>
+                            personas
+                        </p>
+                    </div>
 
-                    <p>
-                        <span class="salon-info-icon">♙</span>
-                        Capacidad máxima:
-                        <strong>@salon.Capacidad</strong>
-                        personas
-                    </p>
-                </div>
+                    <div class="salon-actions">
+                        <button type="button"
+                                class="salon-btn salon-btn-view"
+                                @onclick="() => AbrirDetalleSalon(salon)">
+                            <span>⊙</span>
+                            Ver
+                        </button>
 
-                <div class="salon-actions">
-                    <button type="button"
-                            class="salon-btn salon-btn-view"
-                            @onclick="() => AbrirDetalleSalon(salon)">
-                        <span>⊙</span>
-                        Ver
-                    </button>
-
-                    <NavLink href="@($"/admin/salones/editar/{salon.Id}")"
-                             class="salon-btn salon-btn-edit">
-                        <span>∠</span>
-                        Editar
-                    </NavLink>
-                </div>
-            </article>
-        }
-    </div>
+                        <NavLink href="@($"/admin/salones/editar/{salon.IdSalon}")"
+                                 class="salon-btn salon-btn-edit">
+                            <span>∠</span>
+                            Editar
+                        </NavLink>
+                    </div>
+                </article>
+            }
+        </div>
+    }
 
     @if (salonSeleccionado is not null)
     {
@@ -90,7 +101,7 @@
                     </div>
 
                     <div>
-                        <h3>@salonSeleccionado.Nombre</h3>
+                        <h3>@salonSeleccionado.NombreSalon</h3>
                         <p>Espacio del gimnasio</p>
                     </div>
                 </div>
@@ -99,21 +110,21 @@
                     <div class="salon-modal-info">
                         <span>Estado</span>
                         <strong class="@GetSalonEstadoClass(salonSeleccionado.Estado)">
-                            @salonSeleccionado.Estado
+                            @(salonSeleccionado.Estado ? "Activo" : "Inactivo")
                         </strong>
                     </div>
 
                     <div class="salon-modal-info">
                         <span>Capacidad maxima</span>
-                        <strong>@salonSeleccionado.Capacidad personas</strong>
+                        <strong>@salonSeleccionado.AforoMaximo personas</strong>
                     </div>
                 </div>
 
                 <div class="salon-modal-actions">
-                    <button type="button" class="salon-modal-edit">
+                    <NavLink href="@($"/admin/salones/editar/{salonSeleccionado.IdSalon}")" class="salon-modal-edit" style="text-decoration:none;">
                         <span>∠</span>
                         Editar Salon
-                    </button>
+                    </NavLink>
 
                     <button type="button"
                             class="salon-modal-cancel"
@@ -130,25 +141,29 @@
 
 @code {
     private string searchText = string.Empty;
+    private SalonDTO? salonSeleccionado;
+    private List<SalonDTO> Salones = new();
+    private bool cargando = true;
 
-    private SalonItem? salonSeleccionado;
-
-    private List<SalonItem> Salones = new()
+    protected override async Task OnInitializedAsync()
     {
-        new SalonItem(1, "Sala Principal", 50),
-        new SalonItem(2, "Sala Yoga", 20),
-        new SalonItem(3, "Sala Ciclo", 30),
-        new SalonItem(4, "Ring Boxeo", 15),
-        new SalonItem(5, "Sala Musculacion", 40)
-    };
+        try
+        {
+            Salones = await SalonService.ListarSalonesAsync();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
 
-    private IEnumerable<SalonItem> SalonesFiltrados =>
+    private IEnumerable<SalonDTO> SalonesFiltrados =>
         string.IsNullOrWhiteSpace(searchText)
             ? Salones
             : Salones.Where(s =>
-                s.Nombre.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+                s.NombreSalon.Contains(searchText, StringComparison.OrdinalIgnoreCase));
 
-    private void AbrirDetalleSalon(SalonItem salon)
+    private void AbrirDetalleSalon(SalonDTO salon)
     {
         salonSeleccionado = salon;
     }
@@ -158,20 +173,8 @@
         salonSeleccionado = null;
     }
 
-    private string GetSalonEstadoClass(string estado)
+    private string GetSalonEstadoClass(bool estado)
     {
-        return estado.ToLower() switch
-        {
-            "activo" => "salon-estado-activo",
-            "inactivo" => "salon-estado-inactivo",
-            _ => ""
-        };
+        return estado ? "salon-estado-activo" : "salon-estado-inactivo";
     }
-
-    private record SalonItem(
-        [property: JsonPropertyName("idSalon")] int Id,
-        [property: JsonPropertyName("nombre")] string Nombre,
-        [property: JsonPropertyName("aforoMaximo")] int Capacidad,
-        [property: JsonPropertyName("estado")] string Estado = "Activo"
-    );
 }

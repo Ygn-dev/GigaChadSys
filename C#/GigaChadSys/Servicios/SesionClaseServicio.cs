@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using GigaChadSysModel;
+using GigaChadSys.Servicios.DTO;
 
 namespace GigaChadSys.Servicios;
 
@@ -20,27 +20,27 @@ public class SesionClaseServicio
     /// <summary>
     /// GET /SesionClaseRS — Lista todas las sesiones de clase.
     /// </summary>
-    public async Task<List<SesionClase>> ListarSesionesAsync()
+    public async Task<List<SesionClaseDTO>> ListarSesionesAsync()
     {
-        var sesiones = await _httpClient.GetFromJsonAsync<List<SesionClase>>(Endpoint);
-        return sesiones ?? new List<SesionClase>();
+        var sesiones = await _httpClient.GetFromJsonAsync<List<SesionClaseDTO>>(Endpoint);
+        return sesiones ?? new List<SesionClaseDTO>();
     }
 
     /// <summary>
     /// GET /SesionClaseRS/{id} — Obtiene una sesión de clase por su ID.
     /// </summary>
-    public async Task<SesionClase?> ObtenerPorIdAsync(int idSesion)
+    public async Task<SesionClaseDTO?> ObtenerPorIdAsync(int idSesion)
     {
         var response = await _httpClient.GetAsync($"{Endpoint}/{idSesion}");
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<SesionClase>();
+            return await response.Content.ReadFromJsonAsync<SesionClaseDTO>();
         return null;
     }
 
     /// <summary>
     /// POST /SesionClaseRS — Registra una nueva sesión de clase.
     /// </summary>
-    public async Task<string> RegistrarAsync(SesionClase sesionClase)
+    public async Task<string> RegistrarAsync(SesionClaseDTO sesionClase)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, sesionClase);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
@@ -50,7 +50,7 @@ public class SesionClaseServicio
     /// <summary>
     /// PUT /SesionClaseRS/{id} — Actualiza los datos de una sesión de clase existente.
     /// </summary>
-    public async Task<string> ActualizarAsync(int idSesion, SesionClase sesionClase)
+    public async Task<string> ActualizarAsync(int idSesion, SesionClaseDTO sesionClase)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idSesion}", sesionClase);
         var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
