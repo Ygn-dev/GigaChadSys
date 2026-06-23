@@ -8,6 +8,7 @@
 @inject MembresiaBasicServicio MembresiaBasicService
 @inject MembresiaBlackServicio MembresiaBlackService
 @inject PagoServicio PagoService
+@inject SocioServicio SocioService
 @inject NavigationManager Navigation
 
 <section class="renew-membership-page">
@@ -406,6 +407,23 @@
 
         if (!resultadoSub.StartsWith("Error") && !resultadoSub.ToLower().Contains("error"))
         {
+            // Desactivar la suscripción anterior para no tener dos activas a la vez
+            var suscripcionesActuales = await SuscripcionService.ListarSuscripcionesAsync();
+            var subAnterior = suscripcionesActuales.FirstOrDefault(s => s.IdUsuario == Session.IdUsuario && s.Activo && s.IdSuscripcion != nuevaSuscripcion.IdSuscripcion);
+            if (subAnterior != null)
+            {
+                subAnterior.Activo = false;
+                await SuscripcionService.ActualizarAsync(subAnterior.IdSuscripcion, subAnterior);
+            }
+
+            // Actualizar estado del socio
+            var socioActual = await SocioService.ObtenerPorIdAsync(Session.IdUsuario);
+            if (socioActual != null)
+            {
+                socioActual.EstadoMembresia = true;
+                await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+            }
+
             Mensaje = $"¡Renovación confirmada para {NombrePlanSeleccionado}!";
             ClaseMensaje = "renew-message success";
             await Task.Delay(1500);

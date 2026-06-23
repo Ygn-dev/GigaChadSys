@@ -5,6 +5,8 @@
 @rendermode InteractiveServer
 @inject SessionServicio Session
 @inject PagoServicio PagoService
+@inject SuscripcionServicio SuscripcionService
+@inject SocioServicio SocioService
 @inject NavigationManager Navigation
 
 <section class="socio-pay-process-page">
@@ -223,6 +225,26 @@
 
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
+            // Activar la suscripción correspondiente
+            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+            var sub = suscripciones.FirstOrDefault(s => s.IdPago == pagoActual.IdPago);
+            if (sub != null)
+            {
+                sub.EstadoMembresia = "activa";
+                await SuscripcionService.ActualizarAsync(sub.IdSuscripcion, sub);
+            }
+
+            // Actualizar estadoMembresia del Socio
+            if (Session.EstaAutenticado)
+            {
+                var socioActual = await SocioService.ObtenerPorIdAsync(Session.IdUsuario);
+                if (socioActual != null)
+                {
+                    socioActual.EstadoMembresia = true;
+                    await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+                }
+            }
+
             Mensaje = $"¡Pago confirmado correctamente con tarjeta {MetodoSeleccionado}!";
             ClaseMensaje = "pay-process-message success";
             await Task.Delay(1500);

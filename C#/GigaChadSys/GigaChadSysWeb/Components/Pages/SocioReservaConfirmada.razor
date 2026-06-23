@@ -1,7 +1,13 @@
 @page "/socio/reserva-confirmada"
 @page "/socio/reservar/confirmada/{CodigoClase}"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout SocioLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject SesionClaseServicio SesionClaseService
+@inject ReservaServicio ReservaService
+@inject SuscripcionServicio SuscripcionService
 
 <section class="confirmada-page">
 
@@ -23,7 +29,7 @@
 
         <div>
             <span class="confirmada-eyebrow">Reserva exitosa</span>
-            <h2>¡Todo listo, Lucía!</h2>
+            <h2>¡Todo listo, @(Session.EstaAutenticado ? Session.Nombres : "Socio")!</h2>
             <p>Tu lugar en la clase está asegurado. Te esperamos para que sigas alcanzando tus objetivos.</p>
         </div>
     </div>
@@ -109,7 +115,7 @@
                         <span class="detalle-icon">♛</span>
                         <span>Membresía utilizada</span>
                     </div>
-                    <strong>Membresía Black</strong>
+                    <strong>@TipoMembresia</strong>
                 </div>
 
                 <div class="detalle-row">
@@ -117,7 +123,7 @@
                         <span class="detalle-icon">👤</span>
                         <span>Socio</span>
                     </div>
-                    <strong>Lucía Torres</strong>
+                    <strong>@NombreSocio</strong>
                 </div>
 
             </div>
@@ -207,52 +213,57 @@
 
 @code {
     [Parameter]
-    public string CodigoClase { get; set; } = "yoga-matutino";
+    public string CodigoClase { get; set; } = "";
 
-    private string NombreClase =>
-        CodigoClase == "crossfit-intenso" || CodigoClase == "crossfit-intenso-2" ? "CrossFit Intenso" :
-        CodigoClase == "spinning-power" ? "Spinning Power" :
-        CodigoClase == "boxeo-amateur" ? "Boxeo Amateur" :
-        CodigoClase == "pilates-core" ? "Pilates Core" :
-        "Yoga Matutino";
+    private string NombreClase = "Cargando...";
+    private string Disciplina = "-";
+    private string Fecha = "-";
+    private string Horario = "-";
+    private string Entrenador = "Sin asignar";
+    private string Salon = "Sin asignar";
+    private int CuposRestantes = 0;
+    private string NombreSocio = "Socio";
+    private string TipoMembresia = "Sin membresía";
 
-    private string Disciplina =>
-        CodigoClase == "crossfit-intenso" || CodigoClase == "crossfit-intenso-2" ? "CrossFit" :
-        CodigoClase == "spinning-power" ? "Spinning" :
-        CodigoClase == "boxeo-amateur" ? "Boxeo" :
-        CodigoClase == "pilates-core" ? "Pilates" :
-        "Yoga";
+    protected override async Task OnInitializedAsync()
+    {
+        // Nombre del socio
+        if (Session.EstaAutenticado)
+        {
+            NombreSocio = Session.Nombres;
 
-    private string Fecha =>
-        CodigoClase == "crossfit-intenso-2" || CodigoClase == "pilates-core" ? "2025-05-13" :
-        "2025-05-12";
+            // Obtener tipo de membresía
+            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+            var suscripcion = suscripciones.FirstOrDefault(s => s.IdUsuario == Session.IdUsuario && s.Activo);
+            if (suscripcion != null)
+            {
+                TipoMembresia = $"Membresía {suscripcion.TipoPlan}";
+            }
+        }
 
-    private string Horario =>
-        CodigoClase == "crossfit-intenso" || CodigoClase == "crossfit-intenso-2" ? "07:00 - 08:00" :
-        CodigoClase == "spinning-power" ? "18:30 - 19:15" :
-        CodigoClase == "boxeo-amateur" ? "19:00 - 20:00" :
-        CodigoClase == "pilates-core" ? "18:00 - 18:50" :
-        "08:00 - 08:45";
+        // Cargar datos de la sesión de clase
+        if (int.TryParse(CodigoClase, out int idSesion) && idSesion > 0)
+        {
+            var sesiones = await SesionClaseService.ListarSesionesAsync();
+            var sesionDTO = sesiones.FirstOrDefault(s => s.IdSesion == idSesion);
 
-    private string Entrenador =>
-        CodigoClase == "crossfit-intenso" || CodigoClase == "crossfit-intenso-2" ? "Marco Ruiz" :
-        CodigoClase == "spinning-power" ? "Laura Gomez" :
-        CodigoClase == "boxeo-amateur" ? "Carlos Diaz" :
-        CodigoClase == "pilates-core" ? "Ana Flores" :
-        "Pedro Sanchez";
+            if (sesionDTO != null)
+            {
+                NombreClase = sesionDTO.ClaseGrupal?.NombreDisciplina ?? "Clase General";
+                Disciplina = sesionDTO.ClaseGrupal?.NombreDisciplina ?? "-";
+                Fecha = sesionDTO.FechaSesion.ToString("yyyy-MM-dd");
+                Horario = $"{sesionDTO.HoraInicio:HH:mm} - {sesionDTO.HoraFin:HH:mm}";
+                Entrenador = sesionDTO.Entrenador != null
+                    ? $"{sesionDTO.Entrenador.Nombres} {sesionDTO.Entrenador.ApellidoPaterno}"
+                    : "Sin asignar";
+                Salon = sesionDTO.Salon?.NombreSalon ?? "Sin asignar";
 
-    private string Salon =>
-        CodigoClase == "crossfit-intenso" || CodigoClase == "crossfit-intenso-2" ? "Sala Principal" :
-        CodigoClase == "spinning-power" ? "Sala Ciclo" :
-        CodigoClase == "boxeo-amateur" ? "Sala Box" :
-        CodigoClase == "pilates-core" ? "Sala Yoga" :
-        "Sala Yoga";
-
-    private int CuposRestantes =>
-        CodigoClase == "crossfit-intenso" ? 2 :
-        CodigoClase == "crossfit-intenso-2" ? 5 :
-        CodigoClase == "spinning-power" ? 3 :
-        CodigoClase == "boxeo-amateur" ? 2 :
-        CodigoClase == "pilates-core" ? 1 :
-        3;
+                // Calcular cupos restantes
+                var reservas = await ReservaService.ListarReservasAsync();
+                int inscritos = reservas.Count(r => r.SesionClase?.IdSesion == idSesion);
+                int capacidad = sesionDTO.Salon?.AforoMaximo ?? 0;
+                CuposRestantes = capacidad > 0 ? capacidad - inscritos : sesionDTO.CuposDisponibles;
+            }
+        }
+    }
 }

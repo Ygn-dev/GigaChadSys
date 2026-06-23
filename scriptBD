@@ -1,6 +1,11 @@
-CREATE DATABASE IF NOT EXISTS gygabd;
+DROP DATABASE IF EXISTS gygabd;
+CREATE DATABASE gygabd
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
 USE gygabd;
 
+SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS Reserva;
 DROP TABLE IF EXISTS Suscripcion;
@@ -16,46 +21,67 @@ DROP TABLE IF EXISTS Entrenador;
 DROP TABLE IF EXISTS Administrador;
 DROP TABLE IF EXISTS Maquina;
 
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- =========================================================
+-- USUARIOS
+-- Compatible con UsuarioDTO, SocioDTO, EntrenadorDTO,
+-- AdministradorDTO y los DAO Java actuales.
+-- =========================================================
 
 CREATE TABLE Socio (
     idUsuario INT AUTO_INCREMENT PRIMARY KEY,
-    nombreCompleto VARCHAR(150) NOT NULL,
-    dni VARCHAR(8) UNIQUE,
+    nombres VARCHAR(100) NOT NULL,
+    apellidoPaterno VARCHAR(100) NOT NULL,
+    apellidoMaterno VARCHAR(100) NOT NULL,
+    edad INT DEFAULT 0,
+    DNI INT UNIQUE,
     email VARCHAR(100) UNIQUE NOT NULL,
-    telefono VARCHAR(9),
+    telefono INT,
     contrasenia VARCHAR(255) NOT NULL,
+    rol VARCHAR(50) DEFAULT 'Socio',
     estadoMembresia BOOLEAN DEFAULT FALSE,
     activo BOOLEAN DEFAULT TRUE
 );
 
-
 CREATE TABLE Entrenador (
     idUsuario INT AUTO_INCREMENT PRIMARY KEY,
-    nombreCompleto VARCHAR(150) NOT NULL,
-    dni VARCHAR(8) UNIQUE,
+    nombres VARCHAR(100) NOT NULL,
+    apellidoPaterno VARCHAR(100) NOT NULL,
+    apellidoMaterno VARCHAR(100) NOT NULL,
+    edad INT DEFAULT 0,
+    DNI INT UNIQUE,
     email VARCHAR(100) UNIQUE NOT NULL,
-    telefono VARCHAR(9),
+    telefono INT,
     contrasenia VARCHAR(255) NOT NULL,
-    especialidad VARCHAR(100),
+    rol VARCHAR(50) DEFAULT 'Entrenador',
+    Especialidad VARCHAR(100),
     sueldo DECIMAL(10,2),
     tiempoTrabajo TIME,
     activo BOOLEAN DEFAULT TRUE
 );
 
-
 CREATE TABLE Administrador (
     idUsuario INT AUTO_INCREMENT PRIMARY KEY,
-    nombreCompleto VARCHAR(150) NOT NULL,
-    dni VARCHAR(8) UNIQUE,
+    nombres VARCHAR(100) NOT NULL,
+    apellidoPaterno VARCHAR(100) NOT NULL,
+    apellidoMaterno VARCHAR(100) NOT NULL,
+    edad INT DEFAULT 0,
+    DNI INT UNIQUE,
     email VARCHAR(100) UNIQUE NOT NULL,
-    telefono VARCHAR(9),
+    telefono INT,
     contrasenia VARCHAR(255) NOT NULL,
-    sede VARCHAR(100),
+    rol VARCHAR(50) DEFAULT 'Administrador',
+    Sede VARCHAR(100),
     sueldo DECIMAL(10,2),
     cargo VARCHAR(100),
     activo BOOLEAN DEFAULT TRUE
 );
 
+-- =========================================================
+-- MEMBRESÍAS
+-- Compatible con MembresiaBasicDAOImpl y MembresiaBlackDAOImpl.
+-- =========================================================
 
 CREATE TABLE MembresiaBasic (
     membresia_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -63,7 +89,6 @@ CREATE TABLE MembresiaBasic (
     costoMantenimientoMensual DECIMAL(10,2) NOT NULL,
     activo BOOLEAN DEFAULT TRUE
 );
-
 
 CREATE TABLE MembresiaBlack (
     membresia_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,6 +98,10 @@ CREATE TABLE MembresiaBlack (
     activo BOOLEAN DEFAULT TRUE
 );
 
+-- =========================================================
+-- CLASES, SALONES, SESIONES Y RESERVAS
+-- Compatible con ClaseGrupal, Salon, SesionClase y Reserva.
+-- =========================================================
 
 CREATE TABLE ClaseGrupal (
     idClase INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,14 +112,12 @@ CREATE TABLE ClaseGrupal (
     activo BOOLEAN DEFAULT TRUE
 );
 
-
 CREATE TABLE Salon (
     idSalon INT AUTO_INCREMENT PRIMARY KEY,
     nombreSalon VARCHAR(100) NOT NULL,
     aforoMaximo INT NOT NULL,
     activo BOOLEAN DEFAULT TRUE
 );
-
 
 CREATE TABLE SesionClase (
     idSesion INT AUTO_INCREMENT PRIMARY KEY,
@@ -100,24 +127,19 @@ CREATE TABLE SesionClase (
     cuposDisponibles INT NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
 
-
     idSalon INT NOT NULL,
     idEntrenador INT NOT NULL,
     idClase INT NOT NULL,
 
-
-    CONSTRAINT fk_sesion_salon 
+    CONSTRAINT fk_sesion_salon
         FOREIGN KEY (idSalon) REFERENCES Salon(idSalon),
 
-
-    CONSTRAINT fk_sesion_entrenador 
+    CONSTRAINT fk_sesion_entrenador
         FOREIGN KEY (idEntrenador) REFERENCES Entrenador(idUsuario),
 
-
-    CONSTRAINT fk_sesion_clase 
+    CONSTRAINT fk_sesion_clase
         FOREIGN KEY (idClase) REFERENCES ClaseGrupal(idClase)
 );
-
 
 CREATE TABLE Reserva (
     idReserva INT AUTO_INCREMENT PRIMARY KEY,
@@ -127,15 +149,18 @@ CREATE TABLE Reserva (
     idUsuario INT NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
 
-
-    CONSTRAINT fk_reserva_sesion 
+    CONSTRAINT fk_reserva_sesion
         FOREIGN KEY (idSesion) REFERENCES SesionClase(idSesion),
 
-
-    CONSTRAINT fk_reserva_socio 
+    CONSTRAINT fk_reserva_socio
         FOREIGN KEY (idUsuario) REFERENCES Socio(idUsuario)
 );
 
+-- =========================================================
+-- PAGOS Y SUSCRIPCIONES
+-- Compatible con PagoDTO/SuscripcionDTO y DAO Java actuales.
+-- Ojo: estadoMembresia aquí va como VARCHAR porque Java lo trata como String.
+-- =========================================================
 
 CREATE TABLE MetodoPago (
     idMetodoPago INT AUTO_INCREMENT PRIMARY KEY,
@@ -143,7 +168,6 @@ CREATE TABLE MetodoPago (
     detalle VARCHAR(255),
     activo BOOLEAN DEFAULT TRUE
 );
-
 
 CREATE TABLE Pago (
     idPago INT AUTO_INCREMENT PRIMARY KEY,
@@ -153,18 +177,15 @@ CREATE TABLE Pago (
     idMetodoPago INT NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
 
-
-    CONSTRAINT fk_pago_metodo 
+    CONSTRAINT fk_pago_metodo
         FOREIGN KEY (idMetodoPago) REFERENCES MetodoPago(idMetodoPago)
 );
 
-
 CREATE TABLE Suscripcion (
     idSuscripcion INT AUTO_INCREMENT PRIMARY KEY,
-    estadoMembresia BOOLEAN DEFAULT TRUE,
+    estadoMembresia VARCHAR(50) DEFAULT 'activa',
     fechaIngreso DATE NOT NULL,
     fechaFinMembresia DATE NOT NULL,
-
 
     idPago INT NOT NULL,
     idUsuario INT NOT NULL,
@@ -172,23 +193,22 @@ CREATE TABLE Suscripcion (
     membresia_ID_black INT NULL,
     activo BOOLEAN DEFAULT TRUE,
 
-
-    CONSTRAINT fk_susc_pago 
+    CONSTRAINT fk_susc_pago
         FOREIGN KEY (idPago) REFERENCES Pago(idPago),
 
-
-    CONSTRAINT fk_susc_socio 
+    CONSTRAINT fk_susc_socio
         FOREIGN KEY (idUsuario) REFERENCES Socio(idUsuario),
 
-
-    CONSTRAINT fk_susc_basic 
+    CONSTRAINT fk_susc_basic
         FOREIGN KEY (membresia_ID_basic) REFERENCES MembresiaBasic(membresia_ID),
 
-
-    CONSTRAINT fk_susc_black 
+    CONSTRAINT fk_susc_black
         FOREIGN KEY (membresia_ID_black) REFERENCES MembresiaBlack(membresia_ID)
 );
 
+-- =========================================================
+-- MÁQUINAS
+-- =========================================================
 
 CREATE TABLE Maquina (
     idMaquina INT AUTO_INCREMENT PRIMARY KEY,
@@ -198,3 +218,289 @@ CREATE TABLE Maquina (
     fechaUltimoMantenimiento DATE,
     activo BOOLEAN DEFAULT TRUE
 );
+
+-- =========================================================
+-- DATA INICIAL
+-- =========================================================
+
+INSERT INTO Administrador (
+    nombres,
+    apellidoPaterno,
+    apellidoMaterno,
+    edad,
+    DNI,
+    email,
+    telefono,
+    contrasenia,
+    rol,
+    Sede,
+    sueldo,
+    cargo,
+    activo
+) VALUES (
+    'Admin',
+    'Principal',
+    'GigaChad',
+    30,
+    11111111,
+    'admin@email.com',
+    999111222,
+    '123456',
+    'Administrador',
+    'Sede Central',
+    5000.00,
+    'Administrador General',
+    1
+);
+
+INSERT INTO Socio (
+    nombres,
+    apellidoPaterno,
+    apellidoMaterno,
+    edad,
+    DNI,
+    email,
+    telefono,
+    contrasenia,
+    rol,
+    estadoMembresia,
+    activo
+) VALUES (
+    'Nilver',
+    'Gomez',
+    'Arias',
+    21,
+    12345678,
+    'socio@email.com',
+    987654321,
+    '123456',
+    'Socio',
+    1,
+    1
+);
+
+INSERT INTO Entrenador (
+    nombres,
+    apellidoPaterno,
+    apellidoMaterno,
+    edad,
+    DNI,
+    email,
+    telefono,
+    contrasenia,
+    rol,
+    Especialidad,
+    sueldo,
+    tiempoTrabajo,
+    activo
+) VALUES (
+    'Pedro',
+    'Sanchez',
+    'Ramos',
+    31,
+    33333333,
+    'entrenador@email.com',
+    998877666,
+    '123456',
+    'Entrenador',
+    'Funcional',
+    3500.00,
+    '08:00:00',
+    1
+);
+
+INSERT INTO MembresiaBasic (
+    nombrePlan,
+    costoMantenimientoMensual,
+    activo
+) VALUES (
+    'Basic',
+    79.00,
+    1
+);
+
+INSERT INTO MembresiaBlack (
+    nombrePlan,
+    costoMantenimientoAnual,
+    cantidadInvitadosPorMes,
+    activo
+) VALUES (
+    'Black',
+    1490.00,
+    5,
+    1
+);
+
+INSERT INTO ClaseGrupal (
+    nombreDisciplina,
+    descripcion,
+    duracionMinutos,
+    nivel,
+    activo
+) VALUES
+(
+    'Funcional',
+    'Clase de entrenamiento funcional de intensidad media.',
+    60,
+    'Intermedio',
+    1
+),
+(
+    'Yoga',
+    'Clase de movilidad, respiracion y flexibilidad.',
+    45,
+    'Basico',
+    1
+);
+
+INSERT INTO Salon (
+    nombreSalon,
+    aforoMaximo,
+    activo
+) VALUES
+(
+    'Sala Principal',
+    30,
+    1
+),
+(
+    'Sala Yoga',
+    20,
+    1
+);
+
+INSERT INTO MetodoPago (
+    tipo,
+    detalle,
+    activo
+) VALUES
+(
+    'EFECTIVO',
+    'Pago en caja',
+    1
+),
+(
+    'TARJETA',
+    'Pago con tarjeta',
+    1
+),
+(
+    'YAPE',
+    'Pago por billetera digital',
+    1
+);
+
+INSERT INTO Pago (
+    fechaPago,
+    montoTotal,
+    tipo,
+    idMetodoPago,
+    activo
+) VALUES
+(
+    CURDATE(),
+    79.00,
+    'MENSUAL',
+    1,
+    1
+),
+(
+    CURDATE(),
+    149.00,
+    'MENSUAL',
+    2,
+    1
+);
+
+INSERT INTO Suscripcion (
+    estadoMembresia,
+    fechaIngreso,
+    fechaFinMembresia,
+    idPago,
+    idUsuario,
+    membresia_ID_basic,
+    membresia_ID_black,
+    activo
+) VALUES (
+    'activa',
+    CURDATE(),
+    DATE_ADD(CURDATE(), INTERVAL 1 MONTH),
+    1,
+    1,
+    1,
+    NULL,
+    1
+);
+
+INSERT INTO SesionClase (
+    fechaSesion,
+    horaInicio,
+    horaFin,
+    cuposDisponibles,
+    activo,
+    idSalon,
+    idEntrenador,
+    idClase
+) VALUES (
+    CURDATE(),
+    CONCAT(CURDATE(), ' 08:00:00'),
+    CONCAT(CURDATE(), ' 09:00:00'),
+    20,
+    1,
+    1,
+    1,
+    1
+);
+
+INSERT INTO Reserva (
+    fechaHoraReserva,
+    asistio,
+    idSesion,
+    idUsuario,
+    activo
+) VALUES (
+    NOW(),
+    0,
+    1,
+    1,
+    1
+);
+
+INSERT INTO Maquina (
+    nombre,
+    marca,
+    estado,
+    fechaUltimoMantenimiento,
+    activo
+) VALUES
+(
+    'Press Banca',
+    'LifeFitness',
+    'Operativa',
+    CURDATE(),
+    1
+),
+(
+    'Caminadora',
+    'Technogym',
+    'Operativa',
+    CURDATE(),
+    1
+);
+
+-- =========================================================
+-- COMPROBACIONES
+-- =========================================================
+
+SELECT * FROM Administrador;
+SELECT * FROM Socio;
+SELECT * FROM Entrenador;
+SELECT * FROM MembresiaBasic;
+SELECT * FROM MembresiaBlack;
+SELECT * FROM ClaseGrupal;
+SELECT * FROM Salon;
+SELECT * FROM MetodoPago;
+SELECT * FROM Pago;
+SELECT * FROM Suscripcion;
+SELECT * FROM SesionClase;
+SELECT * FROM Reserva;
