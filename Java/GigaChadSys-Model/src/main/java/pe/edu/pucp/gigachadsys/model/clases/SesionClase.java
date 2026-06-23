@@ -17,6 +17,9 @@ public class SesionClase {
     private ClaseGrupal claseGrupal;
 
     //Constructores
+    public SesionClase() {
+    }
+
     public SesionClase(int idSesion, java.sql.Date fechaSesion, Timestamp horaInicio, Timestamp horaFin, int cuposDisponibles, int idSalon, int idEntrenador, int idClase) {
     }
 

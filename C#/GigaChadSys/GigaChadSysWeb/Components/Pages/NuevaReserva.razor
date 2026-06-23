@@ -1,6 +1,12 @@
 @page "/admin/reservas/nueva"
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
+
+@inject GigaChadSys.Servicios.SocioServicio SocioService
+@inject GigaChadSys.Servicios.SesionClaseServicio SesionClaseService
+@inject GigaChadSys.Servicios.ReservaServicio ReservaService
+@inject NavigationManager NavManager
 
 <section class="admin-list-page">
 
@@ -38,10 +44,10 @@
                 <div class="sf-form-group">
                     <label class="sf-label">Socio <span style="color:#E53935">*</span></label>
                     <select class="sf-select" @bind="SocioSeleccionado">
-                        <option value="">Seleccione un socio</option>
+                        <option value="0">Seleccione un socio</option>
                         @foreach (var s in Socios)
                         {
-                            <option value="@s.Id">@s.Nombre — DNI: @s.Dni</option>
+                            <option value="@s.IdUsuario">@s.NombreCompleto — DNI: @s.Dni</option>
                         }
                     </select>
                 </div>
@@ -56,11 +62,11 @@
                 <div class="sf-form-group">
                     <label class="sf-label">Sesión disponible <span style="color:#E53935">*</span></label>
                     <select class="sf-select" @bind="SesionSeleccionada">
-                        <option value="">Seleccione una sesión</option>
+                        <option value="0">Seleccione una sesión</option>
                         @foreach (var s in Sesiones)
                         {
-                            <option value="@s.Id">
-                                @s.Clase — @s.Fecha  @s.Horario  (@s.CuposLibres cupos libres)
+                            <option value="@s.IdSesion">
+                                @(s.ClaseGrupal?.NombreDisciplina ?? "Clase") — @s.FechaSesion.ToString("dd/MM/yyyy") @s.HoraInicio.ToString("HH:mm") (@s.CuposDisponibles cupos libres)
                             </option>
                         }
                     </select>
@@ -115,7 +121,7 @@
                     <span>Vista Previa</span>
                 </div>
 
-                @if (string.IsNullOrEmpty(SocioSeleccionado) || string.IsNullOrEmpty(SesionSeleccionada))
+                @if (SocioSeleccionado <= 0 || SesionSeleccionada <= 0)
                 {
                     <div class="nr-preview-empty">
                         <span class="nr-preview-empty-icon">📅</span>
@@ -124,15 +130,15 @@
                 }
                 else
                 {
-                    var socio  = Socios.FirstOrDefault(s => s.Id == SocioSeleccionado);
-                    var sesion = Sesiones.FirstOrDefault(s => s.Id == SesionSeleccionada);
+                    var socio  = Socios.FirstOrDefault(s => s.IdUsuario == SocioSeleccionado);
+                    var sesion = Sesiones.FirstOrDefault(s => s.IdSesion == SesionSeleccionada);
 
                     if (socio != null && sesion != null)
                     {
                         <div class="sf-resumen-rows">
                             <div class="sf-resumen-row">
                                 <span>SOCIO</span>
-                                <strong>@socio.Nombre</strong>
+                                <strong>@socio.NombreCompleto</strong>
                             </div>
                             <div class="sf-resumen-row">
                                 <span>DNI</span>
@@ -140,25 +146,25 @@
                             </div>
                             <div class="sf-resumen-row">
                                 <span>CLASE</span>
-                                <strong>@sesion.Clase</strong>
+                                <strong>@sesion.ClaseGrupal?.NombreDisciplina</strong>
                             </div>
                             <div class="sf-resumen-row">
                                 <span>ENTRENADOR</span>
-                                <strong>@sesion.Entrenador</strong>
+                                <strong>@sesion.Entrenador?.NombreCompleto</strong>
                             </div>
                             <div class="sf-resumen-row">
                                 <span>FECHA</span>
-                                <strong>@sesion.Fecha</strong>
+                                <strong>@sesion.FechaSesion.ToString("dd/MM/yyyy")</strong>
                             </div>
                             <div class="sf-resumen-row">
                                 <span>HORARIO</span>
-                                <strong>@sesion.Horario</strong>
+                                <strong>@sesion.HoraInicio.ToString("HH:mm") - @sesion.HoraFin.ToString("HH:mm")</strong>
                             </div>
                             <div class="sf-resumen-row">
                                 <span>CUPOS LIBRES</span>
-                                <strong class="@(sesion.CuposLibres <= 2 ? "rsm-inactivo" : "rsm-activo")">
-                                    @sesion.CuposLibres disponibles
-                                </strong>
+                                <strong class="@(sesion.CuposDisponibles <= 2 ? "rsm-inactivo" : "rsm-activo")">
+                                    @sesion.CuposDisponibles disponibles
+                               </strong>
                             </div>
                             <div class="sf-resumen-row">
                                 <span>ESTADO</span>
@@ -180,55 +186,60 @@
 @if (MostrarToast)
 {
     <div class="socios-toast socios-toast-show">
-        <span>✅</span> Reserva registrada correctamente
+        <span>✅</span> @MensajeToast
     </div>
 }
 
 @code {
-    private string SocioSeleccionado  = "";
-    private string SesionSeleccionada = "";
-    private string EstadoReserva      = "Confirmada";
-    private bool   MostrarToast       = false;
+    private int SocioSeleccionado { get; set; } = 0;
+    private int SesionSeleccionada { get; set; } = 0;
+    private string EstadoReserva { get; set; } = "Confirmada";
+    private bool MostrarToast { get; set; } = false;
+    private string MensajeToast { get; set; } = "Reserva registrada correctamente";
+
+    private List<SocioDTO> Socios = new();
+    private List<SesionClaseDTO> Sesiones = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var taskSocios = SocioService.ListarSociosAsync();
+        var taskSesiones = SesionClaseService.ListarSesionesAsync();
+
+        await Task.WhenAll(taskSocios, taskSesiones);
+
+        Socios = await taskSocios;
+        Sesiones = await taskSesiones;
+    }
 
     private async Task RegistrarReserva()
     {
-        if (string.IsNullOrEmpty(SocioSeleccionado) || string.IsNullOrEmpty(SesionSeleccionada))
+        if (SocioSeleccionado <= 0 || SesionSeleccionada <= 0)
             return;
 
+        var reserva = new ReservaDTO
+        {
+            FechaHoraReserva = DateTime.Now,
+            Asistio = false,
+            IdUsuario = SocioSeleccionado,
+            SesionClase = new SesionClaseDTO { IdSesion = SesionSeleccionada }
+        };
+
+        var responseMsg = await ReservaService.RegistrarAsync(reserva);
+        
+        MensajeToast = responseMsg;
         MostrarToast = true;
         StateHasChanged();
         await Task.Delay(2800);
         MostrarToast = false;
-        LimpiarFormulario();
+        
+        // Return to reservations list or just clear form
+        NavManager.NavigateTo("/admin/reservas");
     }
 
     private void LimpiarFormulario()
     {
-        SocioSeleccionado  = "";
-        SesionSeleccionada = "";
-        EstadoReserva      = "Confirmada";
+        SocioSeleccionado = 0;
+        SesionSeleccionada = 0;
+        EstadoReserva = "Confirmada";
     }
-
-    private List<SocioOption> Socios = new()
-    {
-        new("1", "Maria Gonzalez",   "40123897"),
-        new("2", "Laura Martinez",   "42890123"),
-        new("3", "Diego Fernandez",  "37890123"),
-        new("4", "Carlos Rodriguez", "38456721"),
-        new("5", "Juan Perez",       "35678912"),
-        new("6", "Camila Torres",    "44567890"),
-    };
-
-    private List<SesionOption> Sesiones = new()
-    {
-        new("1", "CrossFit Intenso",     "Marco Ruiz",    "2026-06-10", "07:00 - 08:00", 8),
-        new("2", "Yoga Matutino",        "Pedro Sanchez", "2026-06-10", "08:00 - 09:00", 7),
-        new("3", "Spinning Power",       "Laura Gomez",   "2026-06-10", "18:30 - 19:30", 7),
-        new("4", "Boxeo Amateur",        "Andres Quispe", "2026-06-11", "19:00 - 20:00", 2),
-        new("5", "Musculacion Avanzada", "Marco Ruiz",    "2026-06-11", "06:00 - 07:15", 8),
-        new("6", "Pilates Core",         "Pedro Sanchez", "2026-06-12", "16:00 - 17:00", 7),
-    };
-
-    private record SocioOption(string Id, string Nombre, string Dni);
-    private record SesionOption(string Id, string Clase, string Entrenador, string Fecha, string Horario, int CuposLibres);
 }

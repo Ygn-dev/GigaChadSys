@@ -10,6 +10,9 @@ public class Reserva {
     private SesionClase sesionClase;
 
     //Constructores
+    public Reserva() {
+    }
+
     public Reserva(int idReserva, Timestamp fechaHoraReserva, boolean asistio, int idSesion, int idUsuario) {
     }
 

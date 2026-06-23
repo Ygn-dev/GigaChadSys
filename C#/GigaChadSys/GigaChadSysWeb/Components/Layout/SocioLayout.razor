@@ -1,5 +1,5 @@
 @inherits LayoutComponentBase
-
+@inject GigaChadSys.Servicios.SessionServicio Session
 <div class="socio-shell">
     <aside class="socio-sidebar">
         <div class="socio-logo">
@@ -38,10 +38,10 @@
 
         <div class="socio-bottom">
             <div class="socio-profile">
-                <div class="profile-avatar">LT</div>
+                <div class="profile-avatar">@(Session.EstaAutenticado && Session.Nombres.Length > 0 ? Session.Nombres[0].ToString() : "S")</div>
                 <div>
-                    <strong>Lucia Torres</strong>
-                    <span class="profile-role">Socio Black</span>
+                    <strong>@(Session.EstaAutenticado ? Session.Nombres : "Socio")</strong>
+                    <span class="profile-role">@(Session.EstaAutenticado ? Session.Rol : "Miembro")</span>
                 </div>
             </div>
         </div>
