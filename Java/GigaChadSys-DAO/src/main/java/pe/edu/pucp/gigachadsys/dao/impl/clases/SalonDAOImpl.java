@@ -16,7 +16,7 @@ public class SalonDAOImpl implements SalonDAO {
     @Override
     public List<Salon> listAll() {
         List<Salon> lista = new ArrayList<>();
-        String sql = "SELECT * FROM Salon WHERE activo = 1";
+        String sql = "SELECT * FROM Salon";
 
         try(Connection con = DBManager.getInstance().getConnection();
             Statement st = con.createStatement();
@@ -89,14 +89,15 @@ public class SalonDAOImpl implements SalonDAO {
 
     @Override
     public Salon update(Salon s) {
-        String sql = "UPDATE Salon SET nombreSalon=?, aforoMaximo=? WHERE idSalon=?";
+        String sql = "UPDATE Salon SET nombreSalon=?, aforoMaximo=?,activo=? WHERE idSalon=?";
 
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, s.getNombreSalon());
             ps.setInt(2, s.getAforoMaximo());
-            ps.setInt(3, s.getIdSalon());
+            ps.setBoolean(3, s.isActive());
+            ps.setInt(4, s.getIdSalon());
 
             ps.executeUpdate();
 
