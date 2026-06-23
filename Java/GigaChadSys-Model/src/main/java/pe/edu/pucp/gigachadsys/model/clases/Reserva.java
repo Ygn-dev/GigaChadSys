@@ -8,6 +8,7 @@ public class Reserva {
     private Timestamp  fechaHoraReserva;
     private boolean asistio;
     private SesionClase sesionClase;
+    private int idUsuario;
 
     //Constructores
     public Reserva() {
@@ -19,6 +20,7 @@ public class Reserva {
         this.asistio = asistio;
         this.sesionClase = new SesionClase();
         this.sesionClase.setIdSesion(idSesion);
+        this.idUsuario = idUsuario;
     }
 
     public Reserva(int idReserva, Timestamp fechaHoraReserva, boolean asistio, SesionClase sesionClase) {
@@ -59,6 +61,14 @@ public class Reserva {
 
     public void setSesionClase(SesionClase sesionClase) {
         this.sesionClase = sesionClase;
+    }
+
+    public int getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
 

@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class DBManager {
 
@@ -17,6 +19,8 @@ public class DBManager {
     private String password;
 
     private final String DB_CREDENTIALS_FILE = "db.properties";
+
+    private HikariDataSource ds;
 
     private DBManager() {
         properties = new Properties();
@@ -44,12 +48,20 @@ public class DBManager {
         this.user = properties.getProperty("user");
         this.password = properties.getProperty("password");
 
-        // En servidores web (como GlassFish), es necesario registrar explícitamente el driver JDBC
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             System.out.println("Error: No se encontró el driver de MySQL - " + e.getMessage());
         }
+
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(this.url);
+        config.setUsername(this.user);
+        config.setPassword(this.password);
+        config.setMaximumPoolSize(15);
+        config.setMinimumIdle(2);
+        config.setConnectionTimeout(30000);
+        this.ds = new HikariDataSource(config);
     }
 
     public static DBManager getInstance() {
@@ -61,7 +73,7 @@ public class DBManager {
 
     public Connection getConnection() {
         try {
-            return DriverManager.getConnection(url, user, password);
+            return ds.getConnection();
         } catch (SQLException e) {
             System.out.println("Error connecting to DB: " + e.getMessage());
             return null;

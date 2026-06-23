@@ -18,6 +18,8 @@ public class ReservaDAOImpl implements ReservaDAO {
         List<Reserva> lista = new ArrayList<>();
         String sql = "SELECT * FROM Reserva WHERE activo=1";
         SesionClaseDAO sesionDAO = new SesionClaseDAOImpl();
+        java.util.Map<Integer, pe.edu.pucp.gigachadsys.model.clases.SesionClase> sesionMap = new java.util.HashMap<>();
+        for(pe.edu.pucp.gigachadsys.model.clases.SesionClase s : sesionDAO.listAll()) sesionMap.put(s.getIdSesion(), s);
 
         try(Connection con = DBManager.getInstance().getConnection();
             Statement st = con.createStatement();
@@ -31,7 +33,7 @@ public class ReservaDAOImpl implements ReservaDAO {
                         rs.getInt("idSesion"),
                         rs.getInt("idUsuario")
                 );
-                r.setSesionClase(sesionDAO.load(rs.getInt("idSesion")));
+                r.setSesionClase(sesionMap.get(rs.getInt("idSesion")));
                 lista.add(r);
             }
 
@@ -77,7 +79,8 @@ public class ReservaDAOImpl implements ReservaDAO {
 
             ps.setTimestamp(1, r.getFechaHoraReserva());
             ps.setBoolean(2, r.isAsistio());
-            ps.setInt(3, r.getIdReserva());
+            ps.setInt(3, r.getSesionClase() != null ? r.getSesionClase().getIdSesion() : 0);
+            ps.setInt(4, r.getIdUsuario());
 
             ps.executeUpdate();
 
@@ -95,7 +98,9 @@ public class ReservaDAOImpl implements ReservaDAO {
 
             ps.setTimestamp(1, r.getFechaHoraReserva());
             ps.setBoolean(2, r.isAsistio());
-            ps.setInt(3, r.getIdReserva());
+            ps.setInt(3, r.getSesionClase() != null ? r.getSesionClase().getIdSesion() : 0);
+            ps.setInt(4, r.getIdUsuario());
+            ps.setInt(5, r.getIdReserva());
 
             ps.executeUpdate();
 

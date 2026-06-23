@@ -24,6 +24,15 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
         SalonDAO salonDAO = new SalonDAOImpl();
         EntrenadorDAO entrenadorDAO = new EntrenadorDAOImpl();
         ClaseGrupalDAO claseDAO = new ClaseGrupalDAOImpl();
+        
+        java.util.Map<Integer, pe.edu.pucp.gigachadsys.model.clases.Salon> salonMap = new java.util.HashMap<>();
+        for(pe.edu.pucp.gigachadsys.model.clases.Salon s : salonDAO.listAll()) salonMap.put(s.getIdSalon(), s);
+        
+        java.util.Map<Integer, pe.edu.pucp.gigachadsys.model.personas.Entrenador> entrenadorMap = new java.util.HashMap<>();
+        for(pe.edu.pucp.gigachadsys.model.personas.Entrenador e : entrenadorDAO.listAll()) entrenadorMap.put(e.getIdUsuario(), e);
+        
+        java.util.Map<Integer, pe.edu.pucp.gigachadsys.model.clases.ClaseGrupal> claseMap = new java.util.HashMap<>();
+        for(pe.edu.pucp.gigachadsys.model.clases.ClaseGrupal c : claseDAO.listAll()) claseMap.put(c.getIdClase(), c);
 
         try(Connection con = DBManager.getInstance().getConnection();
             Statement st = con.createStatement();
@@ -40,9 +49,9 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
                         rs.getInt("idEntrenador"),
                         rs.getInt("idClase")
                 );
-                s.setSalon(salonDAO.load(rs.getInt("idSalon")));
-                s.setEntrenador(entrenadorDAO.load(rs.getInt("idEntrenador")));
-                s.setClaseGrupal(claseDAO.load(rs.getInt("idClase")));
+                s.setSalon(salonMap.get(rs.getInt("idSalon")));
+                s.setEntrenador(entrenadorMap.get(rs.getInt("idEntrenador")));
+                s.setClaseGrupal(claseMap.get(rs.getInt("idClase")));
                 lista.add(s);
             }
 
