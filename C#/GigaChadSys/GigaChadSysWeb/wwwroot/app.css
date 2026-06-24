@@ -12854,3 +12854,304 @@ h1:focus {
         font-size: 28px;
     }
 }
+/* =========================================================
+   ROLE LAYOUT REUTILIZABLE: SOCIO / ENTRENADOR
+   ========================================================= */
+
+.role-shell {
+    min-height: 100vh;
+    background: #050505 !important;
+}
+
+.role-sidebar {
+    background: #050505 !important;
+    border-right: 1px solid #1f1f1f !important;
+    box-shadow: 10px 0 38px rgba(0, 0, 0, 0.38);
+}
+
+.role-content {
+    background: radial-gradient(circle at 40% 10%, rgba(255, 255, 255, 0.035), transparent 26%), #0b0b0b !important;
+}
+
+.role-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 34px;
+    padding-top: 4px;
+}
+
+.role-brand-logo {
+    width: 205px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 0 14px rgba(239, 47, 47, 0.20));
+}
+
+.role-nav a {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    min-height: 42px;
+    padding: 10px 14px !important;
+    color: #d8d8d8 !important;
+    font-weight: 700 !important;
+    border-radius: 9px !important;
+    text-decoration: none !important;
+}
+
+    .role-nav a:hover {
+        background: #151515 !important;
+        color: #ffffff !important;
+    }
+
+    .role-nav a.active {
+        background: linear-gradient(90deg, #f23636, #e11d1d) !important;
+        color: #ffffff !important;
+        box-shadow: 0 10px 24px rgba(229, 57, 53, 0.25);
+    }
+
+.role-nav-icon {
+    width: 22px;
+    font-size: 18px;
+    line-height: 1;
+    color: inherit;
+}
+
+.role-bottom {
+    background: transparent !important;
+}
+
+.role-profile {
+    background: #171717 !important;
+    border: 1px solid #282828 !important;
+    border-radius: 14px;
+}
+
+.role-profile-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+    .role-profile-text strong {
+        color: #ffffff;
+        font-weight: 800;
+    }
+
+    .role-profile-text span {
+        color: #ef4444;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+.role-logout {
+    margin-top: 14px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #e8e8e8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-weight: 800;
+    text-align: left;
+}
+
+    .role-logout:hover {
+        color: #ffffff;
+        background: #151515;
+    }
+
+/* HOME REUTILIZABLE */
+
+.role-home {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.role-hero {
+    background: linear-gradient(135deg, rgba(239, 47, 47, 0.18), rgba(255,255,255,0.015)), #121212 !important;
+    border: 1px solid #282828 !important;
+    border-radius: 18px;
+    padding: 42px 44px;
+    margin-bottom: 28px;
+    box-shadow: 0 16px 38px rgba(0,0,0,0.22);
+}
+
+.role-label {
+    color: #bfbfbf;
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+.role-hero h1 {
+    font-size: 38px;
+    font-weight: 900;
+    color: #ffffff;
+    margin: 0;
+}
+
+.role-hero p {
+    color: #c7c7c7;
+    font-size: 16px;
+    margin: 0;
+}
+
+.role-red-line {
+    width: 44px;
+    height: 5px;
+    background: #ef2f2f;
+    border-radius: 999px;
+    margin: 16px 0 22px;
+    box-shadow: 0 0 14px rgba(239, 47, 47, 0.55);
+}
+
+.role-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(280px, 1fr)) !important;
+    gap: 18px !important;
+}
+
+.role-card {
+    min-height: 150px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)), #121212 !important;
+    border: 1px solid #252525 !important;
+    border-radius: 14px !important;
+    padding: 26px 28px !important;
+    color: #ffffff !important;
+    position: relative;
+    overflow: hidden;
+    transition: 0.18s ease !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center;
+    gap: 24px;
+}
+
+    .role-card::after {
+        content: "›";
+        position: absolute;
+        right: 26px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ff2d2d;
+        font-size: 38px;
+        line-height: 1;
+        opacity: 0.95;
+    }
+
+    .role-card:hover {
+        transform: translateY(-3px) !important;
+        border-color: rgba(239, 47, 47, 0.65) !important;
+        box-shadow: 0 16px 35px rgba(0,0,0,0.35);
+        background: radial-gradient(circle at 12% 20%, rgba(239, 47, 47, 0.14), transparent 34%), #151515 !important;
+    }
+
+.role-card-icon {
+    width: 76px;
+    height: 76px;
+    min-width: 76px;
+    border-radius: 50%;
+    background: #202020;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff2d2d;
+    font-size: 36px;
+    position: relative;
+    z-index: 1;
+}
+
+.role-card-body {
+    position: relative;
+    z-index: 1;
+    padding-right: 36px;
+}
+
+    .role-card-body h3 {
+        font-size: 22px;
+        font-weight: 900;
+        color: #f5f5f5;
+        margin: 0 0 8px;
+    }
+
+    .role-card-body p {
+        color: #b5b5b5;
+        font-size: 15.5px;
+        line-height: 1.45;
+        margin: 0 0 16px;
+    }
+
+    .role-card-body span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #ef3838;
+        color: #ffffff;
+        font-weight: 800;
+        padding: 9px 16px;
+        border-radius: 8px;
+    }
+
+.motivacion-card::after {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .role-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .role-hero h1 {
+        font-size: 30px;
+    }
+
+    .role-card {
+        align-items: flex-start;
+    }
+
+    .role-card-icon {
+        width: 58px;
+        height: 58px;
+        min-width: 58px;
+        font-size: 28px;
+    }
+}
+/* =========================================================
+   FIX: iconos de cards a la izquierda
+   ========================================================= */
+
+.role-grid .role-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+}
+
+    .role-grid .role-card .role-card-icon {
+        margin: 0 !important;
+        align-self: center !important;
+    }
+
+    .role-grid .role-card .role-card-body {
+        text-align: left !important;
+        width: 100%;
+    }
+
+        .role-grid .role-card .role-card-body h3,
+        .role-grid .role-card .role-card-body p {
+            text-align: left !important;
+        }
+
+        .role-grid .role-card .role-card-body span {
+            margin-top: 4px;
+        }
