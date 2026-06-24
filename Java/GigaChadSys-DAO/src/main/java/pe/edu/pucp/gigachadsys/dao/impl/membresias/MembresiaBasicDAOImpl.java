@@ -94,7 +94,15 @@ public class MembresiaBasicDAOImpl implements MembresiaBasicDAO {
     @Override
     public MembresiaBasic update(MembresiaBasic membresia) {
 
-        String sql = "UPDATE MembresiaBlack SET " +
+        System.out.println("=== Actualizando MembresiaBasic ===");
+        System.out.println("ID: " + membresia.getIdMembresia());
+        System.out.println("Nombre: " + membresia.getNombre());
+        System.out.println("Costo mantenimiento mensual: " + membresia.getCostoMantenimientoMensual());
+        System.out.println("Activa: " + membresia.isActiva());
+        System.out.println("==============================");
+
+
+        String sql = "UPDATE MembresiaBasic SET " +
                 "nombrePlan = ?, " +
                 "costoMantenimientoMensual = ?, " +
                 "activo = ? "+

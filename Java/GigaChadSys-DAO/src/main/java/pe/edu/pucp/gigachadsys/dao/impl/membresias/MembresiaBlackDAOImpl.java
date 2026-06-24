@@ -118,12 +118,24 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
     @Override
     public MembresiaBlack update(MembresiaBlack membresia) {
 
-        String sql = "UPDATE MembresiaBlack SET " +
-                "nombrePlan = ?, " +
-                "costoMantenimientoAnual = ?, " +
-                "cantidadInvitadosPorMes = ?," +
-                "activo = ?"+
-                "WHERE membresia_ID = ?";
+        System.out.println("=== DATOS DE MEMBRESIA ===");
+        System.out.println("ID: " + membresia.getIdMembresia());
+        System.out.println("Nombre: " + membresia.getNombre());
+        System.out.println("Activa: " + membresia.isActiva());
+        System.out.println("Costo mantenimiento anual: " + membresia.getCostoMantenimientoAnual());
+        System.out.println("Cantidad invitados por mes: " + membresia.getCantidadInvitadosPorMes());
+        System.out.println("==========================");
+
+        String sql =
+                "UPDATE MembresiaBlack " +
+                        "SET nombrePlan = ?, " +
+                        "costoMantenimientoAnual = ?, " +
+                        "cantidadInvitadosPorMes = ?, " +
+                        "activo = ? " +
+                        "WHERE membresia_ID = ?";
+
+        System.out.println(sql);
+
         Connection connection = DBManager.getInstance().getConnection();
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
