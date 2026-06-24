@@ -393,17 +393,17 @@
     /* ── Registrar pago ── */
     private async Task Registrar()
     {
-        MensajeError  = "";
-        MensajeExito  = "";
+        MensajeError = "";
+        MensajeExito = "";
 
         if (SocioSeleccionado == null)
         {
-            MensajeError = "Debe buscar y seleccionar un socio para registrar el pago.";
+            MensajeError = "Debe buscar y seleccionar un socio.";
             return;
         }
         if (Monto <= 0)
         {
-            MensajeError = "El monto debe ser mayor a 0.";
+            MensajeError = "Monto inválido";
             return;
         }
         if (string.IsNullOrWhiteSpace(Concepto))

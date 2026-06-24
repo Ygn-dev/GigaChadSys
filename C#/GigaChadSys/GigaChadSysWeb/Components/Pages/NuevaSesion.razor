@@ -291,7 +291,8 @@
     {
         var valor = e.Value?.ToString() ?? "";
 
-        if (TimeOnly.TryParseExact(valor, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var hora))
+
+        if (TimeOnly.TryParse(valor, out var hora))
         {
             HoraInicio = hora;
         }
@@ -305,7 +306,8 @@
     {
         var valor = e.Value?.ToString() ?? "";
 
-        if (TimeOnly.TryParseExact(valor, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var hora))
+
+        if (TimeOnly.TryParse(valor, out var hora))
         {
             HoraFin = hora;
         }
@@ -333,6 +335,7 @@
     {
         MensajeFormulario = "";
         ClaseMensajeFormulario = "";
+
 
         if (FormularioIncompleto)
         {

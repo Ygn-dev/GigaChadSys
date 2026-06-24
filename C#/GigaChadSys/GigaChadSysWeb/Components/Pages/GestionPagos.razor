@@ -99,7 +99,7 @@
                     }
                     else
                     {
-                        @foreach (var pago in PagosFiltrados)
+                        @foreach (var pago in PagosPaginados)
                         {
                             <tr>
                                 <td style="color:#666; font-size:12px;">
@@ -151,7 +151,7 @@
                                 <td>
                                     <button class="action-button"
                                             title="Ver detalle"
-                                            @onclick="() => VerDetalle(pago.Id)">
+                                            @onclick="() => AbrirDetallePago(pago)">
                                         👁
                                     </button>
                                 </td>
@@ -160,19 +160,204 @@
                     }
                 </tbody>
             </table>
+            @if (PagosFiltrados.Any())
+            {
+                <div class="socios-pagination">
+
+                    <span class="pagination-s-info">
+                        Mostrando
+                        @(((paginaActual - 1) * elementosPorPagina) + 1)
+                        -
+                        @Math.Min(
+                            paginaActual * elementosPorPagina,
+                            PagosFiltrados.Count())
+                        de @PagosFiltrados.Count() pagos
+                    </span>
+
+                    <div class="pagination-s-btns">
+
+                        <button class="pgbtn"
+                                disabled="@(paginaActual == 1)"
+                                @onclick="PaginaAnterior">
+                            ‹
+                        </button>
+
+                        @for (int i = 1; i <= TotalPaginas; i++)
+                        {
+                            int pagina = i;
+
+                            <button class="pgbtn @(paginaActual == pagina ? "pgbtn-active" : "")"
+                                    @onclick="() => IrAPagina(pagina)">
+                                @pagina
+                            </button>
+                        }
+
+                        <button class="pgbtn"
+                                disabled="@(paginaActual == TotalPaginas)"
+                                @onclick="PaginaSiguiente">
+                            ›
+                        </button>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+
+    @if (PagoSeleccionado is not null)
+    {
+        <div class="salon-modal-overlay" @onclick="CerrarDetallePago">
+            <div class="salon-modal" @onclick:stopPropagation="true">
+
+                <div class="salon-modal-header">
+                    <h2>Detalle de Pago</h2>
+
+                    <button type="button"
+                            class="salon-modal-close"
+                            @onclick="CerrarDetallePago">
+                        ×
+                    </button>
+                </div>
+
+                <div class="salon-modal-main">
+                    <div class="trainer-avatar">
+                        @PagoSeleccionado.Iniciales
+                    </div>
+
+                    <div>
+                        <h3>@PagoSeleccionado.SocioNombre</h3>
+                        <p>@PagoSeleccionado.Concepto</p>
+                    </div>
+                </div>
+
+                <div class="salon-modal-info-grid">
+
+                    <div class="salon-modal-info">
+                        <span>ID Pago</span>
+                        <strong>#@PagoSeleccionado.Id</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>DNI</span>
+                        <strong>@PagoSeleccionado.SocioDni</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Monto</span>
+                        <strong>@PagoSeleccionado.MontoTexto</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Método</span>
+                        <strong>@PagoSeleccionado.Metodo</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Fecha</span>
+                        <strong>@PagoSeleccionado.Fecha</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Estado</span>
+
+                        <strong class="@(PagoSeleccionado.Estado == "pagado"
+                                                        ? "salon-estado-activo"
+                                                        : "salon-estado-inactivo")">
+
+                            @(PagoSeleccionado.Estado == "pagado"
+                                ? "Pagado"
+                                : "Pendiente")
+
+                        </strong>
+                    </div>
+
+                </div>
+
+                <div class="salon-modal-actions">
+
+                    <button type="button"
+                            class="salon-modal-edit"
+                            @onclick="() => VerDetalle(PagoSeleccionado.Id)">
+                        Ver Completo
+                    </button>
+
+                    <button type="button"
+                            class="salon-modal-cancel"
+                            @onclick="CerrarDetallePago">
+                        Cerrar
+                    </button>
+
+                </div>
+
+            </div>
         </div>
     }
 
 </div>
 
 @code {
-    private string SearchTerm { get; set; } = "";
-    private string EstadoFiltro { get; set; } = "";
-    private string MetodoFiltro { get; set; } = "";
+    private PagoItem? PagoSeleccionado;
+    private string _searchTerm = "";
+    private string SearchTerm
+    {
+        get => _searchTerm;
+        set
+        {
+            if (_searchTerm != value)
+            {
+                _searchTerm = value;
+                paginaActual = 1;
+            }
+        }
+    }
+
+    private string _estadoFiltro = "";
+    private string EstadoFiltro
+    {
+        get => _estadoFiltro;
+        set
+        {
+            if (_estadoFiltro != value)
+            {
+                _estadoFiltro = value;
+                paginaActual = 1;
+            }
+        }
+    }
+
+    private string _metodoFiltro = "";
+    private string MetodoFiltro
+    {
+        get => _metodoFiltro;
+        set
+        {
+            if (_metodoFiltro != value)
+            {
+                _metodoFiltro = value;
+                paginaActual = 1;
+            }
+        }
+    }
 
     private bool Cargando { get; set; } = true;
 
     private List<PagoItem> Pagos { get; set; } = new();
+
+    private void AbrirDetallePago(PagoItem pago)
+    {
+        PagoSeleccionado = pago;
+    }
+
+    private void CerrarDetallePago()
+    {
+        PagoSeleccionado = null;
+    }
+
+    // ── Paginación ──
+    private int paginaActual = 1;
+    private int elementosPorPagina = 10;
 
     private IEnumerable<string> MetodosDisponibles =>
         Pagos.Select(p => p.Metodo)
@@ -196,59 +381,81 @@
             var sociosTask = SocioService.ListarSociosAsync();
             var metodosTask = MetodoPagoService.ListarMetodosDePagoAsync();
 
-            await Task.WhenAll(pagosTask, suscripcionesTask, sociosTask, metodosTask);
+            await Task.WhenAll(
+                pagosTask,
+                suscripcionesTask,
+                sociosTask,
+                metodosTask);
 
             var pagosResult = pagosTask.Result;
             var suscripcionesResult = suscripcionesTask.Result;
             var sociosResult = sociosTask.Result;
             var metodosResult = metodosTask.Result;
 
-            var dictPagos = pagosResult.ToDictionary(p => p.IdPago, p => p);
-            var dictSocios = sociosResult.ToDictionary(s => s.IdUsuario, s => s);
-            var dictMetodos = metodosResult.ToDictionary(m => m.IdMetodoPago, m => m.Tipo);
+            var dictSocios = sociosResult.ToDictionary(
+                s => s.IdUsuario,
+                s => s);
+
+            var dictMetodos = metodosResult.ToDictionary(
+                m => m.IdMetodoPago,
+                m => m.Tipo);
+
+            var dictSuscripciones = suscripcionesResult
+                .Where(s => s.IdPago > 0)
+                .GroupBy(s => s.IdPago)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderByDescending(x => x.Activo).First()
+                );
 
             Pagos.Clear();
 
-            /*
-             * IMPORTANTE:
-             * No recorremos pagos directamente.
-             * Recorremos suscripciones porque Suscripcion es la tabla que une:
-             *
-             * Socio -> Suscripcion -> Pago
-             *
-             * Así evitamos mostrar pagos sueltos como "Desconocido".
-             */
-            var suscripcionesConPago = suscripcionesResult
-                .Where(s => s.IdPago > 0)
-                .GroupBy(s => s.IdPago)
-                .Select(g => g.OrderByDescending(s => s.Activo).First())
-                .ToList();
-
-            foreach (var suscripcion in suscripcionesConPago)
+            foreach (var pago in pagosResult)
             {
-                if (!dictPagos.TryGetValue(suscripcion.IdPago, out var pago))
-                    continue;
+                dictSuscripciones.TryGetValue(
+                    pago.IdPago,
+                    out var suscripcion);
 
-                if (!dictSocios.TryGetValue(suscripcion.IdUsuario, out var socio))
-                    continue;
+                string socioNombre = "Sin socio";
+                string socioDni = "-";
+                string iniciales = "S";
+                string concepto = pago.Tipo;
 
-                var nombreMetodo = dictMetodos.ContainsKey(pago.MetodoPago)
-                    ? dictMetodos[pago.MetodoPago]
-                    : "Desconocido";
+                if (suscripcion != null &&
+                    dictSocios.TryGetValue(
+                        suscripcion.IdUsuario,
+                        out var socio))
+                {
+                    socioNombre = ObtenerNombreSocio(socio);
+                    socioDni = socio.Dni.ToString();
+                    iniciales = ObtenerIniciales(socio);
+                    concepto = ObtenerConceptoPago(
+                        pago,
+                        suscripcion);
+                }
+
+                var nombreMetodo =
+                    dictMetodos.TryGetValue(
+                        pago.MetodoPago,
+                        out var metodo)
+                        ? metodo
+                        : "Desconocido";
 
                 Pagos.Add(new PagoItem
                 {
                     Id = pago.IdPago,
-                    SocioNombre = ObtenerNombreSocio(socio),
-                    SocioDni = socio.Dni.ToString(),
-                    Iniciales = ObtenerIniciales(socio),
-                    Concepto = ObtenerConceptoPago(pago, suscripcion),
+                    SocioNombre = socioNombre,
+                    SocioDni = socioDni,
+                    Iniciales = iniciales,
+                    Concepto = concepto,
                     Monto = (decimal)pago.Monto,
                     Metodo = nombreMetodo,
                     Fecha = pago.FechaPagoTexto,
                     Estado = pago.Activo ? "pagado" : "pendiente"
                 });
             }
+
+            paginaActual = 1;
         }
         finally
         {
@@ -289,6 +496,18 @@
         }
     }
 
+    private IEnumerable<PagoItem> PagosPaginados =>
+        PagosFiltrados
+            .Skip((paginaActual - 1) * elementosPorPagina)
+            .Take(elementosPorPagina);
+
+    private int TotalPaginas =>
+        Math.Max(
+            1,
+            (int)Math.Ceiling(
+                PagosFiltrados.Count() /
+                (double)elementosPorPagina));
+
     private decimal TotalRecaudado =>
         Pagos.Where(p => p.Estado == "pagado")
              .Sum(p => p.Monto);
@@ -297,6 +516,23 @@
         Pagos.Where(p => p.Estado == "pendiente")
              .Sum(p => p.Monto);
 
+    private void PaginaAnterior()
+    {
+        if (paginaActual > 1)
+            paginaActual--;
+    }
+
+    private void PaginaSiguiente()
+    {
+        if (paginaActual < TotalPaginas)
+            paginaActual++;
+    }
+
+    private void IrAPagina(int pagina)
+    {
+        paginaActual = pagina;
+    }
+
     private void VerDetalle(int id)
     {
         Navigation.NavigateTo($"/admin/pagos/{id}");
@@ -304,8 +540,13 @@
 
     private static string ObtenerNombreSocio(SocioDTO socio)
     {
-        string nombre = $"{socio.Nombres} {socio.ApellidoPaterno} {socio.ApellidoMaterno}".Trim();
-        return string.IsNullOrWhiteSpace(nombre) ? "Socio sin nombre" : nombre;
+        string nombre =
+            $"{socio.Nombres} {socio.ApellidoPaterno} {socio.ApellidoMaterno}"
+            .Trim();
+
+        return string.IsNullOrWhiteSpace(nombre)
+            ? "Socio sin nombre"
+            : nombre;
     }
 
     private static string ObtenerIniciales(SocioDTO socio)
@@ -323,14 +564,19 @@
 
         string iniciales = $"{inicialNombre}{inicialApellido}";
 
-        return string.IsNullOrWhiteSpace(iniciales) ? "S" : iniciales;
+        return string.IsNullOrWhiteSpace(iniciales)
+            ? "S"
+            : iniciales;
     }
 
-    private static string ObtenerConceptoPago(PagoDTO pago, SuscripcionDTO suscripcion)
+    private static string ObtenerConceptoPago(
+        PagoDTO pago,
+        SuscripcionDTO suscripcion)
     {
         string tipoPlan = suscripcion.TipoPlan;
 
-        if (string.IsNullOrWhiteSpace(tipoPlan) || tipoPlan == "Sin plan")
+        if (string.IsNullOrWhiteSpace(tipoPlan) ||
+            tipoPlan == "Sin plan")
         {
             tipoPlan = "Membresía";
         }
@@ -344,10 +590,15 @@
             pago.FechaPago ??
             DateTime.Today;
 
-        string mes = fechaReferencia.ToString("MMMM yyyy", new CultureInfo("es-ES"));
+        string mes =
+            fechaReferencia.ToString(
+                "MMMM yyyy",
+                new CultureInfo("es-ES"));
 
         if (!string.IsNullOrWhiteSpace(pago.Tipo) &&
-            !pago.Tipo.Equals("MENSUAL", StringComparison.OrdinalIgnoreCase))
+            !pago.Tipo.Equals(
+                "MENSUAL",
+                StringComparison.OrdinalIgnoreCase))
         {
             return $"{tipoPlan} - {pago.Tipo} - {mes}";
         }
