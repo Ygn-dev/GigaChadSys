@@ -8,14 +8,12 @@ import pe.edu.pucp.gigachadsys.dao.inter.usuarios.EntrenadorDAO;
 import pe.edu.pucp.gigachadsys.model.personas.Entrenador;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
 
-
 public class EntrenadorDAOImpl implements EntrenadorDAO {
 
     @Override
     public List<Entrenador> listAll() {
         List<Entrenador> list = new ArrayList<>();
 
-        // SQL QUERY
         String sql =
                 "SELECT " +
                         "idUsuario, " +
@@ -32,36 +30,15 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
                         "sueldo, " +
                         "tiempoTrabajo, " +
                         "activo " +
-                        "FROM Entrenador " +
-                        "WHERE activo = 1";
+                        "FROM Entrenador";
 
         try (
                 Connection connection = DBManager.getInstance().getConnection();
                 Statement stm = connection.createStatement();
                 ResultSet rs = stm.executeQuery(sql)
         ) {
-
             while (rs.next()) {
-
-                Entrenador entrenador = new Entrenador(
-                        rs.getInt("idUsuario"),
-                        rs.getString("nombres"),
-                        rs.getString("apellidoPaterno"),
-                        rs.getString("apellidoMaterno"),
-                        rs.getInt("edad"),
-                        rs.getInt("DNI"),
-                        rs.getString("email"),
-                        rs.getInt("telefono"),
-                        rs.getString("contrasenia"),
-                        rs.getString("rol"),
-                        rs.getString("Especialidad"),
-                        rs.getDouble("sueldo"),
-                        rs.getTime("tiempoTrabajo")
-                );
-
-                entrenador.setActivo(rs.getBoolean("activo"));
-
-                list.add(entrenador);
+                list.add(mapearEntrenador(rs));
             }
 
             return list;
@@ -73,8 +50,6 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
 
     @Override
     public Entrenador load(Integer id) {
-
-        // SQL QUERY
         String sql =
                 "SELECT " +
                         "idUsuario, " +
@@ -98,31 +73,11 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
                 Connection connection = DBManager.getInstance().getConnection();
                 PreparedStatement pstmt = connection.prepareStatement(sql)
         ) {
-
             pstmt.setInt(1, id);
 
             try (ResultSet rs = pstmt.executeQuery()) {
-
-                Entrenador entrenador = new Entrenador();
-
                 if (rs.next()) {
-
-                    entrenador.setIdUsuario(rs.getInt("idUsuario"));
-                    entrenador.setNombres(rs.getString("nombres"));
-                    entrenador.setApellidoPaterno(rs.getString("apellidoPaterno"));
-                    entrenador.setApellidoMaterno(rs.getString("apellidoMaterno"));
-                    entrenador.setEdad(rs.getInt("edad"));
-                    entrenador.setDni(rs.getInt("DNI"));
-                    entrenador.setEmail(rs.getString("email"));
-                    entrenador.setTelefono(rs.getInt("telefono"));
-                    entrenador.setContrasenia(rs.getString("contrasenia"));
-                    entrenador.setRol(rs.getString("rol"));
-                    entrenador.setEspecialidad(rs.getString("Especialidad"));
-                    entrenador.setSueldo(rs.getDouble("sueldo"));
-                    entrenador.setTiempoTrabajado(rs.getTime("tiempoTrabajo"));
-                    entrenador.setActivo(rs.getBoolean("activo"));
-
-                    return entrenador;
+                    return mapearEntrenador(rs);
                 }
             }
 
@@ -135,10 +90,8 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
 
     @Override
     public Entrenador save(Entrenador entrenador) {
-
         entrenador.setActivo(true);
 
-        // SQL QUERY
         String sql =
                 "INSERT INTO Entrenador (" +
                         "nombres, " +
@@ -158,12 +111,8 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
 
         try (
                 Connection connection = DBManager.getInstance().getConnection();
-                PreparedStatement pstmt = connection.prepareStatement(
-                        sql,
-                        Statement.RETURN_GENERATED_KEYS
-                )
+                PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ) {
-
             pstmt.setString(1, entrenador.getNombres());
             pstmt.setString(2, entrenador.getApellidoPaterno());
             pstmt.setString(3, entrenador.getApellidoMaterno());
@@ -172,22 +121,18 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
             pstmt.setString(6, entrenador.getEmail());
             pstmt.setInt(7, entrenador.getTelefono());
             pstmt.setString(8, entrenador.getContrasenia());
-            pstmt.setString(9, entrenador.getRol());
+            pstmt.setString(9, entrenador.getRol() == null || entrenador.getRol().isBlank() ? "Entrenador" : entrenador.getRol());
             pstmt.setString(10, entrenador.getEspecialidad());
             pstmt.setDouble(11, entrenador.getSueldo());
             pstmt.setTime(12, entrenador.getTiempoTrabajado());
-            pstmt.setBoolean(13, entrenador.getActivo());
+            pstmt.setBoolean(13, entrenador.getActivo() != null ? entrenador.getActivo() : true);
 
             int affectedRows = pstmt.executeUpdate();
 
             if (affectedRows > 0) {
-
                 try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-
                     if (generatedKeys.next()) {
-
-                        int newId = generatedKeys.getInt(1);
-                        entrenador.setIdUsuario(newId);
+                        entrenador.setIdUsuario(generatedKeys.getInt(1));
                     }
                 }
             }
@@ -201,8 +146,6 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
 
     @Override
     public Entrenador update(Entrenador entrenador) {
-
-        // SQL QUERY
         String sql =
                 "UPDATE Entrenador SET " +
                         "nombres = ?, " +
@@ -212,7 +155,7 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
                         "DNI = ?, " +
                         "email = ?, " +
                         "telefono = ?, " +
-                        "contrasenia = ?, " +
+                        "contrasenia = COALESCE(NULLIF(?, ''), contrasenia), " +
                         "rol = ?, " +
                         "Especialidad = ?, " +
                         "sueldo = ?, " +
@@ -224,7 +167,6 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
                 Connection connection = DBManager.getInstance().getConnection();
                 PreparedStatement pstmt = connection.prepareStatement(sql)
         ) {
-
             pstmt.setString(1, entrenador.getNombres());
             pstmt.setString(2, entrenador.getApellidoPaterno());
             pstmt.setString(3, entrenador.getApellidoMaterno());
@@ -233,13 +175,11 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
             pstmt.setString(6, entrenador.getEmail());
             pstmt.setInt(7, entrenador.getTelefono());
             pstmt.setString(8, entrenador.getContrasenia());
-            pstmt.setString(9, entrenador.getRol());
+            pstmt.setString(9, entrenador.getRol() == null || entrenador.getRol().isBlank() ? "Entrenador" : entrenador.getRol());
             pstmt.setString(10, entrenador.getEspecialidad());
             pstmt.setDouble(11, entrenador.getSueldo());
             pstmt.setTime(12, entrenador.getTiempoTrabajado());
-            pstmt.setBoolean(13, entrenador.getActivo());
-
-            // ID del WHERE
+            pstmt.setBoolean(13, entrenador.getActivo() != null ? entrenador.getActivo() : true);
             pstmt.setInt(14, entrenador.getIdUsuario());
 
             int affectedRows = pstmt.executeUpdate();
@@ -257,11 +197,8 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
 
     @Override
     public void remove(Entrenador entrenador) {
-
-        // Eliminación lógica
         entrenador.setActivo(false);
 
-        // SQL QUERY
         String sql =
                 "UPDATE Entrenador " +
                         "SET activo = ? " +
@@ -271,7 +208,6 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
                 Connection connection = DBManager.getInstance().getConnection();
                 PreparedStatement pstmt = connection.prepareStatement(sql)
         ) {
-
             pstmt.setBoolean(1, entrenador.getActivo());
             pstmt.setInt(2, entrenador.getIdUsuario());
 
@@ -282,4 +218,24 @@ public class EntrenadorDAOImpl implements EntrenadorDAO {
         }
     }
 
+    private Entrenador mapearEntrenador(ResultSet rs) throws SQLException {
+        Entrenador entrenador = new Entrenador();
+
+        entrenador.setIdUsuario(rs.getInt("idUsuario"));
+        entrenador.setNombres(rs.getString("nombres"));
+        entrenador.setApellidoPaterno(rs.getString("apellidoPaterno"));
+        entrenador.setApellidoMaterno(rs.getString("apellidoMaterno"));
+        entrenador.setEdad(rs.getInt("edad"));
+        entrenador.setDni(rs.getInt("DNI"));
+        entrenador.setEmail(rs.getString("email"));
+        entrenador.setTelefono(rs.getInt("telefono"));
+        entrenador.setContrasenia(rs.getString("contrasenia"));
+        entrenador.setRol(rs.getString("rol"));
+        entrenador.setEspecialidad(rs.getString("Especialidad"));
+        entrenador.setSueldo(rs.getDouble("sueldo"));
+        entrenador.setTiempoTrabajado(rs.getTime("tiempoTrabajo"));
+        entrenador.setActivo(rs.getBoolean("activo"));
+
+        return entrenador;
+    }
 }
