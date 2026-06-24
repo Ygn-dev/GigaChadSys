@@ -1,15 +1,13 @@
 @page "/admin/clases"
 @layout AdminLayout
 @rendermode InteractiveServer
-@using System.Text.Json.Serialization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject ClaseGrupalServicio ClaseService
-
+@inject SesionClaseServicio SesionClaseService
 
 <section class="admin-list-page">
 
-    <!-- Header -->
     <div class="admin-list-header">
         <div>
             <h1>Clases Grupales</h1>
@@ -20,7 +18,6 @@
         </a>
     </div>
 
-    <!-- Toolbar: búsqueda + dropdown disciplina -->
     <div class="admin-list-toolbar" style="margin-bottom:28px;">
         <div class="gc-search-wrapper">
             <span class="gc-search-icon">🔍</span>
@@ -31,6 +28,7 @@
                    @bind="TextoBusqueda"
                    @bind:event="oninput" />
         </div>
+
         <div class="gc-discipline-select-wrapper">
             <select class="gc-discipline-select" @bind="DisciplinaFiltro">
                 <option value="">Todas las disciplinas</option>
@@ -43,7 +41,6 @@
         </div>
     </div>
 
-    <!-- Grid de cards -->
     @{
         var clasesFiltradas = ClasesFiltradas.ToList();
     }
@@ -67,32 +64,43 @@
         <div class="gc-grid">
             @foreach (var c in clasesFiltradas)
             {
+                var proximaSesion = ObtenerProximaSesion(c);
+
                 <div class="gc-card">
-                    <!-- Top badges -->
                     <div class="gc-card-top">
-                        <span class="gc-nivel-badge gc-nivel-@c.Nivel.ToLower()">@c.Nivel</span>
+                        <span class="gc-nivel-badge gc-nivel-@ObtenerNivelCss(c.Nivel)">
+                            @MostrarTexto(c.Nivel)
+                        </span>
+
                         <span class="gc-activa-badge @(c.Activo ? "gc-badge-activa" : "gc-badge-inactiva")">
                             @(c.Activo ? "Activa" : "Inactiva")
                         </span>
                     </div>
 
-                    <!-- Nombre -->
-                    <h3 class="gc-card-nombre">@c.NombreDisciplina</h3>
+                    <h3 class="gc-card-nombre">@ObtenerNombreClase(c)</h3>
 
-                    <!-- Descripción -->
-                    <p class="gc-card-desc">@c.Descripcion</p>
+                    <p class="gc-card-desc">@MostrarTexto(c.Descripcion)</p>
 
-                    <!-- Duración -->
                     <div class="gc-card-duracion">
                         <span class="gc-clock-icon">🕐</span>
                         <span>@c.DuracionMinutos min</span>
                     </div>
 
-                    <!-- Botones -->
+                    <div class="gc-card-duracion">
+                        <span class="gc-clock-icon">📅</span>
+                        <span>@ObtenerFechaProximaTexto(proximaSesion)</span>
+                    </div>
+
+                    <div class="gc-card-duracion">
+                        <span class="gc-clock-icon">📍</span>
+                        <span>@ObtenerLugarProximoTexto(proximaSesion)</span>
+                    </div>
+
                     <div class="gc-card-actions">
                         <button class="gc-btn-ver" style="border:none; cursor:pointer;" @onclick="() => ShowModal(c)">
                             👁 Ver
                         </button>
+
                         <a class="gc-btn-editar" href="/admin/clases/editar/@c.IdClase">
                             ✏ Editar
                         </a>
@@ -104,41 +112,70 @@
 
     @if (IsModalVisible && SelectedClase != null)
     {
+        var proxima = ObtenerProximaSesion(SelectedClase);
+
         <div class="modal-backdrop" @onclick="CloseModal">
             <div class="dark-theme-modal" @onclick:stopPropagation="true">
                 <div class="modal-header">
                     <h2>Detalles de la Clase</h2>
                     <button class="close-btn" @onclick="CloseModal">✖</button>
                 </div>
+
                 <div class="modal-body">
                     <div class="detail-section">
                         <h3>Información General</h3>
+
                         <div class="detail-grid">
                             <div class="detail-item">
-                                <span class="detail-label">Disciplina</span>
-                                <span class="detail-value">@SelectedClase.NombreDisciplina</span>
+                                <span class="detail-label">Clase</span>
+                                <span class="detail-value">@ObtenerNombreClase(SelectedClase)</span>
                             </div>
+
+                            <div class="detail-item">
+                                <span class="detail-label">Disciplina</span>
+                                <span class="detail-value">@ObtenerDisciplina(SelectedClase)</span>
+                            </div>
+
                             <div class="detail-item">
                                 <span class="detail-label">Nivel</span>
                                 <span class="detail-value">@SelectedClase.Nivel</span>
                             </div>
+
                             <div class="detail-item">
                                 <span class="detail-label">Duración</span>
                                 <span class="detail-value">@SelectedClase.DuracionMinutos min</span>
                             </div>
+
                             <div class="detail-item">
                                 <span class="detail-label">Estado</span>
                                 <span class="detail-value">@(SelectedClase.Activo ? "Activa" : "Inactiva")</span>
                             </div>
+
+                            <div class="detail-item">
+                                <span class="detail-label">Próxima fecha</span>
+                                <span class="detail-value">@ObtenerFechaProximaTexto(proxima)</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <span class="detail-label">Horario</span>
+                                <span class="detail-value">@ObtenerHorarioProximoTexto(proxima)</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <span class="detail-label">Salón</span>
+                                <span class="detail-value">@ObtenerSalonProximoTexto(proxima)</span>
+                            </div>
                         </div>
                     </div>
-                    
+
                     <div class="detail-section">
                         <h3>Descripción</h3>
-                        <p style="color:#eee; font-size:14px; margin:0; line-height:1.5;">@SelectedClase.Descripcion</p>
+                        <p style="color:#eee; font-size:14px; margin:0; line-height:1.5;">
+                            @MostrarTexto(SelectedClase.Descripcion)
+                        </p>
                     </div>
-
                 </div>
+
                 <div class="modal-footer">
                     <button class="btn-cerrar" @onclick="CloseModal">Cerrar</button>
                 </div>
@@ -150,12 +187,19 @@
 
 <style>
     .modal-backdrop {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
         background: rgba(0, 0, 0, 0.7);
-        display: flex; justify-content: center; align-items: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         z-index: 1000;
         backdrop-filter: blur(5px);
     }
+
     .dark-theme-modal {
         background: #1e1e1e;
         border: 1px solid #333;
@@ -167,36 +211,177 @@
         overflow: hidden;
         animation: fadeIn 0.2s ease-out;
     }
+
     @@keyframes fadeIn {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
+
     .modal-header {
-        display: flex; justify-content: space-between; align-items: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding: 16px 20px;
         border-bottom: 1px solid #333;
         background: #252525;
     }
-    .modal-header h2 { margin: 0; font-size: 18px; font-weight: 600; color: #fff; }
-    .close-btn { background: none; border: none; color: #888; font-size: 20px; cursor: pointer; transition: 0.2s; }
-    .close-btn:hover { color: #fff; }
-    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-    .detail-section h3 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #aaa; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .detail-item { display: flex; flex-direction: column; gap: 4px; }
-    .detail-label { font-size: 12px; color: #888; }
-    .detail-value { font-size: 14px; color: #fff; font-weight: 500; }
-    .modal-footer { padding: 16px 20px; border-top: 1px solid #333; display: flex; justify-content: flex-end; background: #252525; }
-    .btn-cerrar { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: 0.2s; }
-    .btn-cerrar:hover { background: #444; }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 20px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+    .modal-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .detail-section h3 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        text-transform: uppercase;
+        color: #aaa;
+        letter-spacing: 1px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .modal-footer {
+        padding: 16px 20px;
+        border-top: 1px solid #333;
+        display: flex;
+        justify-content: flex-end;
+        background: #252525;
+    }
+
+    .btn-cerrar {
+        background: #333;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+        .btn-cerrar:hover {
+            background: #444;
+        }
 </style>
 
 @code {
-    private string TextoBusqueda   = "";
+    private string TextoBusqueda = "";
     private string DisciplinaFiltro = "";
 
     private bool IsModalVisible = false;
     private ClaseGrupalDTO? SelectedClase = null;
+
+    private List<string> Disciplinas = new();
+    private List<ClaseGrupalDTO> Clases = new();
+    private List<SesionClaseDTO> Sesiones = new();
+
+    private bool Cargando = true;
+
+    private IEnumerable<ClaseGrupalDTO> ClasesFiltradas
+    {
+        get
+        {
+            IEnumerable<ClaseGrupalDTO> resultado = Clases;
+
+            if (!string.IsNullOrWhiteSpace(DisciplinaFiltro))
+            {
+                resultado = resultado.Where(c =>
+                    ObtenerDisciplina(c).Equals(DisciplinaFiltro, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(TextoBusqueda))
+            {
+                string t = TextoBusqueda.Trim();
+
+                resultado = resultado.Where(c =>
+                    ObtenerNombreClase(c).Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                    ObtenerDisciplina(c).Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                    c.NombreDisciplina.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                    c.Descripcion.Contains(t, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return resultado.OrderByDescending(c => c.Activo)
+                            .ThenBy(c => ObtenerDisciplina(c))
+                            .ThenBy(c => ObtenerNombreClase(c));
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Clases = await ClaseService.ListarClasesGrupalesAsync();
+            Sesiones = await SesionClaseService.ListarSesionesAsync();
+
+            Disciplinas = Clases
+                .Select(ObtenerDisciplina)
+                .Where(d => !string.IsNullOrWhiteSpace(d))
+                .Distinct()
+                .OrderBy(d => d)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar clases: {ex.Message}");
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
 
     private void ShowModal(ClaseGrupalDTO clase)
     {
@@ -210,46 +395,76 @@
         SelectedClase = null;
     }
 
-    private List<string> Disciplinas = new();
-
-    private IEnumerable<ClaseGrupalDTO> ClasesFiltradas
+    private SesionClaseDTO? ObtenerProximaSesion(ClaseGrupalDTO clase)
     {
-        get
-        {
-            IEnumerable<ClaseGrupalDTO> resultado = Clases;
-
-            if (!string.IsNullOrWhiteSpace(DisciplinaFiltro))
-                resultado = resultado.Where(c => c.NombreDisciplina.Contains(DisciplinaFiltro, StringComparison.OrdinalIgnoreCase));
-
-            if (!string.IsNullOrWhiteSpace(TextoBusqueda))
-            {
-                string t = TextoBusqueda.Trim();
-                resultado = resultado.Where(c =>
-                    c.NombreDisciplina.Contains(t, StringComparison.OrdinalIgnoreCase) ||
-                    c.Descripcion.Contains(t, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return resultado;
-        }
+        return Sesiones
+            .Where(s => s.ClaseGrupal != null)
+            .Where(s => s.ClaseGrupal!.IdClase == clase.IdClase)
+            .Where(s => s.Activo)
+            .Where(s => s.FechaSesion.Date >= DateTime.Today)
+            .OrderBy(s => s.FechaSesion.Date)
+            .ThenBy(s => s.HoraInicio)
+            .FirstOrDefault();
     }
 
-    private List<ClaseGrupalDTO> Clases = new();
-    private bool Cargando = true;
-
-    protected override async Task OnInitializedAsync()
+    private static string ObtenerDisciplina(ClaseGrupalDTO clase)
     {
-        try
+        if (string.IsNullOrWhiteSpace(clase.NombreDisciplina))
+            return "";
+
+        if (clase.NombreDisciplina.Contains(" - "))
         {
-            Clases = await ClaseService.ListarClasesGrupalesAsync();
-            Disciplinas = Clases.Select(c => c.NombreDisciplina).Distinct().ToList();
+            var partes = clase.NombreDisciplina.Split(new[] { " - " }, 2, StringSplitOptions.None);
+            return partes[0].Trim();
         }
-        catch (Exception ex)
+
+        return clase.NombreDisciplina.Trim();
+    }
+
+    private static string ObtenerNombreClase(ClaseGrupalDTO clase)
+    {
+        if (string.IsNullOrWhiteSpace(clase.NombreDisciplina))
+            return "Clase sin nombre";
+
+        if (clase.NombreDisciplina.Contains(" - "))
         {
-            Console.WriteLine($"Error al cargar clases: {ex.Message}");
+            var partes = clase.NombreDisciplina.Split(new[] { " - " }, 2, StringSplitOptions.None);
+            return partes[1].Trim();
         }
-        finally
-        {
-            Cargando = false;
-        }
+
+        return clase.NombreDisciplina.Trim();
+    }
+
+    private static string MostrarTexto(string? texto)
+    {
+        return string.IsNullOrWhiteSpace(texto) ? "—" : texto;
+    }
+
+    private static string ObtenerNivelCss(string? nivel)
+    {
+        return string.IsNullOrWhiteSpace(nivel) ? "intermedio" : nivel.ToLower();
+    }
+
+    private static string ObtenerFechaProximaTexto(SesionClaseDTO? sesion)
+    {
+        return sesion == null ? "Sin sesiones futuras" : sesion.FechaSesion.ToString("yyyy-MM-dd");
+    }
+
+    private static string ObtenerHorarioProximoTexto(SesionClaseDTO? sesion)
+    {
+        return sesion == null ? "—" : $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}";
+    }
+
+    private static string ObtenerSalonProximoTexto(SesionClaseDTO? sesion)
+    {
+        return sesion?.Salon?.Nombre ?? "Sin asignar";
+    }
+
+    private static string ObtenerLugarProximoTexto(SesionClaseDTO? sesion)
+    {
+        if (sesion == null)
+            return "Sin salón asignado";
+
+        return sesion.Salon?.Nombre ?? "Sin asignar";
     }
 }

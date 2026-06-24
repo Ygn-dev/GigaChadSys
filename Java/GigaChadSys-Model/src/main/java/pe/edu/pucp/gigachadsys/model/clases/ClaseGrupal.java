@@ -1,31 +1,28 @@
 package pe.edu.pucp.gigachadsys.model.clases;
 
 public class ClaseGrupal {
-	//Atributos
-    private int idClase;
-    private String nombreDisciplina;
-    private String descripcion;
-    private  int duracionMinutos;
-    private String nivelClase;
+	private int idClase;
+	private String nombreDisciplina;
+	private String descripcion;
+	private int duracionMinutos;
+	private String nivelClase;
 	private Boolean activo;
 
-	//Constructor vacío
-    public ClaseGrupal() {
-
+	public ClaseGrupal() {
+		this.activo = true;
 	}
 
-    //Constructor con parámetros
-    public ClaseGrupal(int idClase, String nombreDisciplina, String descripcion, int duracionMinutos, String nivelClase) {
-        this.idClase = idClase;
-        this.nombreDisciplina = nombreDisciplina;
-        this.descripcion = descripcion;
-        this.duracionMinutos = duracionMinutos;
-        this.nivelClase = nivelClase;
-    }
+	public ClaseGrupal(int idClase, String nombreDisciplina, String descripcion, int duracionMinutos, String nivelClase) {
+		this.idClase = idClase;
+		this.nombreDisciplina = nombreDisciplina;
+		this.descripcion = descripcion;
+		this.duracionMinutos = duracionMinutos;
+		this.nivelClase = nivelClase;
+		this.activo = true;
+	}
 
-	//Setters y Getters
 	public int getIdClase() {
-    	return idClase;
+		return idClase;
 	}
 
 	public void setIdClase(int idClase) {
@@ -64,17 +61,19 @@ public class ClaseGrupal {
 		this.nivelClase = nivelClase;
 	}
 
-	public void setActive(boolean activo) {
-		this.activo = activo;
+	public Boolean getActivo() {
+		return activo != null ? activo : false;
 	}
 
 	public void setActivo(Boolean activo) {
 		this.activo = activo;
 	}
 
+	public void setActive(boolean activo) {
+		this.activo = activo;
+	}
+
 	public boolean isActive() {
 		return activo != null ? activo : false;
 	}
-
-    //Metodos
 }
