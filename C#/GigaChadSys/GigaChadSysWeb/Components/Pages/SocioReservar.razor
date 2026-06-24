@@ -181,23 +181,16 @@
             IEnumerable<ClaseDisponible> resultado = Clases;
 
             if (!string.IsNullOrWhiteSpace(FiltroDisciplina))
-            {
                 resultado = resultado.Where(c => c.Disciplina == FiltroDisciplina);
-            }
 
             if (!string.IsNullOrWhiteSpace(FiltroFecha))
-            {
                 resultado = resultado.Where(c => c.Fecha == FiltroFecha);
-            }
 
             if (!string.IsNullOrWhiteSpace(FiltroHora))
-            {
                 resultado = resultado.Where(c => c.Horario.StartsWith(FiltroHora));
-            }
 
-            return resultado
-                .OrderBy(c => c.Fecha)
-                .ThenBy(c => c.Horario);
+            return resultado.OrderBy(c => c.Fecha)
+                            .ThenBy(c => c.Horario);
         }
     }
 
@@ -215,11 +208,15 @@
 
         Clases.Clear();
 
+        var ahora = DateTime.Now;
         var hoy = DateTime.Today;
 
         foreach (var sesion in sesiones)
         {
             if (!sesion.Activo)
+                continue;
+
+            if (sesion.FechaHoraFin != default && sesion.FechaHoraFin < ahora)
                 continue;
 
             if (sesion.FechaSesion.Date < hoy)
@@ -231,22 +228,30 @@
             if (!sesion.ClaseGrupal.Activo)
                 continue;
 
-            int inscritos = reservas.Count(r => r.SesionClase?.IdSesion == sesion.IdSesion);
+            int idClase = sesion.ClaseGrupal.IdClase;
+
+            int inscritos = reservas.Count(r =>
+                r.Activo &&
+                r.SesionClase?.IdSesion == sesion.IdSesion);
+
             int capacidad = sesion.Salon?.CapacidadMax ?? 0;
             int cuposDisponibles = capacidad > 0 ? capacidad - inscritos : sesion.CuposDisponibles;
 
             if (cuposDisponibles <= 0)
                 continue;
 
-            bool yaReservada = Session.EstaAutenticado &&
-                               reservas.Any(r =>
-                                   r.IdUsuario == Session.IdUsuario &&
-                                   r.SesionClase?.IdSesion == sesion.IdSesion &&
-                                   r.SesionClase.FechaSesion.Date >= hoy);
+            bool yaReservadaMismaClase = Session.EstaAutenticado &&
+                reservas.Any(r =>
+                    r.Activo &&
+                    r.IdUsuario == Session.IdUsuario &&
+                    r.SesionClase?.ClaseGrupal?.IdClase == idClase &&
+                    r.SesionClase.FechaHoraFin != default &&
+                    r.SesionClase.FechaHoraFin >= ahora);
 
             Clases.Add(new ClaseDisponible
             {
                 Codigo = sesion.IdSesion.ToString(),
+                IdClase = idClase,
                 Nombre = ObtenerNombreClase(sesion.ClaseGrupal),
                 Disciplina = ObtenerDisciplina(sesion.ClaseGrupal),
                 Descripcion = sesion.ClaseGrupal.Descripcion ?? "",
@@ -263,7 +268,7 @@
                     ? sesion.ClaseGrupal.DuracionMinutos
                     : CalcularDuracionMinutos(sesion),
                 CuposDisponibles = cuposDisponibles,
-                YaReservada = yaReservada
+                YaReservada = yaReservadaMismaClase
             });
         }
 
@@ -303,16 +308,26 @@
         if (!int.TryParse(codigoSesion, out int idSesion))
             return;
 
+        var claseSeleccionada = Clases.FirstOrDefault(c => c.Codigo == codigoSesion);
+
+        if (claseSeleccionada == null)
+        {
+            MostrarMensaje("No se encontró la clase seleccionada.", false);
+            return;
+        }
+
         var reservas = await ReservaService.ListarReservasAsync();
 
-        bool yaExiste = reservas.Any(r =>
+        bool yaExisteMismaClase = reservas.Any(r =>
+            r.Activo &&
             r.IdUsuario == Session.IdUsuario &&
-            r.SesionClase?.IdSesion == idSesion &&
-            r.SesionClase.FechaSesion.Date >= DateTime.Today);
+            r.SesionClase?.ClaseGrupal?.IdClase == claseSeleccionada.IdClase &&
+            r.SesionClase.FechaHoraFin != default &&
+            r.SesionClase.FechaHoraFin >= DateTime.Now);
 
-        if (yaExiste)
+        if (yaExisteMismaClase)
         {
-            MostrarMensaje("Ya tienes una reserva para esta clase.", false);
+            MostrarMensaje("Ya tienes una reserva activa para esta clase.", false);
             return;
         }
 
@@ -324,6 +339,7 @@
             IdUsuario = Session.IdUsuario,
             FechaHoraReserva = DateTime.Now,
             Asistio = false,
+            Activo = true,
             SesionClase = new SesionClaseDTO { IdSesion = idSesion }
         };
 
@@ -358,10 +374,7 @@
 
     private string ObtenerClaseCupos(int cupos)
     {
-        if (cupos <= 3)
-            return "clase-cupos cupos-pocos";
-
-        return "clase-cupos";
+        return cupos <= 3 ? "clase-cupos cupos-pocos" : "clase-cupos";
     }
 
     private string ObtenerClaseOcupacion(int porcentaje)
@@ -406,16 +419,13 @@
     private static int CalcularDuracionMinutos(SesionClaseDTO sesion)
     {
         var minutos = (int)(sesion.HoraFin - sesion.HoraInicio).TotalMinutes;
-
-        if (minutos <= 0)
-            return 0;
-
-        return minutos;
+        return minutos <= 0 ? 0 : minutos;
     }
 
     private class ClaseDisponible
     {
         public string Codigo { get; set; } = "";
+        public int IdClase { get; set; }
         public string Nombre { get; set; } = "";
         public string Disciplina { get; set; } = "";
         public string Descripcion { get; set; } = "";

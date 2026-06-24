@@ -4,60 +4,77 @@ namespace GigaChadSys.Servicios.DTO;
 
 /// <summary>
 /// DTO que mapea al JSON de Java para la entidad Reserva.
-/// Java: Reserva.java — campos: idReserva, fechaHoraReserva, asistio, sesionClase
+/// Java: Reserva.java
 /// BD: Reserva(idReserva, fechaHoraReserva, asistio, idSesion, idUsuario, activo)
-/// Endpoint: GET/POST /ReservaRS
 /// </summary>
 public class ReservaDTO
 {
     [JsonPropertyName("idReserva")]
     public int IdReserva { get; set; }
 
-    /// <summary>
-    /// Java: Timestamp fechaHoraReserva → se serializa como string ISO.
-    /// </summary>
     [JsonIgnore]
     public DateTime? FechaHoraReserva { get; set; }
 
     [JsonPropertyName("fechaHoraReserva")]
     public string? FechaHoraReservaStr
     {
-        get => FechaHoraReserva?.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        get => FechaHoraReserva?.ToString("yyyy-MM-dd'T'HH:mm:ss");
         set
         {
-            if (DateTime.TryParse(value?.Replace("[UTC]", ""), out var d))
-                FechaHoraReserva = d;
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                FechaHoraReserva = null;
+                return;
+            }
+
+            var limpio = value.Replace("[UTC]", "").Replace("Z", "").Trim();
+
+            if (DateTime.TryParse(limpio, out var fecha))
+                FechaHoraReserva = DateTime.SpecifyKind(fecha, DateTimeKind.Unspecified);
             else
                 FechaHoraReserva = null;
         }
     }
 
-    /// <summary>
-    /// true = el socio asistió a la clase.
-    /// Java getter: isAsistio()
-    /// </summary>
     [JsonPropertyName("asistio")]
     public bool Asistio { get; set; }
 
-    /// <summary>
-    /// Objeto anidado de la sesión de clase.
-    /// Java getter: getSesionClase()
-    /// </summary>
     [JsonPropertyName("sesionClase")]
     public SesionClaseDTO? SesionClase { get; set; }
 
-    /// <summary>
-    /// FK del socio que realizó la reserva.
-    /// No está en el modelo Java como campo directo, pero sí en la BD.
-    /// Se incluye aquí para cuando se crea una nueva reserva (POST).
-    /// </summary>
     [JsonPropertyName("idUsuario")]
     public int IdUsuario { get; set; }
 
-    // ── Propiedades calculadas para la UI ──────────────────────────────────
+    [JsonPropertyName("activo")]
+    public bool Activo { get; set; } = true;
+
+    [JsonPropertyName("active")]
+    public bool Active
+    {
+        get => Activo;
+        set => Activo = value;
+    }
+
+    [JsonIgnore]
     public string FechaTexto => FechaHoraReserva.HasValue
         ? FechaHoraReserva.Value.ToString("yyyy-MM-dd HH:mm")
         : "—";
 
-    public string EstadoTexto => Asistio ? "Asistió" : "Confirmadas";
+    [JsonIgnore]
+    public string EstadoTexto
+    {
+        get
+        {
+            if (!Activo)
+                return "Canceladas";
+
+            if (Asistio)
+                return "Asistió";
+
+            if (SesionClase != null && SesionClase.FechaHoraFin != default && SesionClase.FechaHoraFin < DateTime.Now)
+                return "Pendientes";
+
+            return "Confirmadas";
+        }
+    }
 }

@@ -14,7 +14,6 @@
         <p class="reservas-subtitle">Gestiona tus reservas de clases</p>
     </div>
 
-    <!-- Tabs -->
     <div class="reservas-tabs">
         <button class="reservas-tab @(tabActiva == "activas" ? "tab-activa" : "")" @onclick='() => tabActiva = "activas"'>
             Reservas Activas (@reservasActivas.Count)
@@ -24,11 +23,11 @@
         </button>
     </div>
 
-    <!-- Reservas list -->
     <div class="reservas-list">
         @{
             var listaActual = tabActiva == "activas" ? reservasActivas : historial;
         }
+
         @if (listaActual.Count == 0)
         {
             <div class="reservas-empty">
@@ -97,47 +96,90 @@
 
     private async Task CargarReservas()
     {
-        if (!Session.EstaAutenticado) return;
+        if (!Session.EstaAutenticado)
+            return;
 
         var todasReservas = await ReservaService.ListarReservasAsync();
-        var misReservas = todasReservas.Where(r => r.IdUsuario == Session.IdUsuario).ToList();
+
+        var misReservas = todasReservas
+            .Where(r => r.IdUsuario == Session.IdUsuario)
+            .ToList();
 
         reservasActivas.Clear();
         historial.Clear();
 
-        foreach (var r in misReservas)
-        {
-            var vista = new ReservaVista
-            {
-                IdReserva = r.IdReserva,
-                NombreClase = r.SesionClase?.ClaseGrupal?.Nombre ?? "Clase General",
-                Disciplina = r.SesionClase?.ClaseGrupal?.Nombre ?? "-",
-                Entrenador = r.SesionClase?.Entrenador != null ? $"{r.SesionClase.Entrenador.Nombres} {r.SesionClase.Entrenador.ApellidoPaterno}" : "Sin asignar",
-                Fecha = r.SesionClase != null ? r.SesionClase.FechaSesion.ToString("yyyy-MM-dd") : "-",
-                Hora = r.SesionClase != null ? $"{r.SesionClase.HoraInicio:HH:mm} - {r.SesionClase.HoraFin:HH:mm}" : "-",
-                Salon = r.SesionClase?.Salon?.Nombre ?? "Sin asignar",
-                Estado = r.EstadoTexto
-            };
+        var ahora = DateTime.Now;
 
-            // Consideramos historial si ya asistió o si la fecha ya pasó
-            if (r.Asistio || (r.SesionClase != null && r.SesionClase.FechaSesion < DateTime.Today))
-            {
-                if (r.Asistio) vista.Estado = "Completada";
-                historial.Add(vista);
-            }
-            else
-            {
-                reservasActivas.Add(vista);
-            }
+        var reservasActivasSinDuplicar = misReservas
+            .Where(r => r.Activo)
+            .Where(r => r.SesionClase != null)
+            .Where(r => r.SesionClase!.ClaseGrupal != null)
+            .Where(r => r.SesionClase!.FechaHoraFin != default && r.SesionClase.FechaHoraFin >= ahora)
+            .GroupBy(r => r.SesionClase!.ClaseGrupal!.IdClase)
+            .Select(g => g.OrderBy(r => r.SesionClase!.FechaSesion)
+                          .ThenBy(r => r.SesionClase!.HoraInicio)
+                          .ThenBy(r => r.IdReserva)
+                          .First())
+            .ToList();
+
+        foreach (var r in reservasActivasSinDuplicar)
+        {
+            reservasActivas.Add(MapearReservaVista(r, "Confirmada"));
         }
+
+        var reservasHistorial = misReservas
+            .Where(r =>
+                !r.Activo ||
+                r.Asistio ||
+                r.SesionClase == null ||
+                r.SesionClase.FechaHoraFin == default ||
+                r.SesionClase.FechaHoraFin < ahora)
+            .OrderByDescending(r => r.SesionClase?.FechaSesion ?? DateTime.MinValue)
+            .ThenByDescending(r => r.IdReserva)
+            .ToList();
+
+        foreach (var r in reservasHistorial)
+        {
+            string estado = "Finalizada";
+
+            if (!r.Activo)
+                estado = "Cancelada";
+            else if (r.Asistio)
+                estado = "Completada";
+
+            historial.Add(MapearReservaVista(r, estado));
+        }
+    }
+
+    private ReservaVista MapearReservaVista(ReservaDTO r, string estado)
+    {
+        var sesion = r.SesionClase;
+        var clase = sesion?.ClaseGrupal;
+        var entrenador = sesion?.Entrenador;
+        var salon = sesion?.Salon;
+
+        return new ReservaVista
+        {
+            IdReserva = r.IdReserva,
+            NombreClase = clase?.Nombre ?? clase?.NombreDisciplina ?? "Clase General",
+            Disciplina = clase?.Disciplina ?? clase?.NombreDisciplina ?? "-",
+            Entrenador = entrenador != null
+                ? $"{entrenador.Nombres} {entrenador.ApellidoPaterno}".Trim()
+                : "Sin asignar",
+            Fecha = sesion != null ? sesion.FechaSesion.ToString("yyyy-MM-dd") : "-",
+            Hora = sesion != null ? $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}" : "-",
+            Salon = salon?.Nombre ?? salon?.NombreSalon ?? "Sin asignar",
+            Estado = estado
+        };
     }
 
     private async Task CancelarReserva(ReservaVista r)
     {
         var resultado = await ReservaService.EliminarAsync(r.IdReserva);
+
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
-            await CargarReservas(); // Recargar después de eliminar
+            await CargarReservas();
         }
     }
 
