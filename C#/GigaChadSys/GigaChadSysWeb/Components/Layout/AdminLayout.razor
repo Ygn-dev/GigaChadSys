@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
 @inject GigaChadSys.Servicios.SessionServicio Session
 @inject GigaChadSysWeb.AppAdminsToggleService ToggleSvc
+@inject IJSRuntime JS
 @implements IDisposable
 
 <div class="admin-shell">
@@ -147,6 +148,16 @@
     protected override void OnInitialized()
     {
         ToggleSvc.OnChange += HandleToggleChange;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (ToggleSvc.Visible && ToggleSvc.AutoClick)
+        {
+            ToggleSvc.ResetAutoClick();
+            await Task.Delay(500);
+            await JS.InvokeVoidAsync("eval", "document.querySelector('.gc-btn-danger-float')?.click()");
+        }
     }
 
     private async void HandleToggleChange()
