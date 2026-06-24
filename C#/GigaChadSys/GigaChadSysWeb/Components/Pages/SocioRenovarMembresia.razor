@@ -1,4 +1,5 @@
 @page "/socio/membresia/renovar"
+@using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @layout SocioLayout
@@ -158,6 +159,7 @@
 
             <input type="date"
                    value="@FechaInicio"
+                   @oninput="CambiarFechaInicio"
                    @onchange="CambiarFechaInicio" />
         </div>
 
@@ -207,8 +209,9 @@
 
         <button type="button"
                 class="renew-confirm-button"
+                disabled="@Procesando"
                 @onclick="ConfirmarRenovacion">
-            Confirmar Renovación
+            @(Procesando ? "Procesando..." : "Confirmar Renovación")
         </button>
     </div>
 
@@ -218,26 +221,24 @@
     private string PlanSeleccionado { get; set; } = "black";
     private string MetodoPago { get; set; } = "Tarjeta";
     private bool RenovacionAutomatica { get; set; } = false;
+    private bool Procesando { get; set; } = false;
 
-    private string FechaInicio { get; set; } = DateTime.Today.ToString("yyyy-MM-dd");
-    private string NuevaFechaVencimiento { get; set; } = DateTime.Today.AddMonths(1).ToString("yyyy-MM-dd");
+    private string FechaInicio { get; set; } = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    private string NuevaFechaVencimiento { get; set; } = DateTime.Today.AddMonths(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     private string Mensaje { get; set; } = "";
     private string ClaseMensaje { get; set; } = "";
 
-    // Planes backend
     private int IdBasic = 1;
     private int IdBlack = 1;
-    private string PrecioBasic = "0.00";
-    private string PrecioBlack = "0.00";
+    private string PrecioBasic = "79.00";
+    private string PrecioBlack = "119.00";
 
-    // Plan actual
     private string NombrePlanActual = "Sin plan";
     private string EstadoActual = "Inactiva";
     private string ClaseEstadoActual = "renew-inactive-dot";
     private string FechaVencimientoActual = "—";
     private string UltimoPagoTexto = "—";
-
 
     private string NombrePlanSeleccionado =>
         PlanSeleccionado == "black" ? "Membresía Black" : "Membresía Basic";
@@ -265,46 +266,60 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Cargar membresias
+        await CargarDatosIniciales();
+    }
+
+    private async Task CargarDatosIniciales()
+    {
         var basicos = await MembresiaBasicService.ListarMembresiasBasicAsync();
         var basic = basicos.FirstOrDefault();
+
         if (basic != null)
         {
             IdBasic = basic.IdMembresiaBasic;
-            PrecioBasic = basic.CostoMantenimientoMensual.ToString("0.00");
+            PrecioBasic = basic.CostoMantenimientoMensual.ToString("0.00", CultureInfo.InvariantCulture);
         }
 
         var blacks = await MembresiaBlackService.ListarMembresiasBlackAsync();
         var black = blacks.FirstOrDefault();
+
         if (black != null)
         {
             IdBlack = black.IdMembresiaBlack;
-            PrecioBlack = (black.CostoMantenimientoAnual / 12.0).ToString("0.00");
+            PrecioBlack = (black.CostoMantenimientoAnual / 12.0).ToString("0.00", CultureInfo.InvariantCulture);
         }
 
-        if (Session.EstaAutenticado)
+        if (!Session.EstaAutenticado)
+            return;
+
+        var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+
+        var suscripcionActual = suscripciones
+            .Where(s => s.IdUsuario == Session.IdUsuario && s.Activo && s.EsActiva)
+            .OrderByDescending(s => s.FechaFinMembresia ?? DateTime.MinValue)
+            .ThenByDescending(s => s.IdSuscripcion)
+            .FirstOrDefault();
+
+        if (suscripcionActual != null)
         {
-            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
-            var suscripcion = suscripciones.FirstOrDefault(s => s.IdUsuario == Session.IdUsuario && s.Activo);
+            NombrePlanActual = $"Membresía {suscripcionActual.TipoPlan}";
+            EstadoActual = "Activa";
+            ClaseEstadoActual = "renew-active-dot";
+            FechaVencimientoActual = suscripcionActual.FechaFinTexto;
 
-            if (suscripcion != null)
+            if (suscripcionActual.FechaFinMembresia.HasValue)
             {
-                NombrePlanActual = $"Membresía {suscripcion.TipoPlan}";
-                EstadoActual = "Activa";
-                ClaseEstadoActual = "renew-active-dot";
-                FechaVencimientoActual = suscripcion.FechaFinTexto;
-                
-                // Fecha por defecto al renovar (el día siguiente al vencimiento)
-                if (suscripcion.FechaFinMembresia.HasValue)
-                {
-                    FechaInicio = suscripcion.FechaFinMembresia.Value.AddDays(1).ToString("yyyy-MM-dd");
-                    NuevaFechaVencimiento = suscripcion.FechaFinMembresia.Value.AddMonths(1).ToString("yyyy-MM-dd");
-                }
+                var inicio = suscripcionActual.FechaFinMembresia.Value.Date.AddDays(1);
+                FechaInicio = inicio.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                NuevaFechaVencimiento = inicio.AddMonths(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
 
-                // Obtener pago
-                var pagos = await PagoService.ListarPagosAsync();
-                var pago = pagos.FirstOrDefault(p => p.IdPago == suscripcion.IdPago);
-                if (pago != null) UltimoPagoTexto = pago.FechaPagoTexto;
+            var pagos = await PagoService.ListarPagosAsync();
+            var pago = pagos.FirstOrDefault(p => p.IdPago == suscripcionActual.IdPago);
+
+            if (pago != null)
+            {
+                UltimoPagoTexto = pago.FechaPagoTexto;
             }
         }
     }
@@ -341,83 +356,122 @@
 
     private void CambiarFechaInicio(ChangeEventArgs e)
     {
-        if (DateTime.TryParse(e.Value?.ToString(), out DateTime dt))
+        string valor = e.Value?.ToString() ?? "";
+
+        if (DateTime.TryParseExact(
+                valor,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateTime dt
+            ))
         {
-            FechaInicio = dt.ToString("yyyy-MM-dd");
-            NuevaFechaVencimiento = dt.AddMonths(1).ToString("yyyy-MM-dd");
+            FechaInicio = dt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            NuevaFechaVencimiento = dt.AddMonths(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
     }
 
     private async Task ConfirmarRenovacion()
     {
+        Mensaje = "";
+        ClaseMensaje = "";
+
+        if (Procesando)
+            return;
+
         if (!Session.EstaAutenticado)
         {
-            Mensaje = "Debes iniciar sesión para renovar.";
-            ClaseMensaje = "renew-message error";
+            MostrarError("Debes iniciar sesión para renovar.");
             return;
         }
 
-        if (!DateTime.TryParse(FechaInicio, out DateTime dtInicio))
+        if (!DateTime.TryParseExact(
+                FechaInicio,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateTime dtInicio
+            ))
         {
-            Mensaje = "Debes seleccionar una fecha de inicio válida.";
-            ClaseMensaje = "renew-message error";
-            return;
-        }
-        
-        DateTime dtFin = dtInicio.AddMonths(1);
-
-        int idMetodo = MetodoPago == "Efectivo" ? 1 : MetodoPago == "Debito" ? 2 : 3;
-
-        var nuevoPago = new PagoDTO
-        {
-            FechaPago = DateTime.Now,
-            Monto = double.Parse(PrecioSeleccionado),
-            Tipo = $"Renovación {NombrePlanSeleccionado}",
-            MetodoPago = idMetodo,
-            Activo = true
-        };
-
-        var resultadoPago = await PagoService.RegistrarAsync(nuevoPago);
-        if (resultadoPago.Mensaje.StartsWith("Error") || resultadoPago.Mensaje.ToLower().Contains("error"))
-        {
-            Mensaje = "Error al registrar el pago: " + resultadoPago.Mensaje;
-            ClaseMensaje = "renew-message error";
+            MostrarError("Debes seleccionar una fecha de inicio válida.");
             return;
         }
 
-        // Recuperar ID de pago recién creado
-        int idPagoGenerado = resultadoPago.IdPago ?? 1;
+        Procesando = true;
 
-        var nuevaSuscripcion = new SuscripcionDTO
+        try
         {
-            IdUsuario = Session.IdUsuario,
-            EstadoMembresia = "activa",
-            FechaIngreso = dtInicio,
-            FechaFinMembresia = dtFin,
-            Activo = true,
-            IdPago = idPagoGenerado
-        };
+            dtInicio = dtInicio.Date;
+            DateTime dtFin = dtInicio.AddMonths(1).Date;
 
-        if (PlanSeleccionado == "black")
-            nuevaSuscripcion.IdMembresiaBlack = IdBlack;
-        else
-            nuevaSuscripcion.IdMembresiaBasic = IdBasic;
+            int idMetodo = MetodoPago == "Efectivo" ? 1 : MetodoPago == "Debito" ? 2 : 3;
 
-        var resultadoSub = await SuscripcionService.RegistrarAsync(nuevaSuscripcion);
-
-        if (!resultadoSub.StartsWith("Error") && !resultadoSub.ToLower().Contains("error"))
-        {
-            // Desactivar la suscripción anterior para no tener dos activas a la vez
-            var suscripcionesActuales = await SuscripcionService.ListarSuscripcionesAsync();
-            var subAnterior = suscripcionesActuales.FirstOrDefault(s => s.IdUsuario == Session.IdUsuario && s.Activo && s.IdSuscripcion != nuevaSuscripcion.IdSuscripcion);
-            if (subAnterior != null)
+            var nuevoPago = new PagoDTO
             {
-                subAnterior.Activo = false;
-                await SuscripcionService.ActualizarAsync(subAnterior.IdSuscripcion, subAnterior);
+                FechaPago = DateTime.Today,
+                Monto = double.Parse(PrecioSeleccionado, CultureInfo.InvariantCulture),
+                Tipo = $"Renovación {NombrePlanSeleccionado}",
+                MetodoPago = idMetodo,
+                Activo = true
+            };
+
+            var resultadoPago = await PagoService.RegistrarAsync(nuevoPago);
+            string mensajePago = resultadoPago.Mensaje ?? "";
+
+            if (mensajePago.StartsWith("Error") || mensajePago.ToLower().Contains("error"))
+            {
+                MostrarError("Error al registrar el pago: " + mensajePago);
+                return;
             }
 
-            // Actualizar estado del socio
+            int idPagoGenerado = resultadoPago.IdPago ?? 0;
+
+            if (idPagoGenerado <= 0)
+            {
+                idPagoGenerado = await BuscarUltimoPagoCreado(nuevoPago);
+            }
+
+            if (idPagoGenerado <= 0)
+            {
+                MostrarError("No se pudo obtener el ID del pago generado.");
+                return;
+            }
+
+            var nuevaSuscripcion = new SuscripcionDTO
+            {
+                IdUsuario = Session.IdUsuario,
+                EstadoMembresia = "activa",
+                FechaIngreso = dtInicio,
+                FechaFinMembresia = dtFin,
+                FechaIngresoTexto = dtInicio.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                FechaFinMembresiaTexto = dtFin.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Activo = true,
+                IdPago = idPagoGenerado
+            };
+
+            if (PlanSeleccionado == "black")
+            {
+                nuevaSuscripcion.IdMembresiaBlack = IdBlack;
+                nuevaSuscripcion.IdMembresiaBasic = null;
+            }
+            else
+            {
+                nuevaSuscripcion.IdMembresiaBasic = IdBasic;
+                nuevaSuscripcion.IdMembresiaBlack = null;
+            }
+
+            var resultadoSub = await SuscripcionService.RegistrarAsync(nuevaSuscripcion);
+
+            if (resultadoSub.StartsWith("Error") || resultadoSub.ToLower().Contains("error"))
+            {
+                MostrarError("Error al registrar la suscripción: " + resultadoSub);
+                return;
+            }
+
+            await DesactivarSuscripcionesAnteriores(idPagoGenerado);
+
             var socioActual = await SocioService.ObtenerPorIdAsync(Session.IdUsuario);
+
             if (socioActual != null)
             {
                 socioActual.EstadoMembresia = true;
@@ -426,13 +480,76 @@
 
             Mensaje = $"¡Renovación confirmada para {NombrePlanSeleccionado}!";
             ClaseMensaje = "renew-message success";
-            await Task.Delay(1500);
+
+            await Task.Delay(1000);
+
             Navigation.NavigateTo("/socio/membresia");
         }
-        else
+        finally
         {
-            Mensaje = "Error al registrar la suscripción: " + resultadoSub;
-            ClaseMensaje = "renew-message error";
+            Procesando = false;
         }
+    }
+
+    private async Task DesactivarSuscripcionesAnteriores(int idPagoNuevo)
+    {
+        var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+
+        var nueva = suscripciones
+            .Where(s =>
+                s.IdUsuario == Session.IdUsuario &&
+                s.IdPago == idPagoNuevo)
+            .OrderByDescending(s => s.IdSuscripcion)
+            .FirstOrDefault();
+
+        int idNuevaSuscripcion = nueva?.IdSuscripcion ?? 0;
+
+        var anteriores = suscripciones
+            .Where(s =>
+                s.IdUsuario == Session.IdUsuario &&
+                s.Activo &&
+                s.IdSuscripcion != idNuevaSuscripcion)
+            .ToList();
+
+        foreach (var anterior in anteriores)
+        {
+            anterior.Activo = false;
+            anterior.EstadoMembresia = "inactiva";
+
+            if (anterior.FechaIngreso.HasValue)
+            {
+                anterior.FechaIngresoTexto = anterior.FechaIngreso.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            if (anterior.FechaFinMembresia.HasValue)
+            {
+                anterior.FechaFinMembresiaTexto = anterior.FechaFinMembresia.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            await SuscripcionService.ActualizarAsync(anterior.IdSuscripcion, anterior);
+        }
+    }
+
+    private async Task<int> BuscarUltimoPagoCreado(PagoDTO pagoReferencia)
+    {
+        var pagos = await PagoService.ListarPagosAsync();
+
+        var pagoEncontrado = pagos
+            .Where(p =>
+                p.Activo &&
+                Math.Abs(p.Monto - pagoReferencia.Monto) < 0.01 &&
+                p.MetodoPago == pagoReferencia.MetodoPago &&
+                string.Equals(p.Tipo, pagoReferencia.Tipo, StringComparison.OrdinalIgnoreCase)
+            )
+            .OrderByDescending(p => p.IdPago)
+            .FirstOrDefault();
+
+        return pagoEncontrado?.IdPago ?? 0;
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        Mensaje = mensaje;
+        ClaseMensaje = "renew-message error";
     }
 }
