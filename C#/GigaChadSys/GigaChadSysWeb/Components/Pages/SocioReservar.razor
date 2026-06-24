@@ -103,8 +103,9 @@
                 </div>
 
                 <button class="reserve-class-button"
+                        disabled="@ReservandoIdSesion.Equals(clase.Codigo)"
                         @onclick="() => ReservarClase(clase.Codigo)">
-                    Reservar
+                    @(ReservandoIdSesion.Equals(clase.Codigo) ? "Reservando..." : "Reservar")
                 </button>
 
             </div>
@@ -113,8 +114,15 @@
 
     @if (!string.IsNullOrWhiteSpace(MensajeReserva))
     {
-        <div class="socios-toast @ClaseMensajeReserva" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-            @MensajeReserva
+        <div style="position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+            min-width: 260px; max-width: 360px;
+            padding: 16px 20px; border-radius: 10px;
+            color: #ffffff; font-weight: 600; font-size: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+            background-color: @(ReservaFueExitosa ? "#1f9d55" : "#c0392b");
+            display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 18px;">@(ReservaFueExitosa ? "✓" : "✕")</span>
+            <span>@MensajeReserva</span>
         </div>
     }
 
@@ -156,9 +164,17 @@
     }
 
     private string MensajeReserva { get; set; } = "";
-    private string ClaseMensajeReserva { get; set; } = "";
+    private bool ReservaFueExitosa { get; set; } = false;
+
+    // Evita doble clic mientras la reserva está en proceso (guarda el código de sesión que se está reservando)
+    private string ReservandoIdSesion { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
+    {
+        await CargarClases();
+    }
+
+    private async Task CargarClases()
     {
         var sesiones = await SesionClaseService.ListarSesionesAsync();
         var reservas = await ReservaService.ListarReservasAsync();
@@ -217,39 +233,53 @@
         if (!Session.EstaAutenticado)
         {
             MensajeReserva = "Debes iniciar sesión para reservar.";
-            ClaseMensajeReserva = "socios-toast-err";
+            ReservaFueExitosa = false;
             return;
         }
 
-        if (int.TryParse(codigoSesion, out int idSesion))
+        if (!int.TryParse(codigoSesion, out int idSesion))
         {
-            var nuevaReserva = new ReservaDTO
-            {
-                IdUsuario = Session.IdUsuario,
-                FechaHoraReserva = DateTime.Now,
-                Asistio = false,
-                SesionClase = new SesionClaseDTO { IdSesion = idSesion }
-            };
-
-            var resultado = await ReservaService.RegistrarAsync(nuevaReserva);
-
-            if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
-            {
-                MensajeReserva = "¡Clase reservada con éxito!";
-                ClaseMensajeReserva = "socios-toast-ok";
-                
-                // Refrescar datos
-                await OnInitializedAsync();
-                
-                // Ocultar mensaje luego de 3 segundos
-                _ = Task.Delay(3000).ContinueWith(_ => { MensajeReserva = ""; InvokeAsync(StateHasChanged); });
-            }
-            else
-            {
-                MensajeReserva = resultado;
-                ClaseMensajeReserva = "socios-toast-err";
-            }
+            return;
         }
+
+        // Evita doble clic / doble envío mientras se procesa la reserva
+        ReservandoIdSesion = codigoSesion;
+        StateHasChanged();
+
+        var nuevaReserva = new ReservaDTO
+        {
+            IdUsuario = Session.IdUsuario,
+            FechaHoraReserva = DateTime.Now,
+            Asistio = false,
+            SesionClase = new SesionClaseDTO { IdSesion = idSesion }
+        };
+
+        var resultado = await ReservaService.RegistrarAsync(nuevaReserva);
+
+        ReservandoIdSesion = "";
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MensajeReserva = "¡Te has reservado con éxito!";
+            ReservaFueExitosa = true;
+
+            // Refrescar el listado de clases (cupos actualizados)
+            await CargarClases();
+        }
+        else
+        {
+            MensajeReserva = resultado;
+            ReservaFueExitosa = false;
+        }
+
+        StateHasChanged();
+
+        // Ocultar el mensaje luego de 3 segundos
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            MensajeReserva = "";
+            InvokeAsync(StateHasChanged);
+        });
     }
 
     private string ObtenerClaseCupos(int cupos)
