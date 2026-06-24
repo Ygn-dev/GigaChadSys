@@ -30,8 +30,7 @@ public class SocioDAOImpl implements SocioDAO {
                         "rol, " +
                         "estadoMembresia, " +
                         "activo " +
-                        "FROM Socio " +
-                        "WHERE activo = 1";
+                        "FROM Socio ";
 
         try (
                 Connection connection = DBManager.getInstance().getConnection();
@@ -127,9 +126,6 @@ public class SocioDAOImpl implements SocioDAO {
 
     @Override
     public Socio save(Socio socio) {
-
-        socio.setActivo(true);
-
         // SQL QUERY
         String sql =
                 "INSERT INTO Socio (" +
