@@ -5,6 +5,7 @@
 @using GigaChadSys.Servicios.DTO
 @inject EntrenadorServicio EntrenadorService
 @inject NavigationManager Nav
+
 <section class="trainer-form-page">
 
     <div class="trainer-breadcrumb">
@@ -35,6 +36,7 @@
                 <label>DNI <span>*</span></label>
                 <input type="text"
                        maxlength="8"
+                       autocomplete="off"
                        placeholder="40567234"
                        value="@DniValor"
                        @oninput="CambiarDni" />
@@ -43,6 +45,7 @@
             <div class="trainer-field">
                 <label>Fecha de nacimiento <span>*</span></label>
                 <input type="date"
+                       autocomplete="off"
                        value="@FechaNacimientoValor"
                        @onchange="CambiarFechaNacimiento" />
             </div>
@@ -50,23 +53,35 @@
             <div class="trainer-field">
                 <label>Nombres <span>*</span></label>
                 <input type="text"
+                       autocomplete="off"
                        placeholder="Pedro"
                        value="@NombresValor"
                        @oninput="CambiarNombres" />
             </div>
 
             <div class="trainer-field">
-                <label>Apellidos <span>*</span></label>
+                <label>Apellido paterno <span>*</span></label>
                 <input type="text"
+                       autocomplete="off"
                        placeholder="Sánchez"
-                       value="@ApellidosValor"
-                       @oninput="CambiarApellidos" />
+                       value="@ApellidoPaternoValor"
+                       @oninput="CambiarApellidoPaterno" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Apellido materno <span>*</span></label>
+                <input type="text"
+                       autocomplete="off"
+                       placeholder="Ramos"
+                       value="@ApellidoMaternoValor"
+                       @oninput="CambiarApellidoMaterno" />
             </div>
 
             <div class="trainer-field">
                 <label>Teléfono <span>*</span></label>
                 <input type="text"
                        maxlength="9"
+                       autocomplete="off"
                        placeholder="998877666"
                        value="@TelefonoValor"
                        @oninput="CambiarTelefono" />
@@ -75,6 +90,7 @@
             <div class="trainer-field">
                 <label>Correo electrónico <span>*</span></label>
                 <input type="email"
+                       autocomplete="off"
                        placeholder="entrenador@email.com"
                        value="@CorreoValor"
                        @oninput="CambiarCorreo" />
@@ -100,27 +116,22 @@
 
             <div class="trainer-field">
                 <label>Sueldo mensual <span>*</span></label>
-                <input type="text"
+                <input type="number"
+                       min="0"
+                       step="0.01"
+                       autocomplete="off"
                        placeholder="3500.00"
                        value="@SueldoMensualValor"
                        @oninput="CambiarSueldoMensual" />
             </div>
 
             <div class="trainer-field">
-                <label>Horario disponible <span>*</span></label>
-                <input type="text"
-                       placeholder="Lunes a Viernes 06:00 - 14:00"
-                       value="@HorarioDisponibleValor"
-                       @oninput="CambiarHorarioDisponible" />
-            </div>
-
-            <div class="trainer-field">
                 <label>Tiempo de trabajo <span>*</span></label>
                 <select value="@TiempoTrabajoValor" @onchange="CambiarTiempoTrabajo">
                     <option value="">Seleccione tiempo de trabajo</option>
-                    <option value="Tiempo completo">Tiempo completo</option>
-                    <option value="Medio tiempo">Medio tiempo</option>
-                    <option value="Por horas">Por horas</option>
+                    <option value="08:00:00">Tiempo completo - 8 horas</option>
+                    <option value="04:00:00">Medio tiempo - 4 horas</option>
+                    <option value="02:00:00">Por horas - 2 horas</option>
                 </select>
             </div>
         </div>
@@ -133,6 +144,7 @@
             <div class="trainer-field">
                 <label>Contraseña <span>*</span></label>
                 <input type="password"
+                       autocomplete="new-password"
                        placeholder="Mínimo 6 caracteres"
                        value="@ContraseniaValor"
                        @oninput="CambiarContrasenia" />
@@ -141,6 +153,7 @@
             <div class="trainer-field">
                 <label>Confirmar contraseña <span>*</span></label>
                 <input type="password"
+                       autocomplete="new-password"
                        placeholder="Repite la contraseña"
                        value="@ConfirmarContraseniaValor"
                        @oninput="CambiarConfirmarContrasenia" />
@@ -194,13 +207,13 @@
     private string DniValor { get; set; } = "";
     private string FechaNacimientoValor { get; set; } = "";
     private string NombresValor { get; set; } = "";
-    private string ApellidosValor { get; set; } = "";
+    private string ApellidoPaternoValor { get; set; } = "";
+    private string ApellidoMaternoValor { get; set; } = "";
     private string TelefonoValor { get; set; } = "";
     private string CorreoValor { get; set; } = "";
 
     private string EspecialidadValor { get; set; } = "";
     private string SueldoMensualValor { get; set; } = "";
-    private string HorarioDisponibleValor { get; set; } = "";
     private string TiempoTrabajoValor { get; set; } = "";
 
     private string ContraseniaValor { get; set; } = "";
@@ -225,9 +238,14 @@
         NombresValor = e.Value?.ToString() ?? "";
     }
 
-    private void CambiarApellidos(ChangeEventArgs e)
+    private void CambiarApellidoPaterno(ChangeEventArgs e)
     {
-        ApellidosValor = e.Value?.ToString() ?? "";
+        ApellidoPaternoValor = e.Value?.ToString() ?? "";
+    }
+
+    private void CambiarApellidoMaterno(ChangeEventArgs e)
+    {
+        ApellidoMaternoValor = e.Value?.ToString() ?? "";
     }
 
     private void CambiarTelefono(ChangeEventArgs e)
@@ -248,11 +266,6 @@
     private void CambiarSueldoMensual(ChangeEventArgs e)
     {
         SueldoMensualValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarHorarioDisponible(ChangeEventArgs e)
-    {
-        HorarioDisponibleValor = e.Value?.ToString() ?? "";
     }
 
     private void CambiarTiempoTrabajo(ChangeEventArgs e)
@@ -291,9 +304,9 @@
             return;
         }
 
-        if (DniValor.Length != 8)
+        if (DniValor.Length != 8 || !int.TryParse(DniValor, out int dniConvertido))
         {
-            MostrarError("El DNI debe tener 8 dígitos.");
+            MostrarError("El DNI debe tener 8 dígitos numéricos.");
             return;
         }
 
@@ -303,15 +316,27 @@
             return;
         }
 
+        if (!DateTime.TryParse(FechaNacimientoValor, out DateTime fechaNacimientoConvertida))
+        {
+            MostrarError("La fecha de nacimiento no es válida.");
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(NombresValor))
         {
             MostrarError("Los nombres son obligatorios.");
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(ApellidosValor))
+        if (string.IsNullOrWhiteSpace(ApellidoPaternoValor))
         {
-            MostrarError("Los apellidos son obligatorios.");
+            MostrarError("El apellido paterno es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ApellidoMaternoValor))
+        {
+            MostrarError("El apellido materno es obligatorio.");
             return;
         }
 
@@ -321,15 +346,21 @@
             return;
         }
 
-        if (TelefonoValor.Length != 9)
+        if (TelefonoValor.Length != 9 || !int.TryParse(TelefonoValor, out int telefonoConvertido))
         {
-            MostrarError("El teléfono debe tener 9 dígitos.");
+            MostrarError("El teléfono debe tener 9 dígitos numéricos.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(CorreoValor))
         {
             MostrarError("El correo electrónico es obligatorio.");
+            return;
+        }
+
+        if (!CorreoValor.Contains("@") || !CorreoValor.Contains("."))
+        {
+            MostrarError("Ingrese un correo electrónico válido.");
             return;
         }
 
@@ -354,12 +385,6 @@
         if (sueldoConvertido <= 0)
         {
             MostrarError("El sueldo mensual debe ser mayor a cero.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(HorarioDisponibleValor))
-        {
-            MostrarError("El horario disponible es obligatorio.");
             return;
         }
 
@@ -389,13 +414,15 @@
 
         var nuevoEntrenador = new EntrenadorDTO
         {
-            Dni = int.TryParse(DniValor, out var dni) ? dni : 0,
-            Nombres = NombresValor,
-            ApellidoPaterno = ApellidosValor,
-            ApellidoMaterno = "",
-            Telefono = int.TryParse(TelefonoValor, out var tel) ? tel : 0,
-            Email = CorreoValor,
-            Contrasenia = ContraseniaValor,
+            Dni = dniConvertido,
+            Nombres = NombresValor.Trim(),
+            ApellidoPaterno = ApellidoPaternoValor.Trim(),
+            ApellidoMaterno = ApellidoMaternoValor.Trim(),
+            Edad = CalcularEdad(fechaNacimientoConvertida),
+            Telefono = telefonoConvertido,
+            Email = CorreoValor.Trim(),
+            Contrasenia = ContraseniaValor.Trim(),
+            Rol = "Entrenador",
             Especialidad = EspecialidadValor,
             Sueldo = (double)sueldoConvertido,
             TiempoTrabajado = TiempoTrabajoValor,
@@ -433,13 +460,13 @@
         DniValor = "";
         FechaNacimientoValor = "";
         NombresValor = "";
-        ApellidosValor = "";
+        ApellidoPaternoValor = "";
+        ApellidoMaternoValor = "";
         TelefonoValor = "";
         CorreoValor = "";
 
         EspecialidadValor = "";
         SueldoMensualValor = "";
-        HorarioDisponibleValor = "";
         TiempoTrabajoValor = "";
 
         ContraseniaValor = "";
@@ -448,5 +475,16 @@
 
         MensajeFormulario = "";
         ClaseMensajeFormulario = "";
+    }
+
+    private static int CalcularEdad(DateTime fechaNacimiento)
+    {
+        var hoy = DateTime.Today;
+        var edad = hoy.Year - fechaNacimiento.Year;
+
+        if (fechaNacimiento.Date > hoy.AddYears(-edad))
+            edad--;
+
+        return edad;
     }
 }

@@ -4,6 +4,7 @@
 @using GigaChadSys.Servicios.DTO
 @layout AuthLayout
 @rendermode InteractiveServer
+
 @inject SocioServicio SocioService
 @inject NavigationManager Nav
 
@@ -15,13 +16,9 @@
     <div class="auth-container">
         <!-- Logo -->
         <div class="auth-logo">
-            <div class="auth-logo-icon">
-                <span>🏋️</span>
-            </div>
-            <h1 class="auth-brand">
-                <span class="brand-giga">GYGA</span><span class="brand-chad">CHAD</span>
-            </h1>
-            <p class="auth-tagline">ENTRENA · SUPÉRATE · VIVE</p>
+            <img src="/img/logo-gigachad-sidebar.png"
+                 alt="GigaChad"
+                 style="width: 220px; max-width: 100%; height: auto; object-fit: contain;" />
         </div>
 
         <!-- Title -->
@@ -32,41 +29,132 @@
         @if (!string.IsNullOrEmpty(mensajeError))
         {
             <div class="auth-error-msg">
-                <span>⚠️</span> @mensajeError
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                @mensajeError
             </div>
         }
+
         @if (!string.IsNullOrEmpty(mensajeExito))
         {
             <div class="auth-success-msg">
-                <span>✅</span> @mensajeExito
+                <i class="bi bi-check-circle-fill"></i>
+                @mensajeExito
             </div>
         }
 
         <!-- Form Card -->
         <div class="auth-card">
+
             <div class="auth-form-group">
-                <label>NOMBRE COMPLETO</label>
+                <label>NOMBRES</label>
                 <div class="auth-input-wrapper">
-                    <span class="auth-input-icon">👤</span>
-                    <input type="text" @bind="nombre" placeholder="Ej: Juan Perez" disabled="@cargando" />
+                    <span class="auth-input-icon">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+                    <input type="text"
+                           @bind="nombres"
+                           placeholder="Ej: Juan"
+                           disabled="@cargando" />
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label>APELLIDO PATERNO</label>
+                <div class="auth-input-wrapper">
+                    <span class="auth-input-icon">
+                        <i class="bi bi-person-vcard-fill"></i>
+                    </span>
+                    <input type="text"
+                           @bind="apellidoPaterno"
+                           placeholder="Ej: Pérez"
+                           disabled="@cargando" />
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label>APELLIDO MATERNO</label>
+                <div class="auth-input-wrapper">
+                    <span class="auth-input-icon">
+                        <i class="bi bi-person-vcard"></i>
+                    </span>
+                    <input type="text"
+                           @bind="apellidoMaterno"
+                           placeholder="Ej: Gómez"
+                           disabled="@cargando" />
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label>DNI</label>
+                <div class="auth-input-wrapper">
+                    <span class="auth-input-icon">
+                        <i class="bi bi-card-text"></i>
+                    </span>
+                    <input type="text"
+                           maxlength="8"
+                           @bind="dniTexto"
+                           placeholder="Ej: 12345678"
+                           disabled="@cargando" />
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label>EDAD</label>
+                <div class="auth-input-wrapper">
+                    <span class="auth-input-icon">
+                        <i class="bi bi-calendar-heart"></i>
+                    </span>
+                    <input type="number"
+                           min="12"
+                           max="100"
+                           @bind="edad"
+                           placeholder="Ej: 21"
+                           disabled="@cargando" />
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label>TELÉFONO</label>
+                <div class="auth-input-wrapper">
+                    <span class="auth-input-icon">
+                        <i class="bi bi-telephone-fill"></i>
+                    </span>
+                    <input type="text"
+                           maxlength="9"
+                           @bind="telefonoTexto"
+                           placeholder="Ej: 987654321"
+                           disabled="@cargando" />
                 </div>
             </div>
 
             <div class="auth-form-group">
                 <label>CORREO ELECTRÓNICO</label>
                 <div class="auth-input-wrapper">
-                    <span class="auth-input-icon">✉️</span>
-                    <input type="email" @bind="correo" placeholder="Ej: juan@email.com" disabled="@cargando" />
+                    <span class="auth-input-icon">
+                        <i class="bi bi-envelope-fill"></i>
+                    </span>
+                    <input type="email"
+                           @bind="correo"
+                           placeholder="Ej: juan@email.com"
+                           disabled="@cargando" />
                 </div>
             </div>
 
             <div class="auth-form-group">
                 <label>CONTRASEÑA</label>
                 <div class="auth-input-wrapper">
-                    <span class="auth-input-icon">🔒</span>
-                    <input type="@(mostrarPass ? "text" : "password")" @bind="password" placeholder="Mínimo 6 caracteres" disabled="@cargando" />
-                    <button class="auth-eye-btn" @onclick="() => mostrarPass = !mostrarPass" type="button">
-                        @(mostrarPass ? "🙈" : "👁️")
+                    <span class="auth-input-icon">
+                        <i class="bi bi-lock-fill"></i>
+                    </span>
+                    <input type="@(mostrarPass ? "text" : "password")"
+                           @bind="password"
+                           placeholder="Mínimo 6 caracteres"
+                           disabled="@cargando" />
+
+                    <button class="auth-eye-btn"
+                            @onclick="() => mostrarPass = !mostrarPass"
+                            type="button">
+                        <i class="@IconoPassword"></i>
                     </button>
                 </div>
             </div>
@@ -74,10 +162,18 @@
             <div class="auth-form-group">
                 <label>CONFIRMAR CONTRASEÑA</label>
                 <div class="auth-input-wrapper">
-                    <span class="auth-input-icon">🔒</span>
-                    <input type="@(mostrarConfirm ? "text" : "password")" @bind="confirmPassword" placeholder="Repite tu contraseña" disabled="@cargando" />
-                    <button class="auth-eye-btn" @onclick="() => mostrarConfirm = !mostrarConfirm" type="button">
-                        @(mostrarConfirm ? "🙈" : "👁️")
+                    <span class="auth-input-icon">
+                        <i class="bi bi-lock-fill"></i>
+                    </span>
+                    <input type="@(mostrarConfirm ? "text" : "password")"
+                           @bind="confirmPassword"
+                           placeholder="Repite tu contraseña"
+                           disabled="@cargando" />
+
+                    <button class="auth-eye-btn"
+                            @onclick="() => mostrarConfirm = !mostrarConfirm"
+                            type="button">
+                        <i class="@IconoConfirmPassword"></i>
                     </button>
                 </div>
             </div>
@@ -98,36 +194,96 @@
         <p class="auth-link-text">
             ¿Ya tienes cuenta?
         </p>
-        <a class="auth-link" href="/login">Inicia sesión aquí  ›</a>
+        <a class="auth-link" href="/login">Inicia sesión aquí ›</a>
     </div>
 </div>
 
 @code {
-    private string nombre = "";
+    private string nombres = "";
+    private string apellidoPaterno = "";
+    private string apellidoMaterno = "";
+    private string dniTexto = "";
+    private int edad = 18;
+    private string telefonoTexto = "";
     private string correo = "";
     private string password = "";
     private string confirmPassword = "";
+
     private bool mostrarPass = false;
     private bool mostrarConfirm = false;
     private bool cargando = false;
+
     private string mensajeError = "";
     private string mensajeExito = "";
+
+    private string IconoPassword =>
+        mostrarPass ? "bi bi-eye-slash-fill" : "bi bi-eye-fill";
+
+    private string IconoConfirmPassword =>
+        mostrarConfirm ? "bi bi-eye-slash-fill" : "bi bi-eye-fill";
 
     private async Task Registrar()
     {
         mensajeError = "";
         mensajeExito = "";
 
-        // Validaciones del lado del cliente
-        if (string.IsNullOrWhiteSpace(nombre))
+        if (string.IsNullOrWhiteSpace(nombres))
         {
             mensajeError = "El nombre es obligatorio.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(apellidoPaterno))
+        {
+            mensajeError = "El apellido paterno es obligatorio.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(apellidoMaterno))
+        {
+            mensajeError = "El apellido materno es obligatorio.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(dniTexto))
+        {
+            mensajeError = "El DNI es obligatorio.";
+            return;
+        }
+
+        if (!int.TryParse(dniTexto, out int dni) || dniTexto.Length != 8)
+        {
+            mensajeError = "El DNI debe tener 8 dígitos numéricos.";
+            return;
+        }
+
+        if (edad < 12 || edad > 100)
+        {
+            mensajeError = "La edad ingresada no es válida.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(telefonoTexto))
+        {
+            mensajeError = "El teléfono es obligatorio.";
+            return;
+        }
+
+        if (!int.TryParse(telefonoTexto, out int telefono) || telefonoTexto.Length != 9)
+        {
+            mensajeError = "El teléfono debe tener 9 dígitos numéricos.";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(correo))
         {
             mensajeError = "El correo es obligatorio.";
+            return;
+        }
+
+        if (!correo.Contains("@") || !correo.Contains("."))
+        {
+            mensajeError = "Ingresa un correo válido.";
             return;
         }
 
@@ -148,14 +304,21 @@
 
         try
         {
-            // Crear el DTO con los campos que espera el backend Java
             var socioDTO = new SocioDTO
             {
-                Nombres = nombre,
-                Email = correo,
+                Nombres = nombres.Trim(),
+                ApellidoPaterno = apellidoPaterno.Trim(),
+                ApellidoMaterno = apellidoMaterno.Trim(),
+                Edad = edad,
+                Dni = dni,
+                Email = correo.Trim(),
+                Telefono = telefono,
                 Contrasenia = password,
                 Rol = "Socio",
                 Activo = true,
+
+                // La membresía todavía NO se activa aquí.
+                // Se activa cuando el socio paga o renueva su membresía.
                 EstadoMembresia = false
             };
 
@@ -163,7 +326,6 @@
 
             mensajeExito = resultado;
 
-            // Esperar un momento para que el usuario vea el mensaje
             await Task.Delay(1500);
             Nav.NavigateTo("/login");
         }
