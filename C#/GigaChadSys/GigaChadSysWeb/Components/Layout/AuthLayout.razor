@@ -1,6 +1,29 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject GigaChadSysWeb.AppAdminsToggleService ToggleSvc
+@implements IDisposable
+
 <div class="auth-layout">
     @Body
 </div>
 
-<AppAdmins></AppAdmins>
+@if (ToggleSvc.Visible)
+{
+    <AppAdmins />
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        ToggleSvc.OnChange += HandleToggleChange;
+    }
+
+    private async void HandleToggleChange()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ToggleSvc.OnChange -= HandleToggleChange;
+    }
+}

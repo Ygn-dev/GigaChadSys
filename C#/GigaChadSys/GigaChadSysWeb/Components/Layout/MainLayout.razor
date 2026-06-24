@@ -1,4 +1,7 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject GigaChadSysWeb.AppAdminsToggleService ToggleSvc
+@implements IDisposable
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -17,4 +20,24 @@
     <span class="dismiss">🗙</span>
 </div>
 
-<AppAdmins />
+@if (ToggleSvc.Visible)
+{
+    <AppAdmins />
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        ToggleSvc.OnChange += HandleToggleChange;
+    }
+
+    private async void HandleToggleChange()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ToggleSvc.OnChange -= HandleToggleChange;
+    }
+}

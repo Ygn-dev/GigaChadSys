@@ -1,4 +1,5 @@
 using GigaChadSys.Servicios;
+using GigaChadSysWeb;
 using GigaChadSysWeb.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,9 @@ builder.Services.AddScoped(_ => new HttpClient
 // Registrar todos los servicios REST que consumen el backend Java
 builder.Services.AddGigaChadSysServicios();
 
+// Singleton para controlar la visibilidad del botón AppAdmins
+builder.Services.AddSingleton<AppAdminsToggleService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,4 +40,27 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+// ── REST API: Control remoto del botón AppAdmins ──
+app.MapGet("/api/appadmins/status", (AppAdminsToggleService svc) =>
+    Results.Ok(new { visible = svc.Visible }));
+
+app.MapPost("/api/appadmins/activar", (AppAdminsToggleService svc) =>
+{
+    svc.Activar();
+    return Results.Ok(new { visible = true, mensaje = "Botón AppAdmins activado" });
+});
+
+app.MapPost("/api/appadmins/desactivar", (AppAdminsToggleService svc) =>
+{
+    svc.Desactivar();
+    return Results.Ok(new { visible = false, mensaje = "Botón AppAdmins desactivado" });
+});
+
+app.MapPost("/api/appadmins/toggle", (AppAdminsToggleService svc) =>
+{
+    svc.Toggle();
+    return Results.Ok(new { visible = svc.Visible, mensaje = $"Botón AppAdmins ahora está {(svc.Visible ? "activado" : "desactivado")}" });
+});
+
 app.Run();
+

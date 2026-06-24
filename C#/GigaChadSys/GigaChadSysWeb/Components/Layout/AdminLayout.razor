@@ -1,5 +1,7 @@
 @inherits LayoutComponentBase
 @inject GigaChadSys.Servicios.SessionServicio Session
+@inject GigaChadSysWeb.AppAdminsToggleService ToggleSvc
+@implements IDisposable
 
 <div class="admin-shell">
     <aside class="admin-sidebar">
@@ -135,3 +137,25 @@
     </div>
 
 </div>
+
+@if (ToggleSvc.Visible)
+{
+    <AppAdmins />
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        ToggleSvc.OnChange += HandleToggleChange;
+    }
+
+    private async void HandleToggleChange()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ToggleSvc.OnChange -= HandleToggleChange;
+    }
+}

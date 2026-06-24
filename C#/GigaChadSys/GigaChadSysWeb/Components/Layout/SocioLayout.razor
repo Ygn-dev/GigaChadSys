@@ -1,6 +1,8 @@
 @inherits LayoutComponentBase
 @inject GigaChadSys.Servicios.SessionServicio Session
 @inject NavigationManager Navigation
+@inject GigaChadSysWeb.AppAdminsToggleService ToggleSvc
+@implements IDisposable
 
 <div class="role-shell socio-shell">
     <aside class="role-sidebar socio-sidebar">
@@ -94,11 +96,31 @@
 
     </div>
 </div>
-<AppAdmins />
+
+@if (ToggleSvc.Visible)
+{
+    <AppAdmins />
+}
+
 @code {
+    protected override void OnInitialized()
+    {
+        ToggleSvc.OnChange += HandleToggleChange;
+    }
+
+    private async void HandleToggleChange()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
     private void CerrarSesion()
     {
         Session.CerrarSesion();
         Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        ToggleSvc.OnChange -= HandleToggleChange;
     }
 }
