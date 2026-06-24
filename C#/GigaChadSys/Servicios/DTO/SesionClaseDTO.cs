@@ -13,6 +13,28 @@ namespace GigaChadSys.Servicios.DTO
         [JsonConverter(typeof(FlexibleSesionDateTimeConverter))]
         public DateTime FechaSesion { get; set; }
 
+        // Campo extra para Java. Este evita el bug de zona horaria.
+        [JsonPropertyName("fechaSesionTexto")]
+        public string FechaSesionTexto
+        {
+            get => FechaSesion == default
+                ? ""
+                : FechaSesion.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            set
+            {
+                if (DateTime.TryParseExact(
+                        value,
+                        "yyyy-MM-dd",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out var fecha))
+                {
+                    FechaSesion = fecha.Date;
+                }
+            }
+        }
+
         [JsonPropertyName("horaInicio")]
         [JsonConverter(typeof(FlexibleSesionDateTimeConverter))]
         public DateTime HoraInicio { get; set; }
@@ -145,10 +167,22 @@ namespace GigaChadSys.Servicios.DTO
             {
                 long value = reader.GetInt64();
 
-                if (value > 100000000000)
-                    return DateTimeOffset.FromUnixTimeMilliseconds(value).LocalDateTime;
+                DateTime fechaUtc;
 
-                return DateTimeOffset.FromUnixTimeSeconds(value).LocalDateTime;
+                if (value > 100000000000)
+                {
+                    fechaUtc = DateTimeOffset
+                        .FromUnixTimeMilliseconds(value)
+                        .UtcDateTime;
+                }
+                else
+                {
+                    fechaUtc = DateTimeOffset
+                        .FromUnixTimeSeconds(value)
+                        .UtcDateTime;
+                }
+
+                return DateTime.SpecifyKind(fechaUtc, DateTimeKind.Unspecified);
             }
 
             if (reader.TokenType == JsonTokenType.StartArray)
@@ -166,7 +200,10 @@ namespace GigaChadSys.Servicios.DTO
                     int minute = array.GetArrayLength() >= 5 ? array[4].GetInt32() : 0;
                     int second = array.GetArrayLength() >= 6 ? array[5].GetInt32() : 0;
 
-                    return new DateTime(year, month, day, hour, minute, second);
+                    return DateTime.SpecifyKind(
+                        new DateTime(year, month, day, hour, minute, second),
+                        DateTimeKind.Unspecified
+                    );
                 }
 
                 return default;
@@ -197,7 +234,12 @@ namespace GigaChadSys.Servicios.DTO
                 int second = ObtenerEntero(root, "second");
 
                 if (year > 0 && month > 0 && day > 0)
-                    return new DateTime(year, month, day, hour, minute, second);
+                {
+                    return DateTime.SpecifyKind(
+                        new DateTime(year, month, day, hour, minute, second),
+                        DateTimeKind.Unspecified
+                    );
+                }
 
                 return default;
             }
@@ -218,7 +260,10 @@ namespace GigaChadSys.Servicios.DTO
             }
 
             var limpio = DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
-            writer.WriteStringValue(limpio.ToString("yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
+
+            writer.WriteStringValue(
+                limpio.ToString("yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture)
+            );
         }
 
         private static int ObtenerEntero(JsonElement root, string propertyName)

@@ -8,6 +8,8 @@ import java.util.Date;
 public class SesionClase {
     private int idSesion;
     private Date fechaSesion;
+    private String fechaSesionTexto;
+
     private Timestamp horaInicio;
     private Timestamp horaFin;
     private int cuposDisponibles;
@@ -25,6 +27,8 @@ public class SesionClase {
                        int cuposDisponibles, int idSalon, int idEntrenador, int idClase) {
         this.idSesion = idSesion;
         this.fechaSesion = fechaSesion;
+        this.fechaSesionTexto = fechaSesion != null ? fechaSesion.toString() : null;
+
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
         this.cuposDisponibles = cuposDisponibles;
@@ -45,6 +49,10 @@ public class SesionClase {
                        Salon salon, Entrenador entrenador, ClaseGrupal claseGrupal) {
         this.idSesion = idSesion;
         this.fechaSesion = fechaSesion;
+        this.fechaSesionTexto = fechaSesion != null
+                ? new java.sql.Date(fechaSesion.getTime()).toString()
+                : null;
+
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
         this.cuposDisponibles = cuposDisponibles;
@@ -68,6 +76,34 @@ public class SesionClase {
 
     public void setFechaSesion(Date fechaSesion) {
         this.fechaSesion = fechaSesion;
+
+        if (fechaSesion != null && (this.fechaSesionTexto == null || this.fechaSesionTexto.isBlank())) {
+            this.fechaSesionTexto = new java.sql.Date(fechaSesion.getTime()).toString();
+        }
+    }
+
+    public String getFechaSesionTexto() {
+        if (fechaSesionTexto != null && !fechaSesionTexto.isBlank()) {
+            return fechaSesionTexto;
+        }
+
+        if (fechaSesion != null) {
+            return new java.sql.Date(fechaSesion.getTime()).toString();
+        }
+
+        return null;
+    }
+
+    public void setFechaSesionTexto(String fechaSesionTexto) {
+        this.fechaSesionTexto = fechaSesionTexto;
+
+        if (fechaSesionTexto != null && !fechaSesionTexto.isBlank()) {
+            try {
+                this.fechaSesion = java.sql.Date.valueOf(fechaSesionTexto);
+            } catch (IllegalArgumentException ex) {
+                // Si viene mal, se deja que fechaSesion normal intente resolver.
+            }
+        }
     }
 
     public Timestamp getHoraInicio() {

@@ -54,6 +54,7 @@
                     </div>
 
                     <div class="sf-form-grid">
+
                         <div class="sf-form-group">
                             <label>CLASE <span class="sf-req">*</span></label>
                             <select @bind="claseId" class="@(errores.ContainsKey("claseId") ? "sf-input-error" : "")">
@@ -102,8 +103,9 @@
                         <div class="sf-form-group">
                             <label>CUPOS DISPONIBLES <span class="sf-req">*</span></label>
                             <input type="number"
-                                   value="@cuposDisponibles"
-                                   @oninput="CambiarCuposDisponibles"
+                                   value="@CuposDisponiblesInput"
+                                   @oninput="CambiarCuposDisponiblesInput"
+                                   @onchange="CambiarCuposDisponiblesInput"
                                    min="0"
                                    max="200"
                                    class="@(errores.ContainsKey("cuposDisponibles") ? "sf-input-error" : "")" />
@@ -117,7 +119,8 @@
                             <label>FECHA <span class="sf-req">*</span></label>
                             <input type="date"
                                    value="@FechaInput"
-                                   @onchange="CambiarFecha"
+                                   @oninput="CambiarFechaInput"
+                                   @onchange="CambiarFechaInput"
                                    class="@(errores.ContainsKey("fecha") ? "sf-input-error" : "")" />
                             @if (errores.ContainsKey("fecha"))
                             {
@@ -125,14 +128,14 @@
                             }
                         </div>
 
-                        <div class="sf-form-group">
-                        </div>
+                        <div class="sf-form-group"></div>
 
                         <div class="sf-form-group">
                             <label>HORA DE INICIO <span class="sf-req">*</span></label>
                             <input type="time"
                                    value="@HoraInicioInput"
-                                   @onchange="CambiarHoraInicio"
+                                   @oninput="CambiarHoraInicioInput"
+                                   @onchange="CambiarHoraInicioInput"
                                    class="@(errores.ContainsKey("horaInicio") ? "sf-input-error" : "")" />
                             @if (errores.ContainsKey("horaInicio"))
                             {
@@ -144,13 +147,15 @@
                             <label>HORA DE FIN <span class="sf-req">*</span></label>
                             <input type="time"
                                    value="@HoraFinInput"
-                                   @onchange="CambiarHoraFin"
+                                   @oninput="CambiarHoraFinInput"
+                                   @onchange="CambiarHoraFinInput"
                                    class="@(errores.ContainsKey("horaFin") ? "sf-input-error" : "")" />
                             @if (errores.ContainsKey("horaFin"))
                             {
                                 <span class="sf-error-msg">@errores["horaFin"]</span>
                             }
                         </div>
+
                     </div>
                 </div>
 
@@ -227,7 +232,7 @@
 
                         <div class="sf-resumen-row">
                             <span>Fecha</span>
-                            <strong>@(FechaSesion == default ? "—" : FechaSesion.ToString("dd/MM/yyyy"))</strong>
+                            <strong>@FechaResumen</strong>
                         </div>
 
                         <div class="sf-resumen-row">
@@ -237,7 +242,7 @@
 
                         <div class="sf-resumen-row">
                             <span>Cupos disponibles</span>
-                            <strong>@cuposDisponibles</strong>
+                            <strong>@CuposDisponiblesInput</strong>
                         </div>
 
                         <div class="sf-resumen-row">
@@ -266,11 +271,11 @@
     private int claseId = 0;
     private int entrenadorId = 0;
     private int salonId = 0;
-    private int cuposDisponibles = 20;
 
-    private DateTime FechaSesion = DateTime.Today;
-    private TimeOnly? HoraInicio;
-    private TimeOnly? HoraFin;
+    private string FechaInput { get; set; } = "";
+    private string HoraInicioInput { get; set; } = "";
+    private string HoraFinInput { get; set; } = "";
+    private string CuposDisponiblesInput { get; set; } = "0";
 
     private string estadoAdministrativo = "Programada";
 
@@ -286,13 +291,36 @@
     private List<EntrenadorDTO> entrenadoresDisponibles = new();
     private List<SalonDTO> salonesDisponibles = new();
 
-    private string FechaInput => FechaSesion.ToString("yyyy-MM-dd");
-    private string HoraInicioInput => HoraInicio?.ToString("HH:mm") ?? "";
-    private string HoraFinInput => HoraFin?.ToString("HH:mm") ?? "";
+    private static readonly string[] FormatosHora =
+    {
+        "HH:mm",
+        "H:mm",
+        "HH:mm:ss",
+        "H:mm:ss"
+    };
 
     private string NombreClase => clasesDisponibles.FirstOrDefault(c => c.IdClase == claseId)?.NombreDisciplina ?? "—";
     private string NombreEntrenador => entrenadoresDisponibles.FirstOrDefault(e => e.IdUsuario == entrenadorId)?.NombreCompleto ?? "—";
     private string NombreSalon => salonesDisponibles.FirstOrDefault(s => s.IdSalon == salonId)?.NombreSalon ?? "—";
+
+    private string FechaResumen
+    {
+        get
+        {
+            if (DateTime.TryParseExact(
+                    FechaInput,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var fecha
+                ))
+            {
+                return fecha.ToString("dd/MM/yyyy");
+            }
+
+            return "—";
+        }
+    }
 
     private string EstadoVisual
     {
@@ -301,9 +329,16 @@
             if (estadoAdministrativo == "Cancelada")
                 return "Cancelada";
 
-            if (HoraFin.HasValue)
+            if (DateTime.TryParseExact(
+                    FechaInput,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var fecha
+                ) &&
+                TryParseHora(HoraFinInput, out var horaFin))
             {
-                var fechaHoraFin = FechaSesion.Date.Add(HoraFin.Value.ToTimeSpan());
+                var fechaHoraFin = fecha.Date.Add(horaFin.ToTimeSpan());
 
                 if (fechaHoraFin < DateTime.Now)
                     return "Finalizada";
@@ -343,19 +378,14 @@
                 entrenadorId = sesionOriginal.Entrenador?.IdUsuario ?? 0;
                 salonId = sesionOriginal.Salon?.IdSalon ?? 0;
 
-                cuposDisponibles = sesionOriginal.CuposDisponibles;
+                CuposDisponiblesInput = sesionOriginal.CuposDisponibles.ToString();
 
-                FechaSesion = sesionOriginal.FechaSesion == default
-                    ? DateTime.Today
-                    : sesionOriginal.FechaSesion.Date;
+                FechaInput = sesionOriginal.FechaSesion == default
+                    ? DateTime.Today.ToString("yyyy-MM-dd")
+                    : sesionOriginal.FechaSesion.ToString("yyyy-MM-dd");
 
-                HoraInicio = sesionOriginal.HoraInicio == default
-                    ? null
-                    : TimeOnly.FromDateTime(sesionOriginal.HoraInicio);
-
-                HoraFin = sesionOriginal.HoraFin == default
-                    ? null
-                    : TimeOnly.FromDateTime(sesionOriginal.HoraFin);
+                HoraInicioInput = NormalizarHoraParaInput(sesionOriginal.HoraInicio);
+                HoraFinInput = NormalizarHoraParaInput(sesionOriginal.HoraFin);
 
                 estadoAdministrativo = sesionOriginal.Activo ? "Programada" : "Cancelada";
             }
@@ -366,53 +396,43 @@
         }
     }
 
-    private void CambiarFecha(ChangeEventArgs e)
+    private void CambiarFechaInput(ChangeEventArgs e)
     {
-        var valor = e.Value?.ToString() ?? "";
-
-        if (DateTime.TryParseExact(
-                valor,
-                "yyyy-MM-dd",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var fecha
-            ))
-        {
-            FechaSesion = fecha.Date;
-        }
+        FechaInput = e.Value?.ToString() ?? "";
+        errores.Remove("fecha");
     }
 
-    private void CambiarHoraInicio(ChangeEventArgs e)
+    private void CambiarHoraInicioInput(ChangeEventArgs e)
     {
-        var valor = e.Value?.ToString() ?? "";
-
-        if (TimeOnly.TryParseExact(valor, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var hora))
-        {
-            HoraInicio = hora;
-        }
+        HoraInicioInput = NormalizarHoraTexto(e.Value?.ToString() ?? "");
+        errores.Remove("horaInicio");
     }
 
-    private void CambiarHoraFin(ChangeEventArgs e)
+    private void CambiarHoraFinInput(ChangeEventArgs e)
     {
-        var valor = e.Value?.ToString() ?? "";
-
-        if (TimeOnly.TryParseExact(valor, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var hora))
-        {
-            HoraFin = hora;
-        }
+        HoraFinInput = NormalizarHoraTexto(e.Value?.ToString() ?? "");
+        errores.Remove("horaFin");
     }
 
-    private void CambiarCuposDisponibles(ChangeEventArgs e)
+    private void CambiarCuposDisponiblesInput(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value?.ToString(), out var cupos))
-        {
-            cuposDisponibles = cupos;
-        }
+        CuposDisponiblesInput = e.Value?.ToString() ?? "";
+        errores.Remove("cuposDisponibles");
     }
 
-    private bool Validar()
+    private bool Validar(out DateTime fechaSesion, out TimeOnly horaInicio, out TimeOnly horaFin, out int cuposDisponibles)
     {
         errores.Clear();
+
+        fechaSesion = default;
+        horaInicio = default;
+        horaFin = default;
+        cuposDisponibles = 0;
+
+        FechaInput = FechaInput?.Trim() ?? "";
+        HoraInicioInput = NormalizarHoraTexto(HoraInicioInput);
+        HoraFinInput = NormalizarHoraTexto(HoraFinInput);
+        CuposDisponiblesInput = CuposDisponiblesInput?.Trim() ?? "";
 
         if (claseId == 0)
             errores["claseId"] = "Selecciona una clase.";
@@ -423,18 +443,32 @@
         if (salonId == 0)
             errores["salonId"] = "Selecciona un salón.";
 
-        if (cuposDisponibles < 0)
+        if (!int.TryParse(CuposDisponiblesInput, out cuposDisponibles))
+            errores["cuposDisponibles"] = "Los cupos disponibles deben ser numéricos.";
+        else if (cuposDisponibles < 0)
             errores["cuposDisponibles"] = "Los cupos disponibles no pueden ser negativos.";
 
-        if (FechaSesion == default)
+        if (!DateTime.TryParseExact(
+                FechaInput,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out fechaSesion
+            ))
+        {
             errores["fecha"] = "La fecha es obligatoria.";
+        }
 
-        if (HoraInicio == null)
+        bool horaInicioValida = TryParseHora(HoraInicioInput, out horaInicio);
+        bool horaFinValida = TryParseHora(HoraFinInput, out horaFin);
+
+        if (!horaInicioValida)
             errores["horaInicio"] = "La hora de inicio es obligatoria.";
 
-        if (HoraFin == null)
+        if (!horaFinValida)
             errores["horaFin"] = "La hora de fin es obligatoria.";
-        else if (HoraInicio != null && HoraFin <= HoraInicio)
+
+        if (horaInicioValida && horaFinValida && horaFin <= horaInicio)
             errores["horaFin"] = "La hora de fin debe ser mayor a la de inicio.";
 
         return errores.Count == 0;
@@ -445,18 +479,21 @@
         MensajeFormulario = "";
         ClaseMensajeFormulario = "";
 
-        if (!Validar())
+        if (!Validar(out var fechaSesion, out var horaInicio, out var horaFin, out var cuposDisponibles))
             return;
 
         guardando = true;
 
-        var fechaInicio = FechaSesion.Date.Add(HoraInicio!.Value.ToTimeSpan());
-        var fechaFin = FechaSesion.Date.Add(HoraFin!.Value.ToTimeSpan());
+        var fechaInicio = fechaSesion.Date.Add(horaInicio.ToTimeSpan());
+        var fechaFin = fechaSesion.Date.Add(horaFin.ToTimeSpan());
 
         var sesionEditada = new SesionClaseDTO
         {
             IdSesion = Id,
-            FechaSesion = FechaSesion.Date,
+
+            // Al mediodía para evitar desfase de fecha por zona horaria en Java/MySQL.
+            FechaSesion = fechaSesion.Date.AddHours(12),
+
             HoraInicio = fechaInicio,
             HoraFin = fechaFin,
             CuposDisponibles = cuposDisponibles,
@@ -473,8 +510,8 @@
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
             MostrarExito("Sesión actualizada correctamente.");
-            await Task.Delay(1200);
-            Navigation.NavigateTo("/admin/sesiones", forceLoad: true);
+            await Task.Delay(800);
+            Navigation.NavigateTo("/admin/sesiones");
         }
         else
         {
@@ -485,6 +522,48 @@
     private void Cancelar()
     {
         Navigation.NavigateTo("/admin/sesiones");
+    }
+
+    private static bool TryParseHora(string valor, out TimeOnly hora)
+    {
+        valor = NormalizarHoraTexto(valor);
+
+        return TimeOnly.TryParseExact(
+            valor,
+            FormatosHora,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out hora
+        );
+    }
+
+    private static string NormalizarHoraParaInput(DateTime hora)
+    {
+        if (hora == default)
+            return "";
+
+        return hora.ToString("HH:mm");
+    }
+
+    private static string NormalizarHoraTexto(string valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+            return "";
+
+        valor = valor.Trim();
+
+        if (TimeOnly.TryParseExact(
+                valor,
+                FormatosHora,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var hora
+            ))
+        {
+            return hora.ToString("HH:mm");
+        }
+
+        return valor;
     }
 
     private void MostrarError(string mensaje)

@@ -112,7 +112,7 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
                 Connection con = DBManager.getInstance().getConnection();
                 PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ) {
-            ps.setDate(1, new java.sql.Date(s.getFechaSesion().getTime()));
+            ps.setDate(1, obtenerFechaSQL(s));
             ps.setTimestamp(2, s.getHoraInicio());
             ps.setTimestamp(3, s.getHoraFin());
             ps.setInt(4, s.getCuposDisponibles());
@@ -157,7 +157,7 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
                 Connection con = DBManager.getInstance().getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)
         ) {
-            ps.setDate(1, new java.sql.Date(s.getFechaSesion().getTime()));
+            ps.setDate(1, obtenerFechaSQL(s));
             ps.setTimestamp(2, s.getHoraInicio());
             ps.setTimestamp(3, s.getHoraFin());
             ps.setInt(4, s.getCuposDisponibles());
@@ -194,9 +194,11 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
     }
 
     private SesionClase mapearSesionClase(ResultSet rs) throws SQLException {
+        java.sql.Date fechaSQL = rs.getDate("fechaSesion");
+
         SesionClase s = new SesionClase(
                 rs.getInt("idSesion"),
-                rs.getDate("fechaSesion"),
+                fechaSQL,
                 rs.getTimestamp("horaInicio"),
                 rs.getTimestamp("horaFin"),
                 rs.getInt("cuposDisponibles"),
@@ -205,8 +207,26 @@ public class SesionClaseDAOImpl implements SesionClaseDAO {
                 rs.getInt("idClase")
         );
 
+        if (fechaSQL != null) {
+            s.setFechaSesionTexto(fechaSQL.toString());
+        }
+
         s.setActivo(rs.getBoolean("activo"));
 
         return s;
+    }
+
+    private java.sql.Date obtenerFechaSQL(SesionClase s) {
+        String fechaTexto = s.getFechaSesionTexto();
+
+        if (fechaTexto != null && !fechaTexto.isBlank()) {
+            return java.sql.Date.valueOf(fechaTexto);
+        }
+
+        if (s.getFechaSesion() == null) {
+            return null;
+        }
+
+        return new java.sql.Date(s.getFechaSesion().getTime());
     }
 }
