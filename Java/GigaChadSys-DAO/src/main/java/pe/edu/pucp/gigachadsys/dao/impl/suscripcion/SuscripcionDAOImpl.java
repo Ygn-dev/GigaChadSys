@@ -80,15 +80,33 @@ public class SuscripcionDAOImpl implements SuscripcionDAO {
                 "VALUES (?,?,?,?,?,?,?,1)";
 
         try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
+            ps.setString(1, s.getEstadoMembresia());
             ps.setDate(2, new java.sql.Date(s.getFechaIngreso().getTime()));
             ps.setDate(3, new java.sql.Date(s.getFechaFinMembresia().getTime()));
+            ps.setInt(4, s.getIdPago());
+            ps.setInt(5, s.getIdUsuario());
 
+            if (s.getIdMembresiaBasic() != null) {
+                ps.setInt(6, s.getIdMembresiaBasic());
+            } else {
+                ps.setNull(6, Types.INTEGER);
+            }
 
-            ps.setNull(7, Types.INTEGER);
+            if (s.getIdMembresiaBlack() != null) {
+                ps.setInt(7, s.getIdMembresiaBlack());
+            } else {
+                ps.setNull(7, Types.INTEGER);
+            }
 
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    s.setIdSuscripcion(rs.getInt(1));
+                }
+            }
 
         } catch(SQLException e){
             throw new RuntimeException(e);
@@ -112,13 +130,25 @@ public class SuscripcionDAOImpl implements SuscripcionDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
+            ps.setString(1, s.getEstadoMembresia());
             ps.setDate(2, new java.sql.Date(s.getFechaIngreso().getTime()));
             ps.setDate(3, new java.sql.Date(s.getFechaFinMembresia().getTime()));
+            ps.setInt(4, s.getIdPago());
+            ps.setInt(5, s.getIdUsuario());
 
+            if (s.getIdMembresiaBasic() != null) {
+                ps.setInt(6, s.getIdMembresiaBasic());
+            } else {
                 ps.setNull(6, Types.INTEGER);
+            }
 
+            if (s.getIdMembresiaBlack() != null) {
+                ps.setInt(7, s.getIdMembresiaBlack());
+            } else {
                 ps.setNull(7, Types.INTEGER);
+            }
 
+            ps.setInt(8, s.getIdSuscripcion());
 
             ps.executeUpdate();
 
@@ -136,6 +166,7 @@ public class SuscripcionDAOImpl implements SuscripcionDAO {
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
 
+            ps.setInt(1, s.getIdSuscripcion());
             ps.executeUpdate();
 
         } catch(SQLException e){
