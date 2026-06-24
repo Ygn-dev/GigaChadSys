@@ -3,15 +3,16 @@ package pe.edu.pucp.gigachadsys.model.clases;
 import java.sql.Timestamp;
 
 public class Reserva {
-    //Atributos
     private int idReserva;
-    private Timestamp  fechaHoraReserva;
+    private Timestamp fechaHoraReserva;
     private boolean asistio;
     private SesionClase sesionClase;
     private int idUsuario;
+    private Boolean activo;
 
-    //Constructores
     public Reserva() {
+        this.activo = true;
+        this.asistio = false;
     }
 
     public Reserva(int idReserva, Timestamp fechaHoraReserva, boolean asistio, int idSesion, int idUsuario) {
@@ -21,6 +22,7 @@ public class Reserva {
         this.sesionClase = new SesionClase();
         this.sesionClase.setIdSesion(idSesion);
         this.idUsuario = idUsuario;
+        this.activo = true;
     }
 
     public Reserva(int idReserva, Timestamp fechaHoraReserva, boolean asistio, SesionClase sesionClase) {
@@ -28,9 +30,9 @@ public class Reserva {
         this.fechaHoraReserva = fechaHoraReserva;
         this.asistio = asistio;
         this.sesionClase = sesionClase;
+        this.activo = true;
     }
 
-    //Setters y Getters
     public int getIdReserva() {
         return idReserva;
     }
@@ -71,9 +73,23 @@ public class Reserva {
         this.idUsuario = idUsuario;
     }
 
+    public Boolean getActivo() {
+        return activo != null ? activo : false;
+    }
 
-    //Metodos
-    public  void registrarAsistencia() {
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
 
+    public void setActive(boolean activo) {
+        this.activo = activo;
+    }
+
+    public boolean isActive() {
+        return activo != null ? activo : false;
+    }
+
+    public void registrarAsistencia() {
+        this.asistio = true;
     }
 }

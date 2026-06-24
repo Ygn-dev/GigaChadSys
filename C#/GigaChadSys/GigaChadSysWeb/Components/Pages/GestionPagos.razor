@@ -1,4 +1,5 @@
 @page "/admin/pagos"
+@using System.Globalization
 @using System.Text.Json.Serialization
 @layout AdminLayout
 @rendermode InteractiveServer
@@ -26,12 +27,12 @@
     <div class="gp-stats-row">
         <div class="gp-stat-card">
             <div class="gp-stat-label">TOTAL RECAUDADO</div>
-            <div class="gp-stat-value">S/@TotalRecaudado</div>
+            <div class="gp-stat-value">S/@TotalRecaudado.ToString("0.00")</div>
         </div>
 
         <div class="gp-stat-card">
             <div class="gp-stat-label">TOTAL PENDIENTE</div>
-            <div class="gp-stat-value gp-stat-yellow">S/@TotalPendiente</div>
+            <div class="gp-stat-value gp-stat-yellow">S/@TotalPendiente.ToString("0.00")</div>
         </div>
 
         <div class="gp-stat-card">
@@ -55,152 +56,410 @@
 
         <select class="gp-filter-select" @bind="MetodoFiltro">
             <option value="">Todos los métodos</option>
-            <option value="Efectivo">Efectivo</option>
-            <option value="Tarjeta Débito">Tarjeta Débito</option>
-            <option value="Tarjeta Crédito">Tarjeta Crédito</option>
+            @foreach (var metodo in MetodosDisponibles)
+            {
+                <option value="@metodo">@metodo</option>
+            }
         </select>
     </div>
 
-    <div class="admin-table-card">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Socio</th>
-                    <th>Concepto</th>
-                    <th>Monto</th>
-                    <th>Método</th>
-                    <th>Fecha</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @if (!PagosFiltrados.Any())
-                {
+    @if (Cargando)
+    {
+        <div class="admin-table-card">
+            <div class="empty-row">
+                Cargando pagos...
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="admin-table-card">
+            <table class="admin-table">
+                <thead>
                     <tr>
-                        <td colspan="8" class="empty-row">
-                            No se encontraron pagos.
-                        </td>
+                        <th>ID</th>
+                        <th>Socio</th>
+                        <th>Concepto</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
-                }
-                else
-                {
-                    @foreach (var pago in PagosFiltrados)
+                </thead>
+
+                <tbody>
+                    @if (!PagosFiltrados.Any())
                     {
                         <tr>
-                            <td style="color:#666; font-size:12px;">
-                                #@pago.Id
-                            </td>
-
-                            <td>
-                                <div class="trainer-cell">
-                                    <div class="trainer-avatar">@pago.Iniciales</div>
-
-                                    <div>
-                                        <strong>@pago.SocioNombre</strong>
-                                        <span>@pago.SocioDni</span>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td style="color:#F5F5F5; font-weight:600;">
-                                @pago.Concepto
-                            </td>
-
-                            <td class="td-monto">
-                                @pago.MontoTexto
-                            </td>
-
-                            <td style="color:#B0B0B0;">
-                                @pago.Metodo
-                            </td>
-
-                            <td style="color:#B0B0B0;">
-                                @pago.Fecha
-                            </td>
-
-                            <td>
-                                @if (pago.Estado == "pagado")
-                                {
-                                    <span class="pagos-estado estado-pagado">
-                                        <span class="estado-dot"></span> pagado
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="pagos-estado estado-pendiente">
-                                        <span class="estado-dot"></span> pendiente
-                                    </span>
-                                }
-                            </td>
-
-                            <td>
-                                <button class="action-button"
-                                        title="Ver detalle"
-                                        @onclick="() => VerDetalle(pago.Id)">
-                                    👁
-                                </button>
+                            <td colspan="8" class="empty-row">
+                                No se encontraron pagos.
                             </td>
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
-    </div>
+                    else
+                    {
+                        @foreach (var pago in PagosPaginados)
+                        {
+                            <tr>
+                                <td style="color:#666; font-size:12px;">
+                                    #@pago.Id
+                                </td>
+
+                                <td>
+                                    <div class="trainer-cell">
+                                        <div class="trainer-avatar">@pago.Iniciales</div>
+
+                                        <div>
+                                            <strong>@pago.SocioNombre</strong>
+                                            <span>@pago.SocioDni</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td style="color:#F5F5F5; font-weight:600;">
+                                    @pago.Concepto
+                                </td>
+
+                                <td class="td-monto">
+                                    @pago.MontoTexto
+                                </td>
+
+                                <td style="color:#B0B0B0;">
+                                    @pago.Metodo
+                                </td>
+
+                                <td style="color:#B0B0B0;">
+                                    @pago.Fecha
+                                </td>
+
+                                <td>
+                                    @if (pago.Estado == "pagado")
+                                    {
+                                        <span class="pagos-estado estado-pagado">
+                                            <span class="estado-dot"></span> pagado
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="pagos-estado estado-pendiente">
+                                            <span class="estado-dot"></span> pendiente
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <button class="action-button"
+                                            title="Ver detalle"
+                                            @onclick="() => AbrirDetallePago(pago)">
+                                        👁
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            @if (PagosFiltrados.Any())
+            {
+                <div class="socios-pagination">
+
+                    <span class="pagination-s-info">
+                        Mostrando
+                        @(((paginaActual - 1) * elementosPorPagina) + 1)
+                        -
+                        @Math.Min(
+                            paginaActual * elementosPorPagina,
+                            PagosFiltrados.Count())
+                        de @PagosFiltrados.Count() pagos
+                    </span>
+
+                    <div class="pagination-s-btns">
+
+                        <button class="pgbtn"
+                                disabled="@(paginaActual == 1)"
+                                @onclick="PaginaAnterior">
+                            ‹
+                        </button>
+
+                        @for (int i = 1; i <= TotalPaginas; i++)
+                        {
+                            int pagina = i;
+
+                            <button class="pgbtn @(paginaActual == pagina ? "pgbtn-active" : "")"
+                                    @onclick="() => IrAPagina(pagina)">
+                                @pagina
+                            </button>
+                        }
+
+                        <button class="pgbtn"
+                                disabled="@(paginaActual == TotalPaginas)"
+                                @onclick="PaginaSiguiente">
+                            ›
+                        </button>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+
+    @if (PagoSeleccionado is not null)
+    {
+        <div class="salon-modal-overlay" @onclick="CerrarDetallePago">
+            <div class="salon-modal" @onclick:stopPropagation="true">
+
+                <div class="salon-modal-header">
+                    <h2>Detalle de Pago</h2>
+
+                    <button type="button"
+                            class="salon-modal-close"
+                            @onclick="CerrarDetallePago">
+                        ×
+                    </button>
+                </div>
+
+                <div class="salon-modal-main">
+                    <div class="trainer-avatar">
+                        @PagoSeleccionado.Iniciales
+                    </div>
+
+                    <div>
+                        <h3>@PagoSeleccionado.SocioNombre</h3>
+                        <p>@PagoSeleccionado.Concepto</p>
+                    </div>
+                </div>
+
+                <div class="salon-modal-info-grid">
+
+                    <div class="salon-modal-info">
+                        <span>ID Pago</span>
+                        <strong>#@PagoSeleccionado.Id</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>DNI</span>
+                        <strong>@PagoSeleccionado.SocioDni</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Monto</span>
+                        <strong>@PagoSeleccionado.MontoTexto</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Método</span>
+                        <strong>@PagoSeleccionado.Metodo</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Fecha</span>
+                        <strong>@PagoSeleccionado.Fecha</strong>
+                    </div>
+
+                    <div class="salon-modal-info">
+                        <span>Estado</span>
+
+                        <strong class="@(PagoSeleccionado.Estado == "pagado"
+                                                        ? "salon-estado-activo"
+                                                        : "salon-estado-inactivo")">
+
+                            @(PagoSeleccionado.Estado == "pagado"
+                                ? "Pagado"
+                                : "Pendiente")
+
+                        </strong>
+                    </div>
+
+                </div>
+
+                <div class="salon-modal-actions">
+
+                    <button type="button"
+                            class="salon-modal-edit"
+                            @onclick="() => VerDetalle(PagoSeleccionado.Id)">
+                        Ver Completo
+                    </button>
+
+                    <button type="button"
+                            class="salon-modal-cancel"
+                            @onclick="CerrarDetallePago">
+                        Cerrar
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    }
 
 </div>
 
 @code {
-    private string SearchTerm { get; set; } = "";
-    private string EstadoFiltro { get; set; } = "";
-    private string MetodoFiltro { get; set; } = "";
+    private PagoItem? PagoSeleccionado;
+    private string _searchTerm = "";
+    private string SearchTerm
+    {
+        get => _searchTerm;
+        set
+        {
+            if (_searchTerm != value)
+            {
+                _searchTerm = value;
+                paginaActual = 1;
+            }
+        }
+    }
+
+    private string _estadoFiltro = "";
+    private string EstadoFiltro
+    {
+        get => _estadoFiltro;
+        set
+        {
+            if (_estadoFiltro != value)
+            {
+                _estadoFiltro = value;
+                paginaActual = 1;
+            }
+        }
+    }
+
+    private string _metodoFiltro = "";
+    private string MetodoFiltro
+    {
+        get => _metodoFiltro;
+        set
+        {
+            if (_metodoFiltro != value)
+            {
+                _metodoFiltro = value;
+                paginaActual = 1;
+            }
+        }
+    }
+
+    private bool Cargando { get; set; } = true;
 
     private List<PagoItem> Pagos { get; set; } = new();
 
+    private void AbrirDetallePago(PagoItem pago)
+    {
+        PagoSeleccionado = pago;
+    }
+
+    private void CerrarDetallePago()
+    {
+        PagoSeleccionado = null;
+    }
+
+    // ── Paginación ──
+    private int paginaActual = 1;
+    private int elementosPorPagina = 10;
+
+    private IEnumerable<string> MetodosDisponibles =>
+        Pagos.Select(p => p.Metodo)
+             .Where(m => !string.IsNullOrWhiteSpace(m))
+             .Distinct()
+             .OrderBy(m => m);
+
     protected override async Task OnInitializedAsync()
     {
-        var pagosTask = PagoService.ListarPagosAsync();
-        var suscripcionesTask = SuscripcionService.ListarSuscripcionesAsync();
-        var sociosTask = SocioService.ListarSociosAsync();
-        var metodosTask = MetodoPagoService.ListarMetodosDePagoAsync();
+        await CargarPagos();
+    }
 
-        await Task.WhenAll(pagosTask, suscripcionesTask, sociosTask, metodosTask);
+    private async Task CargarPagos()
+    {
+        Cargando = true;
 
-        var pagosResult = pagosTask.Result;
-        var suscripcionesResult = suscripcionesTask.Result;
-        var sociosResult = sociosTask.Result;
-        var metodosResult = metodosTask.Result;
-
-        var dictSocios = sociosResult.ToDictionary(s => s.IdUsuario, s => s);
-        var dictMetodos = metodosResult.ToDictionary(m => m.IdMetodoPago, m => m.Tipo);
-
-        Pagos.Clear();
-
-        foreach (var pago in pagosResult)
+        try
         {
-            var suscripcion = suscripcionesResult.FirstOrDefault(s => s.IdPago == pago.IdPago);
-            SocioDTO? socio = null;
-            if (suscripcion != null && dictSocios.ContainsKey(suscripcion.IdUsuario))
+            var pagosTask = PagoService.ListarPagosAsync();
+            var suscripcionesTask = SuscripcionService.ListarSuscripcionesAsync();
+            var sociosTask = SocioService.ListarSociosAsync();
+            var metodosTask = MetodoPagoService.ListarMetodosDePagoAsync();
+
+            await Task.WhenAll(
+                pagosTask,
+                suscripcionesTask,
+                sociosTask,
+                metodosTask);
+
+            var pagosResult = pagosTask.Result;
+            var suscripcionesResult = suscripcionesTask.Result;
+            var sociosResult = sociosTask.Result;
+            var metodosResult = metodosTask.Result;
+
+            var dictSocios = sociosResult.ToDictionary(
+                s => s.IdUsuario,
+                s => s);
+
+            var dictMetodos = metodosResult.ToDictionary(
+                m => m.IdMetodoPago,
+                m => m.Tipo);
+
+            var dictSuscripciones = suscripcionesResult
+                .Where(s => s.IdPago > 0)
+                .GroupBy(s => s.IdPago)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderByDescending(x => x.Activo).First()
+                );
+
+            Pagos.Clear();
+
+            foreach (var pago in pagosResult)
             {
-                socio = dictSocios[suscripcion.IdUsuario];
+                dictSuscripciones.TryGetValue(
+                    pago.IdPago,
+                    out var suscripcion);
+
+                string socioNombre = "Sin socio";
+                string socioDni = "-";
+                string iniciales = "S";
+                string concepto = pago.Tipo;
+
+                if (suscripcion != null &&
+                    dictSocios.TryGetValue(
+                        suscripcion.IdUsuario,
+                        out var socio))
+                {
+                    socioNombre = ObtenerNombreSocio(socio);
+                    socioDni = socio.Dni.ToString();
+                    iniciales = ObtenerIniciales(socio);
+                    concepto = ObtenerConceptoPago(
+                        pago,
+                        suscripcion);
+                }
+
+                var nombreMetodo =
+                    dictMetodos.TryGetValue(
+                        pago.MetodoPago,
+                        out var metodo)
+                        ? metodo
+                        : "Desconocido";
+
+                Pagos.Add(new PagoItem
+                {
+                    Id = pago.IdPago,
+                    SocioNombre = socioNombre,
+                    SocioDni = socioDni,
+                    Iniciales = iniciales,
+                    Concepto = concepto,
+                    Monto = (decimal)pago.Monto,
+                    Metodo = nombreMetodo,
+                    Fecha = pago.FechaPagoTexto,
+                    Estado = pago.Activo ? "pagado" : "pendiente"
+                });
             }
 
-            var nombreMetodo = dictMetodos.ContainsKey(pago.MetodoPago) ? dictMetodos[pago.MetodoPago] : "Desconocido";
-
-            Pagos.Add(new PagoItem
-            {
-                Id = pago.IdPago,
-                SocioNombre = socio != null ? $"{socio.Nombres} {socio.ApellidoPaterno}" : "Desconocido",
-                SocioDni = socio != null ? socio.Dni.ToString() : "-",
-                Iniciales = socio != null && socio.Nombres.Length > 0 ? socio.Nombres.Substring(0, 1).ToUpper() : "?",
-                Concepto = pago.Tipo ?? "-",
-                Monto = (decimal)pago.Monto,
-                Metodo = nombreMetodo,
-                Fecha = pago.FechaPagoTexto,
-                Estado = pago.Activo ? "pagado" : "pendiente"
-            });
+            paginaActual = 1;
+        }
+        finally
+        {
+            Cargando = false;
         }
     }
 
@@ -231,28 +490,47 @@
                 resultado = resultado.Where(p => p.Metodo == MetodoFiltro);
             }
 
-            return resultado;
+            return resultado
+                .OrderByDescending(p => p.Fecha)
+                .ThenBy(p => p.SocioNombre);
         }
     }
 
-    private decimal TotalRecaudado
+    private IEnumerable<PagoItem> PagosPaginados =>
+        PagosFiltrados
+            .Skip((paginaActual - 1) * elementosPorPagina)
+            .Take(elementosPorPagina);
+
+    private int TotalPaginas =>
+        Math.Max(
+            1,
+            (int)Math.Ceiling(
+                PagosFiltrados.Count() /
+                (double)elementosPorPagina));
+
+    private decimal TotalRecaudado =>
+        Pagos.Where(p => p.Estado == "pagado")
+             .Sum(p => p.Monto);
+
+    private decimal TotalPendiente =>
+        Pagos.Where(p => p.Estado == "pendiente")
+             .Sum(p => p.Monto);
+
+    private void PaginaAnterior()
     {
-        get
-        {
-            return Pagos
-                .Where(p => p.Estado == "pagado")
-                .Sum(p => p.Monto);
-        }
+        if (paginaActual > 1)
+            paginaActual--;
     }
 
-    private decimal TotalPendiente
+    private void PaginaSiguiente()
     {
-        get
-        {
-            return Pagos
-                .Where(p => p.Estado == "pendiente")
-                .Sum(p => p.Monto);
-        }
+        if (paginaActual < TotalPaginas)
+            paginaActual++;
+    }
+
+    private void IrAPagina(int pagina)
+    {
+        paginaActual = pagina;
     }
 
     private void VerDetalle(int id)
@@ -260,41 +538,103 @@
         Navigation.NavigateTo($"/admin/pagos/{id}");
     }
 
+    private static string ObtenerNombreSocio(SocioDTO socio)
+    {
+        string nombre =
+            $"{socio.Nombres} {socio.ApellidoPaterno} {socio.ApellidoMaterno}"
+            .Trim();
+
+        return string.IsNullOrWhiteSpace(nombre)
+            ? "Socio sin nombre"
+            : nombre;
+    }
+
+    private static string ObtenerIniciales(SocioDTO socio)
+    {
+        string nombres = socio.Nombres ?? "";
+        string apellido = socio.ApellidoPaterno ?? "";
+
+        string inicialNombre = !string.IsNullOrWhiteSpace(nombres)
+            ? nombres.Trim()[0].ToString().ToUpper()
+            : "";
+
+        string inicialApellido = !string.IsNullOrWhiteSpace(apellido)
+            ? apellido.Trim()[0].ToString().ToUpper()
+            : "";
+
+        string iniciales = $"{inicialNombre}{inicialApellido}";
+
+        return string.IsNullOrWhiteSpace(iniciales)
+            ? "S"
+            : iniciales;
+    }
+
+    private static string ObtenerConceptoPago(
+        PagoDTO pago,
+        SuscripcionDTO suscripcion)
+    {
+        string tipoPlan = suscripcion.TipoPlan;
+
+        if (string.IsNullOrWhiteSpace(tipoPlan) ||
+            tipoPlan == "Sin plan")
+        {
+            tipoPlan = "Membresía";
+        }
+        else
+        {
+            tipoPlan = $"Membresía {tipoPlan}";
+        }
+
+        DateTime fechaReferencia =
+            suscripcion.FechaIngreso ??
+            pago.FechaPago ??
+            DateTime.Today;
+
+        string mes =
+            fechaReferencia.ToString(
+                "MMMM yyyy",
+                new CultureInfo("es-ES"));
+
+        if (!string.IsNullOrWhiteSpace(pago.Tipo) &&
+            !pago.Tipo.Equals(
+                "MENSUAL",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return $"{tipoPlan} - {pago.Tipo} - {mes}";
+        }
+
+        return $"{tipoPlan} - {mes}";
+    }
+
     private class PagoItem
     {
         [JsonPropertyName("idPago")]
         public int Id { get; set; }
-        
+
         [JsonPropertyName("socioNombre")]
         public string SocioNombre { get; set; } = "";
-        
+
         [JsonPropertyName("socioDni")]
         public string SocioDni { get; set; } = "";
-        
+
         [JsonPropertyName("iniciales")]
         public string Iniciales { get; set; } = "";
-        
+
         [JsonPropertyName("tipo")]
         public string Concepto { get; set; } = "";
-        
+
         [JsonPropertyName("monto")]
         public decimal Monto { get; set; }
-        
+
         [JsonPropertyName("metodoPago")]
         public string Metodo { get; set; } = "";
-        
+
         [JsonPropertyName("fechaPago")]
         public string Fecha { get; set; } = "";
-        
+
         [JsonPropertyName("estado")]
         public string Estado { get; set; } = "";
 
-        public string MontoTexto
-        {
-            get
-            {
-                return $"S/{Monto:0}";
-            }
-        }
+        public string MontoTexto => $"S/{Monto:0.00}";
     }
 }

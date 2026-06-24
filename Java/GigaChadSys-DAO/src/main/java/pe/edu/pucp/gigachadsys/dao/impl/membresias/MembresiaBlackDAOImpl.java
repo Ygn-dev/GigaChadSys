@@ -117,13 +117,13 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
 
     @Override
     public MembresiaBlack update(MembresiaBlack membresia) {
-
-        String sql = "UPDATE MembresiaBlack SET " +
-                "nombrePlan = ?, " +
-                "costoMantenimientoAnual = ?, " +
-                "cantidadInvitadosPorMes = ?," +
-                "activo = ?"+
-                "WHERE membresia_ID = ?";
+        String sql =
+                "UPDATE MembresiaBlack " +
+                        "SET nombrePlan = ?, " +
+                        "costoMantenimientoAnual = ?, " +
+                        "cantidadInvitadosPorMes = ?, " +
+                        "activo = ? " +
+                        "WHERE membresia_ID = ?";
         Connection connection = DBManager.getInstance().getConnection();
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
 

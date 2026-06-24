@@ -4,10 +4,13 @@
 @rendermode InteractiveServer
 
 <section class="admin-home">
+
     <div class="welcome-card">
-        <p class="welcome-label">Panel de administración</p>
+        <div class="welcome-label">Panel de Administración</div>
 
         <h1>Bienvenido, Administrador</h1>
+
+        <div class="welcome-red-line"></div>
 
         <p>
             Desde este panel puedes gestionar las operaciones principales del gimnasio GigaChad.
@@ -15,53 +18,106 @@
     </div>
 
     <div class="admin-grid">
-        <a class="admin-option-card" href="/admin/socios">
-            <h3>Gestionar Socios</h3>
-            <p>Registrar, consultar y actualizar socios del gimnasio.</p>
+
+        <a class="admin-option-card admin-card-with-icon" href="/admin/socios">
+            <div class="admin-card-icon">
+                <i class="bi bi-people"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Gestionar Socios</h3>
+                <p>Consulta, registra y administra a los socios del gimnasio.</p>
+            </div>
         </a>
 
-        <a class="admin-option-card" href="/admin/entrenadores">
-            <h3>Gestionar Entrenadores</h3>
-            <p>Administrar entrenadores, especialidades y estado.</p>
+        <a class="admin-option-card admin-card-with-icon" href="/admin/entrenadores">
+            <div class="admin-card-icon">
+                <i class="bi bi-person-check"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Gestionar Entrenadores</h3>
+                <p>Consulta, registra y administra a los entrenadores.</p>
+            </div>
         </a>
 
-        <a class="admin-option-card" href="/admin/membresias">
-            <h3>Gestionar Membresías</h3>
-            <p>Controlar planes Basic y Black.</p>
+        <a class="admin-option-card admin-card-with-icon" href="/admin/membresias">
+            <div class="admin-card-icon">
+                <i class="bi bi-gem"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Gestionar Membresías</h3>
+                <p>Administra los planes y tipos de membresías disponibles.</p>
+            </div>
         </a>
 
-        <a class="admin-option-card" href="/admin/clases">
-            <h3>Gestionar Clases</h3>
-            <p>Crear y administrar clases grupales.</p>
+        <a class="admin-option-card admin-card-with-icon" href="/admin/clases">
+            <div class="admin-card-icon">
+                <i class="bi bi-fire"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Gestionar Clases</h3>
+                <p>Gestiona las disciplinas y clases grupales del gimnasio.</p>
+            </div>
         </a>
 
-        <a class="admin-option-card" href="/admin/sesiones">
-            <h3>Gestionar Sesiones</h3>
-            <p>Programar sesiones con salón y entrenador.</p>
+        <a class="admin-option-card admin-card-with-icon" href="/admin/sesiones">
+            <div class="admin-card-icon">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Gestionar Sesiones</h3>
+                <p>Programa y administra las sesiones de clases.</p>
+            </div>
         </a>
 
-        <a class="admin-option-card" href="/admin/reservas">
-            <h3>Gestionar Reservas</h3>
-            <p>Consultar reservas realizadas por los socios.</p>
+        <a class="admin-option-card admin-card-with-icon" href="/admin/reservas">
+            <div class="admin-card-icon">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Gestionar Reservas</h3>
+                <p>Consulta y administra las reservas de los socios.</p>
+            </div>
         </a>
 
-        <a class="admin-option-card" href="/admin/pagos">
-            <h3>Gestionar Pagos</h3>
-            <p>Registrar y consultar pagos de membresías.</p>
+        <a class="admin-option-card admin-card-with-icon" href="/admin/pagos">
+            <div class="admin-card-icon">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Gestionar Pagos</h3>
+                <p>Administra los pagos, métodos y transacciones.</p>
+            </div>
         </a>
 
-        <a class="admin-option-card" href="/admin/maquinas">
-            <h3>Gestionar Máquinas</h3>
-            <p>Controlar estado y mantenimiento de máquinas.</p>
-        </a>
-        <a class="admin-option-card" href="/admin/salones">
-            <h3>Gestionar Salones</h3>
-            <p>Administrar salones, aforo y disponibilidad.</p>
+        <a class="admin-option-card admin-card-with-icon" href="/admin/salones">
+            <div class="admin-card-icon">
+                <i class="bi bi-building"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Gestionar Salones</h3>
+                <p>Administra los salones, aforo y disponibilidad.</p>
+            </div>
         </a>
 
-        <a class="admin-option-card" href="/admin/reportes">
-            <h3>Ver Reportes</h3>
-            <p>Consultar información general del gimnasio.</p>
+        <a class="admin-option-card admin-card-with-icon" href="/admin/reportes">
+            <div class="admin-card-icon">
+                <i class="bi bi-bar-chart-line"></i>
+            </div>
+
+            <div class="admin-card-body">
+                <h3>Ver Reportes</h3>
+                <p>Consulta indicadores generales del gimnasio.</p>
+            </div>
         </a>
+
     </div>
+
 </section>

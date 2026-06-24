@@ -8,8 +8,11 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add global HttpClient pointing to the Java REST Backend
-builder.Services.AddScoped(sp => new HttpClient { 
-    BaseAddress = new Uri("http://localhost:8080/GigaChadSys-REST/webresources/") 
+builder.Services.AddScoped(_ => new HttpClient
+{
+    BaseAddress = new Uri(
+        "http://localhost:8080/GigaChadSys-REST-1.0-SNAPSHOT/webresources/"
+    )
 });
 
 // Registrar todos los servicios REST que consumen el backend Java

@@ -1,55 +1,58 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace GigaChadSys.Servicios.DTO;
 
-/// <summary>
-/// DTO que mapea al JSON de Java para la entidad Suscripcion.
-/// Java: Suscripcion.java
-/// BD: Suscripcion(idSuscripcion, estadoMembresia, fechaIngreso, fechaFinMembresia,
-///                 idPago, idUsuario, membresia_ID_basic, membresia_ID_black, activo)
-/// Endpoint: GET/POST/PUT /SuscripcionRS
-/// </summary>
 public class SuscripcionDTO
 {
     [JsonPropertyName("idSuscripcion")]
     public int IdSuscripcion { get; set; }
 
-    /// <summary>
-    /// Puede venir como string ("activa", "true") o como boolean desde Java.
-    /// </summary>
     [JsonPropertyName("estadoMembresia")]
     [JsonConverter(typeof(FlexibleEstadoMembresiaConverter))]
     public string EstadoMembresia { get; set; } = "";
 
-    [JsonPropertyName("fechaIngreso")]
-    [JsonConverter(typeof(FlexibleNullableDateTimeConverter))]
+    [JsonIgnore]
     public DateTime? FechaIngreso { get; set; }
 
-    [JsonPropertyName("fechaFinMembresia")]
-    [JsonConverter(typeof(FlexibleNullableDateTimeConverter))]
+    [JsonIgnore]
     public DateTime? FechaFinMembresia { get; set; }
 
-    /// <summary>FK al Pago asociado.</summary>
+    [JsonPropertyName("fechaIngresoTexto")]
+    public string FechaIngresoTexto
+    {
+        get => FechaIngreso.HasValue
+            ? FechaIngreso.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : "";
+
+        set => FechaIngreso = ParseFecha(value);
+    }
+
+    [JsonPropertyName("fechaFinMembresiaTexto")]
+    public string FechaFinMembresiaTexto
+    {
+        get => FechaFinMembresia.HasValue
+            ? FechaFinMembresia.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : "";
+
+        set => FechaFinMembresia = ParseFecha(value);
+    }
+
     [JsonPropertyName("idPago")]
     public int IdPago { get; set; }
 
-    /// <summary>FK al Socio (idUsuario en tabla Socio).</summary>
     [JsonPropertyName("idUsuario")]
     public int IdUsuario { get; set; }
 
-    /// <summary>FK opcional a MembresiaBasic (null si es Black).</summary>
     [JsonPropertyName("idMembresiaBasic")]
     public int? IdMembresiaBasic { get; set; }
 
-    /// <summary>FK opcional a MembresiaBlack (null si es Basic).</summary>
     [JsonPropertyName("idMembresiaBlack")]
     public int? IdMembresiaBlack { get; set; }
 
     [JsonPropertyName("activo")]
     public bool Activo { get; set; }
-
-    // ── Propiedades calculadas para la UI ──────────────────────────────────
 
     public bool EsActiva =>
         EstadoMembresia?.ToLower() == "true"
@@ -72,11 +75,47 @@ public class SuscripcionDTO
     public string FechaInicioTexto => FechaIngreso.HasValue
         ? FechaIngreso.Value.ToString("yyyy-MM-dd")
         : "—";
+
+    private static DateTime? ParseFecha(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        value = value.Replace("[UTC]", "").Trim();
+
+        if (value.EndsWith("Z", StringComparison.OrdinalIgnoreCase))
+            value = value[..^1];
+
+        string[] formatos =
+        {
+            "yyyy-MM-dd",
+            "yyyy-MM-ddTHH:mm:ss",
+            "yyyy-MM-ddTHH:mm:ss.fff",
+            "yyyy-MM-dd HH:mm:ss",
+            "dd/MM/yyyy",
+            "MM/dd/yyyy"
+        };
+
+        if (DateTime.TryParseExact(
+                value,
+                formatos,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateTime fechaExacta))
+        {
+            return fechaExacta.Date;
+        }
+
+        if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fecha))
+            return fecha.Date;
+
+        if (DateTime.TryParse(value, out DateTime fallback))
+            return fallback.Date;
+
+        return null;
+    }
 }
 
-/// <summary>
-/// Convierte estadoMembresia aunque Java lo mande como string, boolean o número.
-/// </summary>
 public class FlexibleEstadoMembresiaConverter : JsonConverter<string>
 {
     public override string Read(

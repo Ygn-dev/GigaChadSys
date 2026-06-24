@@ -1,4 +1,5 @@
 @page "/admin/sesiones/nuevo"
+@using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject SesionClaseServicio SesionService
@@ -22,6 +23,13 @@
     <h1 class="admin-form-title">Registrar Nueva Sesión</h1>
     <p class="admin-form-subtitle">Programe una sesión de clase para los socios del gimnasio</p>
 
+    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    {
+        <div class="@ClaseMensajeFormulario">
+            @MensajeFormulario
+        </div>
+    }
+
     @if (Cargando)
     {
         <p>Cargando información necesaria...</p>
@@ -30,15 +38,14 @@
     {
         <div class="sesion-form-layout">
 
-            <!-- COLUMNA IZQUIERDA -->
             <div class="sesion-form-left">
 
-                <!-- Información de la Clase -->
                 <div class="form-card">
                     <div class="form-card-header">
                         <span class="form-card-icon">📅</span>
                         <h2>Información de la Clase</h2>
                     </div>
+
                     <div class="form-card-body">
                         <div class="form-group">
                             <label class="form-label">Clase grupal <span class="required">*</span></label>
@@ -53,12 +60,12 @@
                     </div>
                 </div>
 
-                <!-- Asignación -->
                 <div class="form-card">
                     <div class="form-card-header">
                         <span class="form-card-icon">👤</span>
                         <h2>Asignación</h2>
                     </div>
+
                     <div class="form-card-body">
                         <div class="form-row">
                             <div class="form-group">
@@ -67,10 +74,11 @@
                                     <option value="0">Seleccione un entrenador</option>
                                     @foreach (var e in EntrenadoresDisponibles)
                                     {
-                                    <option value="@e.IdUsuario">@e.NombreCompleto</option>
+                                        <option value="@e.IdUsuario">@e.NombreCompleto</option>
                                     }
                                 </select>
                             </div>
+
                             <div class="form-group">
                                 <label class="form-label">Salón <span class="required">*</span></label>
                                 <select class="form-select" @bind="SalonId">
@@ -85,35 +93,48 @@
                     </div>
                 </div>
 
-                <!-- Programación -->
                 <div class="form-card">
                     <div class="form-card-header">
                         <span class="form-card-icon">🕐</span>
                         <h2>Programación</h2>
                     </div>
+
                     <div class="form-card-body">
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Fecha <span class="required">*</span></label>
-                                <input class="form-input" type="date" @bind="Fecha" />
+                                <input class="form-input"
+                                       type="date"
+                                       value="@FechaInput"
+                                       @onchange="CambiarFecha" />
                             </div>
+
                             <div class="form-group">
-                                <label class="form-label">Capacidad máxima <span class="required">*</span></label>
-                                <input class="form-input" type="number" placeholder="Opcional (se usará aforo salón)" @bind="CapacidadMaxima" min="1" />
+                                <label class="form-label">Cupos disponibles <span class="required">*</span></label>
+                                <input class="form-input"
+                                       type="number"
+                                       placeholder="Opcional, se usará aforo del salón"
+                                       value="@CapacidadMaximaInput"
+                                       @oninput="CambiarCapacidad"
+                                       min="1" />
                             </div>
                         </div>
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Hora de inicio <span class="required">*</span></label>
-                                <input class="form-input" type="time"
-                                       value="@(HoraInicio?.ToString("HH:mm"))"
-                                       @onchange="e => HoraInicio = TimeOnly.TryParse(e.Value?.ToString(), out var t) ? t : null" />
+                                <input class="form-input"
+                                       type="time"
+                                       value="@HoraInicioInput"
+                                       @onchange="CambiarHoraInicio" />
                             </div>
+
                             <div class="form-group">
                                 <label class="form-label">Hora de fin <span class="required">*</span></label>
-                                <input class="form-input" type="time"
-                                       value="@(HoraFin?.ToString("HH:mm"))"
-                                       @onchange="e => HoraFin = TimeOnly.TryParse(e.Value?.ToString(), out var t) ? t : null" />
+                                <input class="form-input"
+                                       type="time"
+                                       value="@HoraFinInput"
+                                       @onchange="CambiarHoraFin" />
                             </div>
                         </div>
                     </div>
@@ -121,13 +142,13 @@
 
             </div>
 
-            <!-- COLUMNA DERECHA: Vista previa -->
             <div class="sesion-form-right">
                 <div class="form-card sesion-preview-card">
                     <div class="form-card-header">
                         <span class="form-card-icon">🔴</span>
                         <h2>Vista Previa de Sesión</h2>
                     </div>
+
                     <div class="form-card-body">
                         @if (FormularioIncompleto)
                         {
@@ -143,25 +164,30 @@
                                     <span class="preview-label">Clase</span>
                                     <span class="preview-value">@ClasesDisponibles.FirstOrDefault(c => c.IdClase == ClaseId)?.NombreDisciplina</span>
                                 </div>
+
                                 <div class="preview-row">
                                     <span class="preview-label">Entrenador</span>
                                     <span class="preview-value">@EntrenadoresDisponibles.FirstOrDefault(e => e.IdUsuario == EntrenadorId)?.NombreCompleto</span>
                                 </div>
+
                                 <div class="preview-row">
                                     <span class="preview-label">Salón</span>
                                     <span class="preview-value">@SalonesDisponibles.FirstOrDefault(s => s.IdSalon == SalonId)?.NombreSalon</span>
                                 </div>
+
                                 <div class="preview-row">
                                     <span class="preview-label">Fecha</span>
-                                    <span class="preview-value">@Fecha?.ToString("dd/MM/yyyy")</span>
+                                    <span class="preview-value">@FechaSesion?.ToString("dd/MM/yyyy")</span>
                                 </div>
+
                                 <div class="preview-row">
                                     <span class="preview-label">Horario</span>
-                                    <span class="preview-value">@HoraInicioTexto - @HoraFinTexto</span>
+                                    <span class="preview-value">@HoraInicioInput - @HoraFinInput</span>
                                 </div>
+
                                 <div class="preview-row">
-                                    <span class="preview-label">Capacidad Max</span>
-                                    <span class="preview-value">@(CapacidadMaxima ?? SalonesDisponibles.FirstOrDefault(s => s.IdSalon == SalonId)?.AforoMaximo ?? 0) cupos</span>
+                                    <span class="preview-label">Cupos disponibles</span>
+                                    <span class="preview-value">@ObtenerCuposFinales() cupos</span>
                                 </div>
                             </div>
                         }
@@ -171,7 +197,6 @@
 
         </div>
 
-        <!-- BOTONES -->
         <div class="form-actions">
             <button class="btn-primary" @onclick="Registrar">✔ Registrar Sesión</button>
             <button class="btn-secondary" @onclick="Cancelar">✕ Cancelar</button>
@@ -185,7 +210,8 @@
     private int ClaseId { get; set; }
     private int EntrenadorId { get; set; }
     private int SalonId { get; set; }
-    private DateTime? Fecha { get; set; } = null;
+
+    private DateTime? FechaSesion { get; set; } = null;
     private TimeOnly? HoraInicio { get; set; } = null;
     private TimeOnly? HoraFin { get; set; } = null;
     private int? CapacidadMaxima { get; set; } = null;
@@ -193,7 +219,27 @@
     private List<ClaseGrupalDTO> ClasesDisponibles = new();
     private List<EntrenadorDTO> EntrenadoresDisponibles = new();
     private List<SalonDTO> SalonesDisponibles = new();
+
     private bool Cargando = true;
+
+    private string MensajeFormulario = "";
+    private string ClaseMensajeFormulario = "";
+
+    private string FechaInput => FechaSesion.HasValue
+        ? FechaSesion.Value.ToString("yyyy-MM-dd")
+        : "";
+
+    private string HoraInicioInput => HoraInicio?.ToString("HH:mm") ?? "";
+    private string HoraFinInput => HoraFin?.ToString("HH:mm") ?? "";
+    private string CapacidadMaximaInput => CapacidadMaxima.HasValue ? CapacidadMaxima.Value.ToString() : "";
+
+    private bool FormularioIncompleto =>
+        ClaseId <= 0 ||
+        EntrenadorId <= 0 ||
+        SalonId <= 0 ||
+        FechaSesion == null ||
+        HoraInicio == null ||
+        HoraFin == null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -205,8 +251,14 @@
 
             await Task.WhenAll(taskClases, taskEntrenadores, taskSalones);
 
-            ClasesDisponibles = await taskClases;
-            EntrenadoresDisponibles = await taskEntrenadores;
+            ClasesDisponibles = (await taskClases)
+                .Where(c => c.Activo)
+                .ToList();
+
+            EntrenadoresDisponibles = (await taskEntrenadores)
+                .Where(e => e.Activo)
+                .ToList();
+
             SalonesDisponibles = await taskSalones;
         }
         finally
@@ -215,49 +267,157 @@
         }
     }
 
-    private string HoraInicioTexto => HoraInicio?.ToString("HH:mm") ?? "";
-    private string HoraFinTexto => HoraFin?.ToString("HH:mm") ?? "";
+    private void CambiarFecha(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString() ?? "";
 
-    private bool FormularioIncompleto =>
-        ClaseId <= 0 ||
-        EntrenadorId <= 0 ||
-        SalonId <= 0 ||
-        Fecha == null ||
-        HoraInicio == null ||
-        HoraFin == null;
+        if (DateTime.TryParseExact(
+                valor,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var fecha
+            ))
+        {
+            FechaSesion = fecha.Date;
+        }
+        else
+        {
+            FechaSesion = null;
+        }
+    }
+
+    private void CambiarHoraInicio(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString() ?? "";
+
+
+        if (TimeOnly.TryParse(valor, out var hora))
+        {
+            HoraInicio = hora;
+        }
+        else
+        {
+            HoraInicio = null;
+        }
+    }
+
+    private void CambiarHoraFin(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString() ?? "";
+
+
+        if (TimeOnly.TryParse(valor, out var hora))
+        {
+            HoraFin = hora;
+        }
+        else
+        {
+            HoraFin = null;
+        }
+    }
+
+    private void CambiarCapacidad(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString() ?? "";
+
+        if (int.TryParse(valor, out var capacidad))
+        {
+            CapacidadMaxima = capacidad;
+        }
+        else
+        {
+            CapacidadMaxima = null;
+        }
+    }
 
     private async Task Registrar()
     {
-        if (FormularioIncompleto) return;
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+
+
+        if (FormularioIncompleto)
+        {
+            MostrarError("Completa todos los campos obligatorios.");
+            return;
+        }
+
+        if (FechaSesion!.Value.Date < DateTime.Today)
+        {
+            MostrarError("No puedes registrar una sesión con fecha pasada.");
+            return;
+        }
+
+        if (HoraFin <= HoraInicio)
+        {
+            MostrarError("La hora de fin debe ser mayor a la hora de inicio.");
+            return;
+        }
 
         var selectedSalon = SalonesDisponibles.FirstOrDefault(s => s.IdSalon == SalonId);
         var selectedClase = ClasesDisponibles.FirstOrDefault(c => c.IdClase == ClaseId);
         var selectedEntrenador = EntrenadoresDisponibles.FirstOrDefault(e => e.IdUsuario == EntrenadorId);
 
-        if (selectedSalon == null || selectedClase == null || selectedEntrenador == null) return;
+        if (selectedSalon == null || selectedClase == null || selectedEntrenador == null)
+        {
+            MostrarError("La clase, entrenador o salón seleccionado no es válido.");
+            return;
+        }
 
-        var fechaInicio = Fecha!.Value.AddTicks(HoraInicio!.Value.Ticks);
-        var fechaFin = Fecha!.Value.AddTicks(HoraFin!.Value.Ticks);
-        
-        int cuposDisp = CapacidadMaxima ?? selectedSalon.AforoMaximo;
+        int cuposDisp = ObtenerCuposFinales();
+
+        if (cuposDisp <= 0)
+        {
+            MostrarError("Los cupos disponibles deben ser mayores a cero.");
+            return;
+        }
+
+        var fechaInicio = FechaSesion.Value.Date.Add(HoraInicio!.Value.ToTimeSpan());
+        var fechaFin = FechaSesion.Value.Date.Add(HoraFin!.Value.ToTimeSpan());
 
         var nuevaSesion = new SesionClaseDTO
         {
-            FechaSesion = Fecha.Value,
+            FechaSesion = FechaSesion.Value.Date,
             HoraInicio = fechaInicio,
             HoraFin = fechaFin,
             CuposDisponibles = cuposDisp,
+            Activo = true,
             ClaseGrupal = new ClaseGrupalDTO { IdClase = ClaseId },
             Entrenador = new EntrenadorDTO { IdUsuario = EntrenadorId },
             Salon = new SalonDTO { IdSalon = SalonId }
         };
 
-        await SesionService.RegistrarAsync(nuevaSesion);
-        Navigation.NavigateTo("/admin/sesiones");
+        var resultado = await SesionService.RegistrarAsync(nuevaSesion);
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            Navigation.NavigateTo("/admin/sesiones", forceLoad: true);
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
+    }
+
+    private int ObtenerCuposFinales()
+    {
+        var salon = SalonesDisponibles.FirstOrDefault(s => s.IdSalon == SalonId);
+
+        if (CapacidadMaxima.HasValue && CapacidadMaxima.Value > 0)
+            return CapacidadMaxima.Value;
+
+        return salon?.AforoMaximo ?? 0;
     }
 
     private void Cancelar()
     {
         Navigation.NavigateTo("/admin/sesiones");
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message error";
     }
 }

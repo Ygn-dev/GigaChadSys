@@ -1,49 +1,93 @@
-﻿@page "/entrenador/inicio"
+@page "/entrenador/inicio"
+@using GigaChadSys.Servicios
 @using GigaChadSysWeb.Components.Layout
 @layout EntrenadorLayout
 @rendermode InteractiveServer
 
-<section class="entrenador-home">
-    <div class="entrenador-hero">
+@inject SessionServicio Session
+
+<section class="role-home entrenador-home">
+
+    <div class="role-hero entrenador-hero">
         <div>
-            <h1>¡Bienvenido, Marco!</h1>
+            <div class="role-label">Panel de Entrenador</div>
+
+            <h1>¡Bienvenido, @NombreEntrenador!</h1>
+
+            <div class="role-red-line"></div>
+
             <p>Desde aquí puedes gestionar tus sesiones, horarios y alumnos inscritos.</p>
-            <div class="hero-line"></div>
         </div>
     </div>
 
-    <div class="entrenador-grid">
-        <a class="entrenador-card" href="/entrenador/sesiones">
-            <div class="entrenador-icon">▣</div>
-            <h3>Mis Sesiones</h3>
-            <p>Consulta las sesiones de clase que tienes asignadas.</p>
-            <span>Ver Sesiones</span>
+    <div class="role-grid entrenador-grid">
+
+        <a class="role-card entrenador-card" href="/entrenador/horario">
+            <div class="role-card-icon">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+
+            <div class="role-card-body">
+                <h3>Mis Sesiones</h3>
+                <p>Consulta las sesiones de clase que tienes asignadas.</p>
+                <span>Ver Sesiones</span>
+            </div>
         </a>
 
-        <a class="entrenador-card" href="/entrenador/horario">
-            <div class="entrenador-icon">◷</div>
-            <h3>Mi Horario</h3>
-            <p>Revisa tu horario semanal y disponibilidad.</p>
-            <span>Ver Horario</span>
+        <a class="role-card entrenador-card" href="/entrenador/horario">
+            <div class="role-card-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+
+            <div class="role-card-body">
+                <h3>Mi Horario</h3>
+                <p>Revisa tu horario semanal y disponibilidad.</p>
+                <span>Ver Horario</span>
+            </div>
         </a>
 
-        <a class="entrenador-card" href="/entrenador/alumnos">
-            <div class="entrenador-icon">◎</div>
-            <h3>Alumnos Inscritos</h3>
-            <p>Visualiza los socios inscritos en tus sesiones.</p>
-            <span>Ver Alumnos</span>
+        <a class="role-card entrenador-card" href="/entrenador/pagos">
+            <div class="role-card-icon">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+
+            <div class="role-card-body">
+                <h3>Mis Pagos</h3>
+                <p>Revisa el historial de pagos de tu sueldo.</p>
+                <span>Ver Pagos</span>
+            </div>
         </a>
 
-        <a class="entrenador-card" href="/entrenador/perfil">
-            <div class="entrenador-icon">○</div>
-            <h3>Mi Perfil</h3>
-            <p>Consulta y actualiza tu información personal y profesional.</p>
-            <span>Editar Perfil</span>
+        <a class="role-card entrenador-card" href="/entrenador/perfil">
+            <div class="role-card-icon">
+                <i class="bi bi-person-circle"></i>
+            </div>
+
+            <div class="role-card-body">
+                <h3>Mi Perfil</h3>
+                <p>Consulta y actualiza tu información personal y profesional.</p>
+                <span>Editar Perfil</span>
+            </div>
         </a>
 
-        <div class="entrenador-card entrenador-motivacion-card">
-            <h3>Inspira, guía y transforma.</h3>
-            <p>Cada sesión es una oportunidad para ayudar a tus alumnos a mejorar.</p>
+        <div class="role-card entrenador-card entrenador-motivacion-card">
+            <div class="role-card-icon">
+                <i class="bi bi-lightning-charge"></i>
+            </div>
+
+            <div class="role-card-body">
+                <h3>Inspira, guía y transforma.</h3>
+                <p>Cada sesión es una oportunidad para ayudar a tus alumnos a mejorar.</p>
+            </div>
         </div>
+
     </div>
+
 </section>
+
+@code {
+    private string NombreEntrenador =>
+        Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
+            ? Session.Nombres
+            : "Entrenador";
+}

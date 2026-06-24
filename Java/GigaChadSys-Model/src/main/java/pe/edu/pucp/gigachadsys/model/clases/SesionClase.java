@@ -6,33 +6,40 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 public class SesionClase {
-    //Atributos
     private int idSesion;
     private Date fechaSesion;
+    private String fechaSesionTexto;
+
     private Timestamp horaInicio;
     private Timestamp horaFin;
     private int cuposDisponibles;
+    private Boolean activo;
+
     private Salon salon;
     private Entrenador entrenador;
     private ClaseGrupal claseGrupal;
 
-    //Constructores
     public SesionClase() {
+        this.activo = true;
     }
 
-    public SesionClase(int idSesion, java.sql.Date fechaSesion, Timestamp horaInicio, Timestamp horaFin, int cuposDisponibles, int idSalon, int idEntrenador, int idClase) {
+    public SesionClase(int idSesion, java.sql.Date fechaSesion, Timestamp horaInicio, Timestamp horaFin,
+                       int cuposDisponibles, int idSalon, int idEntrenador, int idClase) {
         this.idSesion = idSesion;
         this.fechaSesion = fechaSesion;
+        this.fechaSesionTexto = fechaSesion != null ? fechaSesion.toString() : null;
+
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
         this.cuposDisponibles = cuposDisponibles;
-        
+        this.activo = true;
+
         this.salon = new Salon();
         this.salon.setIdSalon(idSalon);
-        
+
         this.entrenador = new Entrenador();
         this.entrenador.setIdUsuario(idEntrenador);
-        
+
         this.claseGrupal = new ClaseGrupal();
         this.claseGrupal.setIdClase(idClase);
     }
@@ -42,17 +49,21 @@ public class SesionClase {
                        Salon salon, Entrenador entrenador, ClaseGrupal claseGrupal) {
         this.idSesion = idSesion;
         this.fechaSesion = fechaSesion;
+        this.fechaSesionTexto = fechaSesion != null
+                ? new java.sql.Date(fechaSesion.getTime()).toString()
+                : null;
+
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
         this.cuposDisponibles = cuposDisponibles;
         this.salon = salon;
         this.entrenador = entrenador;
         this.claseGrupal = claseGrupal;
+        this.activo = true;
     }
-    
-    //Setters y Getters
+
     public int getIdSesion() {
-    return idSesion;
+        return idSesion;
     }
 
     public void setIdSesion(int idSesion) {
@@ -65,6 +76,34 @@ public class SesionClase {
 
     public void setFechaSesion(Date fechaSesion) {
         this.fechaSesion = fechaSesion;
+
+        if (fechaSesion != null && (this.fechaSesionTexto == null || this.fechaSesionTexto.isBlank())) {
+            this.fechaSesionTexto = new java.sql.Date(fechaSesion.getTime()).toString();
+        }
+    }
+
+    public String getFechaSesionTexto() {
+        if (fechaSesionTexto != null && !fechaSesionTexto.isBlank()) {
+            return fechaSesionTexto;
+        }
+
+        if (fechaSesion != null) {
+            return new java.sql.Date(fechaSesion.getTime()).toString();
+        }
+
+        return null;
+    }
+
+    public void setFechaSesionTexto(String fechaSesionTexto) {
+        this.fechaSesionTexto = fechaSesionTexto;
+
+        if (fechaSesionTexto != null && !fechaSesionTexto.isBlank()) {
+            try {
+                this.fechaSesion = java.sql.Date.valueOf(fechaSesionTexto);
+            } catch (IllegalArgumentException ex) {
+                // Si viene mal, se deja que fechaSesion normal intente resolver.
+            }
+        }
     }
 
     public Timestamp getHoraInicio() {
@@ -91,6 +130,22 @@ public class SesionClase {
         this.cuposDisponibles = cuposDisponibles;
     }
 
+    public Boolean getActivo() {
+        return activo != null ? activo : false;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public void setActive(boolean activo) {
+        this.activo = activo;
+    }
+
+    public boolean isActive() {
+        return activo != null ? activo : false;
+    }
+
     public Salon getSalon() {
         return salon;
     }
@@ -115,12 +170,13 @@ public class SesionClase {
         this.claseGrupal = claseGrupal;
     }
 
-
-    //Metodos
-	public void aumentarCupoDisponible(){
-
+    public void aumentarCupoDisponible() {
+        this.cuposDisponibles++;
     }
-	public void reducirCupoDisponible(){
 
+    public void reducirCupoDisponible() {
+        if (this.cuposDisponibles > 0) {
+            this.cuposDisponibles--;
+        }
     }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ReservaBLImpl implements ReservaBL {
 
-    ReservaDAO reservaDAO = new ReservaDAOImpl();
+    private final ReservaDAO reservaDAO = new ReservaDAOImpl();
 
     @Override
     public List<Reserva> listAll() {
@@ -45,7 +45,8 @@ public class ReservaBLImpl implements ReservaBL {
     @Override
     public String eliminar(int idReserva) {
         try {
-            Reserva reserva = new Reserva(idReserva, null, false, null);
+            Reserva reserva = new Reserva();
+            reserva.setIdReserva(idReserva);
             reservaDAO.remove(reserva);
             return "Reserva eliminada correctamente.";
         } catch (Exception e) {

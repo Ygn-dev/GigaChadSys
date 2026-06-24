@@ -6,6 +6,7 @@
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject SalonServicio SalonService
+
 <section class="salon-form-page">
 
     <nav class="salon-form-breadcrumb">
@@ -65,12 +66,12 @@
                 <label>Estado <span>*</span></label>
 
                 <div class="salon-status-options">
-                    <label class="salon-status-option @(estado == "Activo" ? "active" : "")">
+
+                    <label class="salon-status-option @(estado ? "active" : "")">
                         <input type="radio"
                                name="estadoSalon"
-                               value="Activo"
-                               checked="@(estado == "Activo")"
-                               @onchange="@(() => estado = "Activo")" />
+                               checked="@estado"
+                               @onchange="@(() => estado = true)" />
 
                         <div>
                             <strong>Activo</strong>
@@ -78,18 +79,18 @@
                         </div>
                     </label>
 
-                    <label class="salon-status-option @(estado == "Inactivo" ? "active" : "")">
+                    <label class="salon-status-option @(!estado ? "active" : "")">
                         <input type="radio"
                                name="estadoSalon"
-                               value="Inactivo"
-                               checked="@(estado == "Inactivo")"
-                               @onchange="@(() => estado = "Inactivo")" />
+                               checked="@(!estado)"
+                               @onchange="@(() => estado = false)" />
 
                         <div>
                             <strong>Inactivo</strong>
                             <p>El salón no estará disponible</p>
                         </div>
                     </label>
+
                 </div>
             </div>
 
@@ -112,8 +113,8 @@
                 <div class="salon-preview-top">
                     <div class="salon-preview-icon">⊞</div>
 
-                    <span class="salon-preview-status @(estado == "Activo" ? "activo" : "inactivo")">
-                        @estado
+                    <span class="salon-preview-status @(estado ? "activo" : "inactivo")">
+                        @(estado ? "Activo" : "Inactivo")
                     </span>
                 </div>
 
@@ -160,7 +161,7 @@
 
     private string nombreSalon = string.Empty;
     private int? capacidad;
-    private string estado = "Activo";
+    private bool estado = true;
 
     private string NombrePreview =>
         string.IsNullOrWhiteSpace(nombreSalon)
@@ -189,7 +190,7 @@
 
         nombreSalon = salon.NombreSalon;
         capacidad = salon.AforoMaximo;
-        estado = salon.Estado ? "Activo" : "Inactivo";
+        estado = salon.Estado;
     }
 
     private void Cancelar()
@@ -209,7 +210,7 @@
             IdSalon = Id,
             NombreSalon = nombreSalon.Trim(),
             AforoMaximo = capacidad.Value,
-            Estado = estado == "Activo"
+            Estado = estado
         };
 
         await SalonService.ActualizarAsync(Id, salonEditado);

@@ -9,25 +9,18 @@
 @inject NavigationManager Nav
 
 <section class="socio-form-page">
-
-    <!-- Breadcrumb -->
     <nav class="sf-breadcrumb">
         <a href="/admin/socios">Socios</a>
         <span class="sf-bc-sep">›</span>
         <span class="sf-bc-current">Editar</span>
     </nav>
-
-    <!-- Page Header -->
     <div class="sf-page-header">
         <div>
             <h1>Editar Socio</h1>
             <p class="sf-page-subtitle">Actualiza los datos del socio y su membresía</p>
         </div>
     </div>
-
     <div class="sf-edit-layout">
-
-        <!-- ── Columna izquierda: Formulario ── -->
         <div class="sf-form-col">
 
             <!-- Sección 1: Información Personal -->
@@ -39,7 +32,6 @@
                         <span>Datos básicos del socio</span>
                     </div>
                 </div>
-
                 <div class="sf-form-grid">
                     <div class="sf-form-group">
                         <label>DNI <span class="sf-req">*</span></label>
@@ -90,6 +82,13 @@
                             <span class="sf-error-msg">@errores["email"]</span>
                         }
                     </div>
+                    <div class="sf-form-group">
+                        <label>Estado del socio <span class="sf-req">*</span></label>
+                        <select @bind="form.EstadoSocio">
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -102,7 +101,6 @@
                         <span>Credenciales para el sistema</span>
                     </div>
                 </div>
-
                 <div class="sf-form-grid">
                     <div class="sf-form-group sf-form-full">
                         <label>Correo electrónico <span class="sf-req">*</span></label>
@@ -111,8 +109,7 @@
                     <div class="sf-form-group">
                         <label>Contraseña</label>
                         <div class="sf-input-pass">
-                            <input type="@(verPass ? "text" : "password")" @bind="form.Contrasenia"
-                                   placeholder="••••••••" />
+                            <input type="@(verPass ? "text" : "password")" @bind="form.Contrasenia" placeholder="••••••••" />
                             <button type="button" class="sf-eye-btn" @onclick="() => verPass = !verPass">
                                 @(verPass ? "🙈" : "👁️")
                             </button>
@@ -145,8 +142,6 @@
                         <span>Gestiona la membresía y el estado del socio</span>
                     </div>
                 </div>
-
-                <!-- Plan selector -->
                 <p class="sf-sublabel">Plan de membresía</p>
                 <div class="sf-plan-grid">
                     <div class="sf-plan-card @(form.PlanSeleccionado == "basic" ? "sf-plan-selected" : "")"
@@ -166,7 +161,6 @@
                             </ul>
                         </div>
                     </div>
-
                     <div class="sf-plan-card sf-plan-premium @(form.PlanSeleccionado == "black" ? "sf-plan-selected sf-plan-premium-sel" : "")"
                          @onclick='() => form.PlanSeleccionado = "black"'>
                         <div class="sf-plan-radio @(form.PlanSeleccionado == "black" ? "sf-radio-sel sf-radio-red" : "")"></div>
@@ -186,8 +180,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Fechas de membresía -->
                 <div class="sf-form-grid sf-mt-16">
                     <div class="sf-form-group">
                         <label>Fecha de Inicio <span class="sf-req">*</span></label>
@@ -205,16 +197,12 @@
                             <option value="Vencida">Vencida</option>
                         </select>
                     </div>
-                    <div class="sf-form-group">
-                        <!-- spacer -->
-                    </div>
+                    <div class="sf-form-group"><!-- spacer --></div>
                     <div class="sf-form-group sf-form-full">
                         <label>Motivo / Observación</label>
                         <textarea @bind="form.Motivo" rows="3" placeholder="Corrección administrativa…"></textarea>
                     </div>
                 </div>
-
-                <!-- Quitar membresía -->
                 <button class="sf-btn-quitar" type="button" @onclick="QuitarMembresia">
                     ⊖ Quitar membresía
                 </button>
@@ -230,12 +218,10 @@
                     <a href="/admin/socios">← Volver al listado</a>
                 </span>
             </div>
-
         </div>
 
-        <!-- ── Columna derecha: Resumen ── -->
+        <!-- Columna derecha: Resumen -->
         <aside class="sf-resumen-col">
-
             <div class="sf-resumen-card">
                 <h4>Resumen</h4>
                 <div class="sf-resumen-rows">
@@ -252,10 +238,12 @@
                         <strong>@(form.PlanSeleccionado == "black" ? "Membresía Black" : "Membresía Basic")</strong>
                     </div>
                     <div class="sf-resumen-row">
-                        <span>Estado nuevo</span>
-                        <strong class="@(form.EstadoMembresia == "Activa" ? "rsm-activo" : "rsm-inactivo")">
-                            @form.EstadoMembresia
-                        </strong>
+                        <span>Estado membresía</span>
+                        <strong class="@(form.EstadoMembresia == "Activa" ? "rsm-activo" : "rsm-inactivo")">@form.EstadoMembresia</strong>
+                    </div>
+                    <div class="sf-resumen-row">
+                        <span>Estado socio</span>
+                        <strong class="@(form.EstadoSocio == "Activo" ? "rsm-activo" : "rsm-inactivo")">@form.EstadoSocio</strong>
                     </div>
                     <div class="sf-resumen-row">
                         <span>Vencimiento</span>
@@ -267,19 +255,14 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Nota administrativa -->
             <div class="sf-admin-nota">
                 <span class="sf-nota-icon">⚠️</span>
                 <p>Desde aquí puedes modificar, suspender o retirar la membresía del socio por motivos administrativos y disciplinarios.</p>
             </div>
-
         </aside>
     </div>
-
 </section>
 
-<!-- Toast -->
 @if (mostrarToast)
 {
     <div class="socios-toast socios-toast-show">
@@ -296,7 +279,6 @@
     private bool mostrarToast = false;
     private string mensajeToast = "";
     private Dictionary<string, string> errores = new();
-
     private FormEditarSocio form = new();
 
     protected override async Task OnInitializedAsync()
@@ -312,7 +294,8 @@
                 Telefono = socio.Telefono.ToString(),
                 Email = socio.Email,
                 PlanSeleccionado = socio.EstadoMembresia ? "basic" : "",
-                EstadoMembresia = socio.EstadoMembresia ? "Activa" : "Vencida"
+                EstadoMembresia = socio.EstadoMembresia ? "Activa" : "Vencida",
+                EstadoSocio = socio.Activo ? "Activo" : "Inactivo"
             };
         }
     }
@@ -320,28 +303,17 @@
     private async Task GuardarCambios()
     {
         errores.Clear();
-
         if (string.IsNullOrWhiteSpace(form.Dni) || form.Dni.Length != 8)
             errores["dni"] = "El DNI debe tener 8 dígitos.";
-
         if (string.IsNullOrWhiteSpace(form.Nombres))
             errores["nombres"] = "El nombre es obligatorio.";
-
         if (string.IsNullOrWhiteSpace(form.Apellidos))
             errores["apellidos"] = "Los apellidos son obligatorios.";
-
         if (string.IsNullOrWhiteSpace(form.Email))
             errores["email"] = "El correo es obligatorio.";
-
-        if (!string.IsNullOrWhiteSpace(form.Contrasenia) &&
-            form.Contrasenia != form.ConfirmarContrasenia)
+        if (!string.IsNullOrWhiteSpace(form.Contrasenia) && form.Contrasenia != form.ConfirmarContrasenia)
             errores["confirmar"] = "Las contraseñas no coinciden.";
-
-        if (errores.Any())
-        {
-            StateHasChanged();
-            return;
-        }
+        if (errores.Any()) { StateHasChanged(); return; }
 
         var dto = new SocioDTO
         {
@@ -353,12 +325,11 @@
             Telefono = int.TryParse(form.Telefono, out var tel) ? tel : 0,
             Email = form.Email,
             Contrasenia = form.Contrasenia,
-            Activo = true,
+            Activo = form.EstadoSocio == "Activo",
             EstadoMembresia = form.EstadoMembresia == "Activa"
         };
 
         var resultado = await SocioService.ActualizarAsync(Id, dto);
-
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
             mensajeToast = "Cambios guardados correctamente.";
@@ -396,5 +367,6 @@
         public DateTime? FechaVencimiento { get; set; }
         public string EstadoMembresia { get; set; } = "Activa";
         public string Motivo { get; set; } = "";
+        public string EstadoSocio { get; set; } = "Activo";
     }
 }

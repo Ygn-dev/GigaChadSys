@@ -58,6 +58,7 @@ x86/
 
 # .NET
 *.dll
+!**/Libs/GigaChad.Componentes.dll
 *.exe
 *.pdb
 *.cache

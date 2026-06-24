@@ -1,4 +1,6 @@
 @page "/admin/pagos/registrar"
+@layout AdminLayout
+@using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject NavigationManager Navigation
@@ -6,382 +8,398 @@
 @inject SuscripcionServicio SuscripcionService
 @inject PagoServicio PagoService
 
-<div class="admin-shell">
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="admin-sidebar">
-        <div>
-            <div class="admin-logo">
-                <div class="logo-mark">GC</div>
-                <div>
-                    <h2 style="color:#F5F5F5; font-weight:900; letter-spacing:2px; margin:0;">GIGACHAD</h2>
-                    <span>Admin Panel</span>
-                </div>
-            </div>
+<div class="rp-page">
 
-            <nav class="admin-nav">
-                <a href="/admin/dashboard">Inicio</a>
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a href="/admin/inicio">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/admin/pagos">Pagos</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Registrar Pago</span>
+    </nav>
 
-                <div class="nav-section">USUARIOS</div>
-                <a href="/admin/socios">Socios</a>
-                <a href="/admin/entrenadores">Entrenadores</a>
-
-                <div class="nav-section">MEMBRESÍAS</div>
-                <a href="/admin/membresias">Membresías</a>
-                <a href="/admin/suscripciones">Suscripciones</a>
-
-                <div class="nav-section">OPERACIONES</div>
-                <a href="/admin/clases">Clases</a>
-                <a href="/admin/sesiones">Sesiones</a>
-                <a href="/admin/reservas">Reservas</a>
-                <a href="/admin/pagos" class="active">Pagos</a>
-
-                <div class="nav-section">INFRAESTRUCTURA</div>
-                <a href="/admin/salones">Salones</a>
-                <a href="/admin/maquinas">Máquinas</a>
-
-                <div class="nav-section">ANÁLISIS</div>
-                <a href="/admin/reportes">Reportes</a>
-
-                <div class="nav-section">CUENTA</div>
-                <a href="/admin/perfil">Mi Perfil</a>
-            </nav>
-        </div>
-
-        <div class="admin-bottom">
-            <div class="admin-profile">
-                <div class="profile-avatar">A</div>
-                <div>
-                    <strong>Administrador</strong>
-                    <span>admin@gigachad.com</span>
-                </div>
-            </div>
-            <a href="/logout" class="admin-logout">Cerrar Sesión</a>
-        </div>
-    </aside>
-
-    <!-- ===== CONTENT AREA ===== -->
-    <div class="admin-content-area">
-        <!-- Topbar -->
-        <header class="gp-topbar">
-            <div class="topbar-actions">
-                <button class="topbar-btn">🔔</button>
-                <button class="topbar-btn">🔍</button>
-                <a href="/logout" class="topbar-btn topbar-logout">🚪 Salir</a>
-            </div>
-        </header>
-
-        <!-- Main -->
-        <main class="admin-main">
-            <div class="rp-page">
-
-                <!-- Breadcrumb -->
-                <nav class="breadcrumb-nav">
-                    <a href="/admin/dashboard">Inicio</a>
-                    <span class="breadcrumb-sep">/</span>
-                    <a href="/admin/pagos">Pagos</a>
-                    <span class="breadcrumb-sep">/</span>
-                    <span class="breadcrumb-current">Registrar Pago</span>
-                </nav>
-
-                <!-- Page header -->
-                <div class="rp-header">
-                    <h1>Registrar Nuevo Pago</h1>
-                    <p class="rp-subtitle">Registre un pago asociado a una suscripción activa</p>
-                </div>
-
-                <!-- Layout: form col + info cards col -->
-                <div class="rp-layout">
-
-                    <!-- ── FORM COLUMN ── -->
-                    <div class="rp-form-col">
-
-                        <!-- 1. Información del Socio -->
-                        <div class="sf-section-card">
-                            <div class="sf-section-head">
-                                <span class="sf-section-icon">USR</span>
-                                Informacion del Socio
-                                <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">Busque y seleccione el socio</span>
-                            </div>
-                            <div class="rp-socio-search-wrapper">
-                                <span class="rp-socio-search-icon">🔍</span>
-                                <input type="text"
-                                       class="rp-socio-search"
-                                       placeholder="Buscar por DNI, nombre o correo..."
-                                       @bind="SocioBusqueda"
-                                       @bind:event="oninput"
-                                       @onfocus="() => MostrarDropdown = true"
-                                       @onblur="CerrarDropdownConDelay" />
-                            </div>
-
-                            @if (MostrarDropdown && SociosFiltrados.Any())
-                            {
-                                <div class="rp-socio-dropdown">
-                                    @foreach (var s in SociosFiltrados)
-                                    {
-                                        <div class="rp-socio-option" @onmousedown="() => SeleccionarSocio(s)">
-                                            <div class="rp-socio-avatar">@s.Iniciales</div>
-                                            <div>
-                                                <strong>@s.Nombre</strong>
-                                                <span>@s.Dni</span>
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            }
-
-                            @if (SocioSeleccionado != null)
-                            {
-                                <div class="rp-socio-selected">
-                                    <div class="rp-socio-avatar">@SocioSeleccionado.Iniciales</div>
-                                    <div>
-                                        <strong>@SocioSeleccionado.Nombre</strong>
-                                        <span>@SocioSeleccionado.Dni · @SocioSeleccionado.Email</span>
-                                    </div>
-                                    <button class="rp-socio-clear" @onclick="LimpiarSocio" title="Quitar socio">✕</button>
-                                </div>
-                            }
-                        </div>
-
-                        <!-- 2. Información del Pago -->
-                        <div class="sf-section-card">
-                            <div class="sf-section-head">
-                                <span class="sf-section-icon">PAG</span>
-                                Informacion del Pago
-                                <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">Detalles de la transaccion</span>
-                            </div>
-
-                            <!-- Tipo de pago -->
-                            <div class="sf-form-group" style="margin-bottom:20px;">
-                                <label class="sf-label">TIPO DE PAGO <span class="rp-req">*</span></label>
-                                <div class="rp-radio-group">
-                                    <button class="rp-radio-btn @(TipoPago == "mensualidad" ? "rp-radio-active" : "")"
-                                            @onclick='() => TipoPago = "mensualidad"'>
-                                        Mensualidad
-                                    </button>
-                                    <button class="rp-radio-btn @(TipoPago == "inscripcion" ? "rp-radio-active" : "")"
-                                            @onclick='() => TipoPago = "inscripcion"'>
-                                        Inscripción
-                                    </button>
-                                    <button class="rp-radio-btn @(TipoPago == "renovacion" ? "rp-radio-active" : "")"
-                                            @onclick='() => TipoPago = "renovacion"'>
-                                        Renovación
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Método de pago -->
-                            <div class="sf-form-group" style="margin-bottom:20px;">
-                                <label class="sf-label">METODO DE PAGO <span class="rp-req">*</span></label>
-                                <div class="rp-radio-group">
-                                    <button class="rp-radio-btn @(MetodoPago == "efectivo" ? "rp-radio-active" : "")"
-                                            @onclick='() => MetodoPago = "efectivo"'>
-                                        Efectivo
-                                    </button>
-                                    <button class="rp-radio-btn @(MetodoPago == "debito" ? "rp-radio-active" : "")"
-                                            @onclick='() => MetodoPago = "debito"'>
-                                        Tarjeta Débito
-                                    </button>
-                                    <button class="rp-radio-btn @(MetodoPago == "credito" ? "rp-radio-active" : "")"
-                                            @onclick='() => MetodoPago = "credito"'>
-                                        Tarjeta Crédito
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Monto + Fecha -->
-                            <div class="rp-row-2">
-                                <div class="sf-form-group">
-                                    <label class="sf-label">MONTO (S/) <span class="rp-req">*</span></label>
-                                    <div class="rp-monto-wrapper">
-                                        <span class="rp-monto-prefix">S/</span>
-                                        <input type="number"
-                                               class="rp-monto-input"
-                                               placeholder="0.00"
-                                               min="0"
-                                               step="0.01"
-                                               @bind="Monto" />
-                                    </div>
-                                </div>
-                                <div class="sf-form-group">
-                                    <label class="sf-label">FECHA DE PAGO <span class="rp-req">*</span></label>
-                                    <input type="date"
-                                           class="rp-date-input"
-                                           @bind="FechaPago" />
-                                </div>
-                            </div>
-
-                            <!-- Concepto -->
-                            <div class="sf-form-group">
-                                <label class="sf-label">CONCEPTO <span class="rp-req">*</span></label>
-                                <input type="text"
-                                       class="rp-text-input"
-                                       placeholder="Ej: Membresía Black - Mayo 2025"
-                                       @bind="Concepto" />
-                            </div>
-                        </div>
-
-                        <!-- 3. Mini info cards (monto sugerido / membresía / último pago) -->
-                        <div class="rp-info-trio">
-                            <div class="rp-info-card">
-                                <div class="rp-info-icon rp-icon-red">S/</div>
-                                <div class="rp-info-label">MONTO SUGERIDO</div>
-                                <div class="rp-info-val">@(SocioSeleccionado != null ? MontoSugerido : "--")</div>
-                            </div>
-                            <div class="rp-info-card">
-                                <div class="rp-info-icon rp-icon-green">M</div>
-                                <div class="rp-info-label">MEMBRESÍA ACTUAL</div>
-                                <div class="rp-info-val">@(SocioSeleccionado != null ? SocioSeleccionado.Membresia : "--")</div>
-                            </div>
-                            <div class="rp-info-card">
-                                <div class="rp-info-icon rp-icon-yellow">T</div>
-                                <div class="rp-info-label">ÚLTIMO PAGO</div>
-                                <div class="rp-info-val">@(SocioSeleccionado != null ? SocioSeleccionado.UltimoPago : "--")</div>
-                            </div>
-                        </div>
-
-                        <!-- 4. Estado del Pago -->
-                        <div class="sf-section-card">
-                            <div class="sf-section-head">
-                                <span class="sf-section-icon">EST</span>
-                                Estado del Pago
-                                <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">Define el estado actual de la transaccion</span>
-                            </div>
-                            <div class="rp-radio-group">
-                                <button class="rp-radio-btn rp-radio-green @(EstadoPago == "pagado" ? "rp-radio-active-green" : "")"
-                                        @onclick='() => EstadoPago = "pagado"'>
-                                    Pagado
-                                </button>
-                                <button class="rp-radio-btn @(EstadoPago == "pendiente" ? "rp-radio-active" : "")"
-                                        @onclick='() => EstadoPago = "pendiente"'>
-                                    Pendiente
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="rp-actions">
-                            <button class="rp-btn-primary" @onclick="Registrar">
-                                Registrar Pago
-                            </button>
-                            <button class="rp-btn-secondary" @onclick="Cancelar">
-                                Cancelar
-                            </button>
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(MensajeExito))
-                        {
-                            <div class="socios-toast socios-toast-ok" style="margin-top:16px;">@MensajeExito</div>
-                        }
-                        @if (!string.IsNullOrEmpty(MensajeError))
-                        {
-                            <div class="socios-toast socios-toast-err" style="margin-top:16px;">@MensajeError</div>
-                        }
-
-                    </div>
-                    <!-- end rp-form-col -->
-
-                </div>
-                <!-- end rp-layout -->
-
-            </div>
-        </main>
+    <!-- Page header -->
+    <div class="rp-header">
+        <h1>Registrar Nuevo Pago</h1>
+        <p class="rp-subtitle">Registre un pago asociado a una suscripción activa</p>
     </div>
+
+    <div class="rp-layout">
+
+        <div class="rp-form-col">
+
+            <!-- 1. Información del Socio -->
+            <div class="sf-section-card">
+                <div class="sf-section-head">
+                    <span class="sf-section-icon">USR</span>
+                    Información del Socio
+                    <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">
+                        Busque y seleccione el socio
+                    </span>
+                </div>
+
+                <div class="rp-socio-search-wrapper">
+                    <span class="rp-socio-search-icon">🔍</span>
+
+                    <input type="text"
+                           class="rp-socio-search"
+                           placeholder="Buscar por DNI, nombre o correo..."
+                           @bind="SocioBusqueda"
+                           @bind:event="oninput"
+                           @onfocus="() => MostrarDropdown = true"
+                           @onblur="CerrarDropdownConDelay" />
+                </div>
+
+                @if (MostrarDropdown && SociosFiltrados.Any())
+                {
+                    <div class="rp-socio-dropdown">
+                        @foreach (var s in SociosFiltrados)
+                        {
+                            <div class="rp-socio-option" @onmousedown="() => SeleccionarSocio(s)">
+                                <div class="rp-socio-avatar">@s.Iniciales</div>
+
+                                <div>
+                                    <strong>@s.Nombre</strong>
+                                    <span>@s.Dni · @s.Email</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (SocioSeleccionado != null)
+                {
+                    <div class="rp-socio-selected">
+                        <div class="rp-socio-avatar">@SocioSeleccionado.Iniciales</div>
+
+                        <div>
+                            <strong>@SocioSeleccionado.Nombre</strong>
+                            <span>@SocioSeleccionado.Dni · @SocioSeleccionado.Email</span>
+                        </div>
+
+                        <button type="button"
+                                class="rp-socio-clear"
+                                @onclick="LimpiarSocio"
+                                title="Quitar socio">
+                            ✕
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <!-- 2. Información del Pago -->
+            <div class="sf-section-card">
+                <div class="sf-section-head">
+                    <span class="sf-section-icon">PAG</span>
+                    Información del Pago
+                    <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">
+                        Detalles de la transacción
+                    </span>
+                </div>
+
+                <!-- Tipo de pago -->
+                <div class="sf-form-group" style="margin-bottom:20px;">
+                    <label class="sf-label">
+                        TIPO DE PAGO <span class="rp-req">*</span>
+                    </label>
+
+                    <div class="rp-radio-group">
+                        <button type="button"
+                                class="rp-radio-btn @(TipoPago == "mensualidad" ? "rp-radio-active" : "")"
+                                @onclick='() => TipoPago = "mensualidad"'>
+                            Mensualidad
+                        </button>
+
+                        <button type="button"
+                                class="rp-radio-btn @(TipoPago == "inscripcion" ? "rp-radio-active" : "")"
+                                @onclick='() => TipoPago = "inscripcion"'>
+                            Inscripción
+                        </button>
+
+                        <button type="button"
+                                class="rp-radio-btn @(TipoPago == "renovacion" ? "rp-radio-active" : "")"
+                                @onclick='() => TipoPago = "renovacion"'>
+                            Renovación
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Método de pago -->
+                <div class="sf-form-group" style="margin-bottom:20px;">
+                    <label class="sf-label">
+                        MÉTODO DE PAGO <span class="rp-req">*</span>
+                    </label>
+
+                    <div class="rp-radio-group">
+                        <button type="button"
+                                class="rp-radio-btn @(MetodoPago == "efectivo" ? "rp-radio-active" : "")"
+                                @onclick='() => MetodoPago = "efectivo"'>
+                            Efectivo
+                        </button>
+
+                        <button type="button"
+                                class="rp-radio-btn @(MetodoPago == "debito" ? "rp-radio-active" : "")"
+                                @onclick='() => MetodoPago = "debito"'>
+                            Tarjeta Débito
+                        </button>
+
+                        <button type="button"
+                                class="rp-radio-btn @(MetodoPago == "credito" ? "rp-radio-active" : "")"
+                                @onclick='() => MetodoPago = "credito"'>
+                            Tarjeta Crédito
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Monto + Fecha -->
+                <div class="rp-row-2">
+                    <div class="sf-form-group">
+                        <label class="sf-label">
+                            MONTO (S/) <span class="rp-req">*</span>
+                        </label>
+
+                        <div class="rp-monto-wrapper">
+                            <span class="rp-monto-prefix">S/</span>
+
+                            <input type="number"
+                                   class="rp-monto-input"
+                                   placeholder="0.00"
+                                   min="0"
+                                   step="0.01"
+                                   @bind="Monto"
+                                   @bind:event="oninput" />
+                        </div>
+                    </div>
+
+                    <div class="sf-form-group">
+                        <label class="sf-label">
+                            FECHA DE PAGO <span class="rp-req">*</span>
+                        </label>
+
+                        <input type="date"
+                               class="rp-date-input"
+                               value="@FechaPagoInput"
+                               @onchange="CambiarFechaPago" />
+                    </div>
+                </div>
+
+                <!-- Concepto -->
+                <div class="sf-form-group">
+                    <label class="sf-label">
+                        CONCEPTO <span class="rp-req">*</span>
+                    </label>
+
+                    <input type="text"
+                           class="rp-text-input"
+                           placeholder="Ej: Membresía Black - Junio 2026"
+                           @bind="Concepto"
+                           @bind:event="oninput" />
+                </div>
+            </div>
+
+            <!-- 3. Mini info cards -->
+            <div class="rp-info-trio">
+                <div class="rp-info-card">
+                    <div class="rp-info-icon rp-icon-red">S/</div>
+                    <div class="rp-info-label">MONTO SUGERIDO</div>
+                    <div class="rp-info-val">@(SocioSeleccionado != null ? MontoSugerido : "--")</div>
+                </div>
+
+                <div class="rp-info-card">
+                    <div class="rp-info-icon rp-icon-green">M</div>
+                    <div class="rp-info-label">MEMBRESÍA ACTUAL</div>
+                    <div class="rp-info-val">@(SocioSeleccionado != null ? SocioSeleccionado.Membresia : "--")</div>
+                </div>
+
+                <div class="rp-info-card">
+                    <div class="rp-info-icon rp-icon-yellow">T</div>
+                    <div class="rp-info-label">ÚLTIMO PAGO</div>
+                    <div class="rp-info-val">@(SocioSeleccionado != null ? SocioSeleccionado.UltimoPago : "--")</div>
+                </div>
+            </div>
+
+            <!-- 4. Estado del Pago -->
+            <div class="sf-section-card">
+                <div class="sf-section-head">
+                    <span class="sf-section-icon">EST</span>
+                    Estado del Pago
+                    <span style="color:#666; font-size:12px; font-weight:400; margin-left:4px;">
+                        Define el estado actual de la transacción
+                    </span>
+                </div>
+
+                <div class="rp-radio-group">
+                    <button type="button"
+                            class="rp-radio-btn rp-radio-green @(EstadoPago == "pagado" ? "rp-radio-active-green" : "")"
+                            @onclick='() => EstadoPago = "pagado"'>
+                        Pagado
+                    </button>
+
+                    <button type="button"
+                            class="rp-radio-btn @(EstadoPago == "pendiente" ? "rp-radio-active" : "")"
+                            @onclick='() => EstadoPago = "pendiente"'>
+                        Pendiente
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="rp-actions">
+                <button type="button"
+                        class="rp-btn-primary"
+                        disabled="@Procesando"
+                        @onclick="Registrar">
+                    @(Procesando ? "Registrando..." : "Registrar Pago")
+                </button>
+
+                <button type="button"
+                        class="rp-btn-secondary"
+                        @onclick="Cancelar">
+                    Cancelar
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(MensajeExito))
+            {
+                <div class="socios-toast socios-toast-ok" style="margin-top:16px;">
+                    @MensajeExito
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(MensajeError))
+            {
+                <div class="socios-toast socios-toast-err" style="margin-top:16px;">
+                    @MensajeError
+                </div>
+            }
+
+        </div>
+
+    </div>
+
 </div>
 
 @code {
-
-    /* ── Estado del formulario ── */
     private string SocioBusqueda { get; set; } = "";
     private bool MostrarDropdown { get; set; } = false;
-    private SocioDto? SocioSeleccionado { get; set; }
+    private bool Procesando { get; set; } = false;
 
-    private string TipoPago   { get; set; } = "mensualidad";
-    private string MetodoPago  { get; set; } = "efectivo";
-    private string EstadoPago  { get; set; } = "pagado";
-    private decimal Monto      { get; set; } = 0;
-    private DateTime FechaPago { get; set; } = DateTime.UtcNow;
-    private string Concepto    { get; set; } = "";
+    private SocioVista? SocioSeleccionado { get; set; }
+
+    private string TipoPago { get; set; } = "mensualidad";
+    private string MetodoPago { get; set; } = "efectivo";
+    private string EstadoPago { get; set; } = "pagado";
+
+    private decimal Monto { get; set; } = 0;
+    private DateTime FechaPago { get; set; } = DateTime.Today;
+    private string FechaPagoInput { get; set; } = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private string Concepto { get; set; } = "";
 
     private string MensajeExito { get; set; } = "";
     private string MensajeError { get; set; } = "";
 
-    /* ── Monto sugerido derivado de membresía ── */
+    private List<SocioVista> TodosLosSocios = new();
+
     private string MontoSugerido => SocioSeleccionado?.Membresia switch
     {
-        "Black" => "S/149",
+        "Black" => "S/119",
         "Basic" => "S/79",
-        _       => "--"
+        _ => "--"
     };
-
-    /* ── Modelo socio ── */
-    private class SocioDto
-    {
-        public int Id { get; set; }
-        public string Nombre    { get; set; } = "";
-        public string Dni       { get; set; } = "";
-        public string Email     { get; set; } = "";
-        public string Iniciales { get; set; } = "";
-        public string Membresia { get; set; } = "";
-        public string UltimoPago{ get; set; } = "";
-    }
-
-    /* ── Datos Reales del Backend ── */
-    private List<SocioDto> TodosLosSocios = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarSocios();
+    }
+
+    private async Task CargarSocios()
+    {
+        TodosLosSocios.Clear();
+
         var socios = await SocioService.ListarSociosAsync();
         var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
         var pagos = await PagoService.ListarPagosAsync();
 
-        foreach (var s in socios)
+        foreach (var socio in socios.Where(s => s.Activo))
         {
-            var sub = suscripciones.FirstOrDefault(x => x.IdUsuario == s.IdUsuario && x.Activo);
-            var pagoAsociado = sub != null ? pagos.FirstOrDefault(p => p.IdPago == sub.IdPago) : null;
-            
-            string membresia = sub != null ? sub.TipoPlan : "Sin membresía";
-            string ultimoPago = pagoAsociado != null ? pagoAsociado.FechaPagoTexto : "N/A";
+            var suscripcionActual = suscripciones
+                .Where(s =>
+                    s.IdUsuario == socio.IdUsuario &&
+                    s.Activo)
+                .OrderByDescending(s => s.FechaFinMembresia ?? DateTime.MinValue)
+                .ThenByDescending(s => s.IdSuscripcion)
+                .FirstOrDefault();
 
-            TodosLosSocios.Add(new SocioDto
+            var pagoAsociado = suscripcionActual != null
+                ? pagos.FirstOrDefault(p => p.IdPago == suscripcionActual.IdPago)
+                : null;
+
+            string nombres = $"{socio.Nombres} {socio.ApellidoPaterno} {socio.ApellidoMaterno}".Trim();
+
+            TodosLosSocios.Add(new SocioVista
             {
-                Id = s.IdUsuario,
-                Nombre = $"{s.Nombres} {s.ApellidoPaterno}",
-                Dni = s.Dni.ToString(),
-                Email = s.CorreoElectronico,
-                Iniciales = s.Nombres.Length > 0 ? s.Nombres[0].ToString().ToUpper() : "S",
-                Membresia = membresia,
-                UltimoPago = ultimoPago
+                Id = socio.IdUsuario,
+                Nombre = string.IsNullOrWhiteSpace(nombres) ? "Socio sin nombre" : nombres,
+                Dni = socio.Dni.ToString(),
+                Email = socio.CorreoElectronico,
+                Iniciales = !string.IsNullOrWhiteSpace(socio.Nombres)
+                    ? socio.Nombres[0].ToString().ToUpper()
+                    : "S",
+                Membresia = suscripcionActual?.TipoPlan ?? "Sin membresía",
+                IdSuscripcion = suscripcionActual?.IdSuscripcion ?? 0,
+                UltimoPago = pagoAsociado?.FechaPagoTexto ?? "N/A"
             });
         }
     }
 
-    private IEnumerable<SocioDto> SociosFiltrados =>
-        string.IsNullOrWhiteSpace(SocioBusqueda)
-            ? Enumerable.Empty<SocioDto>()
-            : TodosLosSocios.Where(s =>
-                s.Nombre.Contains(SocioBusqueda, StringComparison.OrdinalIgnoreCase) ||
-                s.Dni.Contains(SocioBusqueda) ||
-                s.Email.Contains(SocioBusqueda, StringComparison.OrdinalIgnoreCase));
+    private IEnumerable<SocioVista> SociosFiltrados
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(SocioBusqueda))
+                return Enumerable.Empty<SocioVista>();
 
-    /* ── Interacción del buscador ── */
-    private void SeleccionarSocio(SocioDto socio)
+            string texto = SocioBusqueda.Trim();
+
+            return TodosLosSocios
+                .Where(s =>
+                    s.Nombre.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                    s.Dni.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                    s.Email.Contains(texto, StringComparison.OrdinalIgnoreCase))
+                .Take(10);
+        }
+    }
+
+    private void SeleccionarSocio(SocioVista socio)
     {
         SocioSeleccionado = socio;
-        SocioBusqueda     = socio.Nombre;
-        MostrarDropdown   = false;
-        // Auto-rellenar monto y concepto si están vacíos
-        if (Monto == 0)
-            Monto = socio.Membresia == "Black" ? 149 : 79;
+        SocioBusqueda = socio.Nombre;
+        MostrarDropdown = false;
+
+        if (Monto <= 0)
+        {
+            Monto = socio.Membresia == "Black" ? 119 : 79;
+        }
+
         if (string.IsNullOrWhiteSpace(Concepto))
-            Concepto = $"Membresía {socio.Membresia} - {DateTime.Today:MMMM yyyy}";
+        {
+            string mes = CultureInfo.GetCultureInfo("es-PE").TextInfo.ToTitleCase(
+                DateTime.Today.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("es-PE"))
+            );
+
+            Concepto = $"Membresía {socio.Membresia} - {mes}";
+        }
     }
 
     private void LimpiarSocio()
     {
         SocioSeleccionado = null;
-        SocioBusqueda     = "";
-        Monto             = 0;
-        Concepto          = "";
+        SocioBusqueda = "";
+        Monto = 0;
+        Concepto = "";
+        MostrarDropdown = false;
     }
 
     private async Task CerrarDropdownConDelay()
@@ -390,68 +408,131 @@
         MostrarDropdown = false;
     }
 
-    /* ── Registrar pago ── */
+    private void CambiarFechaPago(ChangeEventArgs e)
+    {
+        FechaPagoInput = e.Value?.ToString() ?? "";
+
+        if (DateTime.TryParseExact(
+                FechaPagoInput,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var fecha))
+        {
+            FechaPago = fecha.Date;
+        }
+    }
+
     private async Task Registrar()
     {
-        MensajeError  = "";
-        MensajeExito  = "";
+        MensajeError = "";
+        MensajeExito = "";
+
+        if (Procesando)
+            return;
 
         if (SocioSeleccionado == null)
         {
-            MensajeError = "Debe buscar y seleccionar un socio para registrar el pago.";
+            MensajeError = "Debe buscar y seleccionar un socio.";
             return;
         }
+
+        if (SocioSeleccionado.IdSuscripcion <= 0)
+        {
+            MensajeError = "El socio seleccionado no tiene una suscripción activa.";
+            return;
+        }
+
         if (Monto <= 0)
         {
-            MensajeError = "El monto debe ser mayor a 0.";
+            MensajeError = "El monto debe ser mayor a cero.";
             return;
         }
+
         if (string.IsNullOrWhiteSpace(Concepto))
         {
             MensajeError = "Debe ingresar un concepto para el pago.";
             return;
         }
 
-        int idMetodo = MetodoPago == "efectivo" ? 1 : MetodoPago == "debito" ? 2 : 3;
+        Procesando = true;
 
-        var fechaSegura = DateTime.SpecifyKind(FechaPago, DateTimeKind.Utc);
-
-        var nuevoPago = new PagoDTO
+        try
         {
-            FechaPago = fechaSegura,
-            Monto = (double)Monto,
-            Tipo = Concepto,
-            MetodoPago = idMetodo,
-            Activo = EstadoPago == "pagado"
-        };
-
-        var resultado = await PagoService.RegistrarAsync(nuevoPago);
-
-        if (!resultado.Mensaje.StartsWith("Error") && !resultado.Mensaje.ToLower().Contains("error"))
-        {
-            if (resultado.IdPago.HasValue)
+            int idMetodo = MetodoPago switch
             {
-                var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
-                var sub = suscripciones.FirstOrDefault(x => x.IdUsuario == SocioSeleccionado.Id && x.Activo);
-                if (sub != null)
+                "efectivo" => 1,
+                "debito" => 2,
+                "credito" => 3,
+                _ => 1
+            };
+
+            var nuevoPago = new PagoDTO
+            {
+                FechaPago = FechaPago.Date,
+                Monto = (double)Monto,
+                Tipo = Concepto.Trim(),
+                MetodoPago = idMetodo,
+                Activo = EstadoPago == "pagado"
+            };
+
+            var resultado = await PagoService.RegistrarAsync(nuevoPago);
+            string mensajeResultado = resultado?.Mensaje ?? "Error al registrar pago.";
+
+            if (mensajeResultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase) ||
+                mensajeResultado.ToLower().Contains("error"))
+            {
+                MensajeError = mensajeResultado;
+                return;
+            }
+
+            if (resultado?.IdPago.HasValue == true)
+            {
+                var suscripcion = await SuscripcionService.ObtenerPorIdAsync(SocioSeleccionado.IdSuscripcion);
+
+                if (suscripcion != null)
                 {
-                    sub.IdPago = resultado.IdPago.Value;
-                    await SuscripcionService.ActualizarAsync(sub.IdSuscripcion, sub);
+                    suscripcion.IdPago = resultado.IdPago.Value;
+                    suscripcion.EstadoMembresia = EstadoPago == "pagado" ? "activa" : "pendiente";
+                    suscripcion.Activo = true;
+
+                    await SuscripcionService.ActualizarAsync(suscripcion.IdSuscripcion, suscripcion);
+                }
+
+                var socio = await SocioService.ObtenerPorIdAsync(SocioSeleccionado.Id);
+
+                if (socio != null)
+                {
+                    socio.EstadoMembresia = EstadoPago == "pagado";
+                    await SocioService.ActualizarAsync(socio.IdUsuario, socio);
                 }
             }
 
             MensajeExito = $"Pago de {Concepto} registrado correctamente.";
-            await Task.Delay(1500);
+
+            await Task.Delay(1000);
             Navigation.NavigateTo("/admin/pagos");
         }
-        else
+        finally
         {
-            MensajeError = resultado.Mensaje;
+            Procesando = false;
         }
     }
 
     private void Cancelar()
     {
         Navigation.NavigateTo("/admin/pagos");
+    }
+
+    private class SocioVista
+    {
+        public int Id { get; set; }
+        public int IdSuscripcion { get; set; }
+        public string Nombre { get; set; } = "";
+        public string Dni { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Iniciales { get; set; } = "";
+        public string Membresia { get; set; } = "";
+        public string UltimoPago { get; set; } = "";
     }
 }

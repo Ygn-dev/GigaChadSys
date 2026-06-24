@@ -29,11 +29,10 @@
 
                 <select value="@FiltroDisciplina" @onchange="CambiarDisciplina">
                     <option value="">Todas las disciplinas</option>
-                    <option value="CrossFit">CrossFit</option>
-                    <option value="Yoga">Yoga</option>
-                    <option value="Spinning">Spinning</option>
-                    <option value="Boxeo">Boxeo</option>
-                    <option value="Pilates">Pilates</option>
+                    @foreach (var disc in DisciplinasDisponibles)
+                    {
+                        <option value="@disc">@disc</option>
+                    }
                 </select>
             </div>
 
@@ -61,61 +60,95 @@
         </button>
     </div>
 
-    <div class="clases-grid">
-        @foreach (var clase in ClasesFiltradas)
-        {
-            <div class="clase-card">
+    @if (Cargando)
+    {
+        <div class="reservas-empty">
+            <p>Cargando clases disponibles...</p>
+        </div>
+    }
+    else if (!ClasesFiltradas.Any())
+    {
+        <div class="reservas-empty">
+            <p>No hay clases disponibles con los filtros actuales.</p>
+        </div>
+    }
+    else
+    {
+        <div class="clases-grid">
+            @foreach (var clase in ClasesFiltradas)
+            {
+                <div class="clase-card">
 
-                <div class="clase-card-top">
-                    <span class="clase-disciplina">
-                        @clase.Disciplina.ToUpper()
-                    </span>
+                    <div class="clase-card-top">
+                        <span class="clase-disciplina">
+                            @clase.Disciplina.ToUpper()
+                        </span>
 
-                    <span class="@ObtenerClaseCupos(clase.CuposDisponibles)">
-                        @clase.CuposDisponibles cupos
-                    </span>
-                </div>
-
-                <h3>@clase.Nombre</h3>
-
-                <p class="clase-desc">
-                    @clase.Descripcion
-                </p>
-
-                <div class="clase-detalles">
-                    <span>📅 @clase.Fecha</span>
-                    <span>🕐 @clase.Horario</span>
-                    <span>👤 @clase.Entrenador</span>
-                    <span>📍 @clase.Salon (Cap. @clase.Capacidad)</span>
-                    <span>🎯 Nivel: @clase.Nivel | @clase.Duracion min</span>
-                </div>
-
-                <div class="clase-ocupacion">
-                    <div class="ocupacion-info">
-                        <span>Ocupación</span>
-                        <span>@clase.Inscritos/@clase.Capacidad</span>
+                        <span class="@ObtenerClaseCupos(clase.CuposDisponibles)">
+                            @clase.CuposDisponibles cupos
+                        </span>
                     </div>
 
-                    <div class="ocupacion-bar">
-                        <div class="@ObtenerClaseOcupacion(clase.PorcentajeOcupacion)"
-                             style="@($"width: {clase.PorcentajeOcupacion}%")">
+                    <h3>@clase.Nombre</h3>
+
+                    <p class="clase-desc">
+                        @clase.Descripcion
+                    </p>
+
+                    <div class="clase-detalles">
+                        <span>📅 @clase.Fecha</span>
+                        <span>🕐 @clase.Horario</span>
+                        <span>👤 @clase.Entrenador</span>
+                        <span>📍 @clase.Salon (Cap. @clase.Capacidad)</span>
+                        <span>🎯 Nivel: @clase.Nivel | @clase.Duracion min</span>
+                    </div>
+
+                    <div class="clase-ocupacion">
+                        <div class="ocupacion-info">
+                            <span>Ocupación</span>
+                            <span>@clase.Inscritos/@clase.Capacidad</span>
+                        </div>
+
+                        <div class="ocupacion-bar">
+                            <div class="@ObtenerClaseOcupacion(clase.PorcentajeOcupacion)"
+                                 style="@($"width: {clase.PorcentajeOcupacion}%")">
+                            </div>
                         </div>
                     </div>
+
+                    <button class="reserve-class-button"
+                            disabled="@(ReservandoIdSesion.Equals(clase.Codigo) || clase.YaReservada)"
+                            @onclick="() => ReservarClase(clase.Codigo)">
+                        @if (clase.YaReservada)
+                        {
+                            <span>Ya reservada</span>
+                        }
+                        else if (ReservandoIdSesion.Equals(clase.Codigo))
+                        {
+                            <span>Reservando...</span>
+                        }
+                        else
+                        {
+                            <span>Reservar</span>
+                        }
+                    </button>
+
                 </div>
-
-                <button class="reserve-class-button"
-                        @onclick="() => ReservarClase(clase.Codigo)">
-                    Reservar
-                </button>
-
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 
     @if (!string.IsNullOrWhiteSpace(MensajeReserva))
     {
-        <div class="socios-toast @ClaseMensajeReserva" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-            @MensajeReserva
+        <div style="position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+            min-width: 260px; max-width: 360px;
+            padding: 16px 20px; border-radius: 10px;
+            color: #ffffff; font-weight: 600; font-size: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+            background-color: @(ReservaFueExitosa ? "#1f9d55" : "#c0392b");
+            display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 18px;">@(ReservaFueExitosa ? "✓" : "✕")</span>
+            <span>@MensajeReserva</span>
         </div>
     }
 
@@ -126,7 +159,20 @@
     private string FiltroFecha { get; set; } = "";
     private string FiltroHora { get; set; } = "";
 
+    private bool Cargando { get; set; } = true;
+
     private List<ClaseDisponible> Clases { get; set; } = new();
+
+    private string MensajeReserva { get; set; } = "";
+    private bool ReservaFueExitosa { get; set; } = false;
+
+    private string ReservandoIdSesion { get; set; } = "";
+
+    private IEnumerable<string> DisciplinasDisponibles =>
+        Clases.Select(c => c.Disciplina)
+              .Where(d => !string.IsNullOrWhiteSpace(d))
+              .Distinct()
+              .OrderBy(d => d);
 
     private IEnumerable<ClaseDisponible> ClasesFiltradas
     {
@@ -135,57 +181,98 @@
             IEnumerable<ClaseDisponible> resultado = Clases;
 
             if (!string.IsNullOrWhiteSpace(FiltroDisciplina))
-            {
                 resultado = resultado.Where(c => c.Disciplina == FiltroDisciplina);
-            }
 
             if (!string.IsNullOrWhiteSpace(FiltroFecha))
-            {
                 resultado = resultado.Where(c => c.Fecha == FiltroFecha);
-            }
 
             if (!string.IsNullOrWhiteSpace(FiltroHora))
-            {
                 resultado = resultado.Where(c => c.Horario.StartsWith(FiltroHora));
-            }
 
-            return resultado;
+            return resultado.OrderBy(c => c.Fecha)
+                            .ThenBy(c => c.Horario);
         }
     }
 
-    private string MensajeReserva { get; set; } = "";
-    private string ClaseMensajeReserva { get; set; } = "";
-
     protected override async Task OnInitializedAsync()
     {
+        await CargarClases();
+    }
+
+    private async Task CargarClases()
+    {
+        Cargando = true;
+
         var sesiones = await SesionClaseService.ListarSesionesAsync();
         var reservas = await ReservaService.ListarReservasAsync();
 
         Clases.Clear();
 
+        var ahora = DateTime.Now;
+        var hoy = DateTime.Today;
+
         foreach (var sesion in sesiones)
         {
-            int inscritos = reservas.Count(r => r.SesionClase?.IdSesion == sesion.IdSesion);
+            if (!sesion.Activo)
+                continue;
+
+            if (sesion.FechaHoraFin != default && sesion.FechaHoraFin < ahora)
+                continue;
+
+            if (sesion.FechaSesion.Date < hoy)
+                continue;
+
+            if (sesion.ClaseGrupal == null)
+                continue;
+
+            if (!sesion.ClaseGrupal.Activo)
+                continue;
+
+            int idClase = sesion.ClaseGrupal.IdClase;
+
+            int inscritos = reservas.Count(r =>
+                r.Activo &&
+                r.SesionClase?.IdSesion == sesion.IdSesion);
+
             int capacidad = sesion.Salon?.CapacidadMax ?? 0;
             int cuposDisponibles = capacidad > 0 ? capacidad - inscritos : sesion.CuposDisponibles;
+
+            if (cuposDisponibles <= 0)
+                continue;
+
+            bool yaReservadaMismaClase = Session.EstaAutenticado &&
+                reservas.Any(r =>
+                    r.Activo &&
+                    r.IdUsuario == Session.IdUsuario &&
+                    r.SesionClase?.ClaseGrupal?.IdClase == idClase &&
+                    r.SesionClase.FechaHoraFin != default &&
+                    r.SesionClase.FechaHoraFin >= ahora);
 
             Clases.Add(new ClaseDisponible
             {
                 Codigo = sesion.IdSesion.ToString(),
-                Nombre = sesion.ClaseGrupal?.Nombre ?? "Sesión sin nombre",
-                Disciplina = sesion.ClaseGrupal?.Nombre ?? "-",
-                Descripcion = sesion.ClaseGrupal?.Descripcion ?? "",
+                IdClase = idClase,
+                Nombre = ObtenerNombreClase(sesion.ClaseGrupal),
+                Disciplina = ObtenerDisciplina(sesion.ClaseGrupal),
+                Descripcion = sesion.ClaseGrupal.Descripcion ?? "",
                 Fecha = sesion.FechaSesion.ToString("yyyy-MM-dd"),
                 Horario = $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}",
-                Entrenador = sesion.Entrenador != null ? $"{sesion.Entrenador.Nombres} {sesion.Entrenador.ApellidoPaterno}" : "Sin asignar",
+                Entrenador = sesion.Entrenador != null
+                    ? $"{sesion.Entrenador.Nombres} {sesion.Entrenador.ApellidoPaterno}".Trim()
+                    : "Sin asignar",
                 Salon = sesion.Salon?.Nombre ?? "Sin asignar",
-                Capacidad = capacidad,
+                Capacidad = capacidad > 0 ? capacidad : sesion.CuposDisponibles,
                 Inscritos = inscritos,
-                Nivel = "Todos", // O el que venga en el modelo
-                Duracion = (int)(sesion.HoraFin - sesion.HoraInicio).TotalMinutes,
-                CuposDisponibles = cuposDisponibles
+                Nivel = string.IsNullOrWhiteSpace(sesion.ClaseGrupal.Nivel) ? "Todos" : sesion.ClaseGrupal.Nivel,
+                Duracion = sesion.ClaseGrupal.DuracionMinutos > 0
+                    ? sesion.ClaseGrupal.DuracionMinutos
+                    : CalcularDuracionMinutos(sesion),
+                CuposDisponibles = cuposDisponibles,
+                YaReservada = yaReservadaMismaClase
             });
         }
+
+        Cargando = false;
     }
 
     private void CambiarDisciplina(ChangeEventArgs e)
@@ -214,70 +301,131 @@
     {
         if (!Session.EstaAutenticado)
         {
-            MensajeReserva = "Debes iniciar sesión para reservar.";
-            ClaseMensajeReserva = "socios-toast-err";
+            MostrarMensaje("Debes iniciar sesión para reservar.", false);
             return;
         }
 
-        if (int.TryParse(codigoSesion, out int idSesion))
+        if (!int.TryParse(codigoSesion, out int idSesion))
+            return;
+
+        var claseSeleccionada = Clases.FirstOrDefault(c => c.Codigo == codigoSesion);
+
+        if (claseSeleccionada == null)
         {
-            var nuevaReserva = new ReservaDTO
-            {
-                IdUsuario = Session.IdUsuario,
-                FechaHoraReserva = DateTime.Now,
-                Asistio = false,
-                SesionClase = new SesionClaseDTO { IdSesion = idSesion }
-            };
-
-            var resultado = await ReservaService.RegistrarAsync(nuevaReserva);
-
-            if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
-            {
-                MensajeReserva = "¡Clase reservada con éxito!";
-                ClaseMensajeReserva = "socios-toast-ok";
-                
-                // Refrescar datos
-                await OnInitializedAsync();
-                
-                // Ocultar mensaje luego de 3 segundos
-                _ = Task.Delay(3000).ContinueWith(_ => { MensajeReserva = ""; InvokeAsync(StateHasChanged); });
-            }
-            else
-            {
-                MensajeReserva = resultado;
-                ClaseMensajeReserva = "socios-toast-err";
-            }
+            MostrarMensaje("No se encontró la clase seleccionada.", false);
+            return;
         }
+
+        var reservas = await ReservaService.ListarReservasAsync();
+
+        bool yaExisteMismaClase = reservas.Any(r =>
+            r.Activo &&
+            r.IdUsuario == Session.IdUsuario &&
+            r.SesionClase?.ClaseGrupal?.IdClase == claseSeleccionada.IdClase &&
+            r.SesionClase.FechaHoraFin != default &&
+            r.SesionClase.FechaHoraFin >= DateTime.Now);
+
+        if (yaExisteMismaClase)
+        {
+            MostrarMensaje("Ya tienes una reserva activa para esta clase.", false);
+            return;
+        }
+
+        ReservandoIdSesion = codigoSesion;
+        StateHasChanged();
+
+        var nuevaReserva = new ReservaDTO
+        {
+            IdUsuario = Session.IdUsuario,
+            FechaHoraReserva = DateTime.Now,
+            Asistio = false,
+            Activo = true,
+            SesionClase = new SesionClaseDTO { IdSesion = idSesion }
+        };
+
+        var resultado = await ReservaService.RegistrarAsync(nuevaReserva);
+
+        ReservandoIdSesion = "";
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MostrarMensaje("¡Te has reservado con éxito!", true);
+            await CargarClases();
+        }
+        else
+        {
+            MostrarMensaje(resultado, false);
+        }
+
+        StateHasChanged();
+    }
+
+    private void MostrarMensaje(string mensaje, bool exitoso)
+    {
+        MensajeReserva = mensaje;
+        ReservaFueExitosa = exitoso;
+
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            MensajeReserva = "";
+            InvokeAsync(StateHasChanged);
+        });
     }
 
     private string ObtenerClaseCupos(int cupos)
     {
-        if (cupos <= 3)
-        {
-            return "clase-cupos cupos-pocos";
-        }
-
-        return "clase-cupos";
+        return cupos <= 3 ? "clase-cupos cupos-pocos" : "clase-cupos";
     }
 
     private string ObtenerClaseOcupacion(int porcentaje)
     {
         if (porcentaje > 80)
-        {
             return "ocupacion-fill fill-rojo";
-        }
 
         if (porcentaje > 60)
-        {
             return "ocupacion-fill fill-amarillo";
-        }
 
         return "ocupacion-fill fill-verde";
+    }
+
+    private static string ObtenerDisciplina(ClaseGrupalDTO clase)
+    {
+        if (string.IsNullOrWhiteSpace(clase.NombreDisciplina))
+            return "-";
+
+        if (clase.NombreDisciplina.Contains(" - "))
+        {
+            var partes = clase.NombreDisciplina.Split(new[] { " - " }, 2, StringSplitOptions.None);
+            return partes[0].Trim();
+        }
+
+        return clase.NombreDisciplina.Trim();
+    }
+
+    private static string ObtenerNombreClase(ClaseGrupalDTO clase)
+    {
+        if (string.IsNullOrWhiteSpace(clase.NombreDisciplina))
+            return "Sesión sin nombre";
+
+        if (clase.NombreDisciplina.Contains(" - "))
+        {
+            var partes = clase.NombreDisciplina.Split(new[] { " - " }, 2, StringSplitOptions.None);
+            return partes[1].Trim();
+        }
+
+        return clase.NombreDisciplina.Trim();
+    }
+
+    private static int CalcularDuracionMinutos(SesionClaseDTO sesion)
+    {
+        var minutos = (int)(sesion.HoraFin - sesion.HoraInicio).TotalMinutes;
+        return minutos <= 0 ? 0 : minutos;
     }
 
     private class ClaseDisponible
     {
         public string Codigo { get; set; } = "";
+        public int IdClase { get; set; }
         public string Nombre { get; set; } = "";
         public string Disciplina { get; set; } = "";
         public string Descripcion { get; set; } = "";
@@ -290,15 +438,14 @@
         public string Nivel { get; set; } = "";
         public int Duracion { get; set; }
         public int CuposDisponibles { get; set; }
+        public bool YaReservada { get; set; }
 
         public int PorcentajeOcupacion
         {
             get
             {
                 if (Capacidad <= 0)
-                {
                     return 0;
-                }
 
                 return Inscritos * 100 / Capacidad;
             }

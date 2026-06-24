@@ -27,10 +27,10 @@
                @bind:event="oninput" />
 
         <div class="admin-filter-group">
-            <button class="@GetFiltroClase("Todas")"  @onclick='() => SetFiltro("Todas")'>Todas</button>
+            <button class="@GetFiltroClase("Todas")" @onclick='() => SetFiltro("Todas")'>Todas</button>
             <button class="@GetFiltroClase("Confirmadas")" @onclick='() => SetFiltro("Confirmadas")'>Confirmadas</button>
             <button class="@GetFiltroClase("Pendientes")" @onclick='() => SetFiltro("Pendientes")'>Pendientes</button>
-            <button class="@GetFiltroClase("Asistió")"  @onclick='() => SetFiltro("Asistió")'>Asistió</button>
+            <button class="@GetFiltroClase("Asistió")" @onclick='() => SetFiltro("Asistió")'>Asistió</button>
             <button class="@GetFiltroClase("Canceladas")" @onclick='() => SetFiltro("Canceladas")'>Canceladas</button>
         </div>
     </div>
@@ -49,10 +49,12 @@
                     <th>ACCIONES</th>
                 </tr>
             </thead>
+
             <tbody>
                 @{
                     var lista = ReservasFiltradas.ToList();
                 }
+
                 @if (lista.Count == 0)
                 {
                     <tr>
@@ -75,15 +77,18 @@
                                     </div>
                                 </div>
                             </td>
+
                             <td>
                                 <div>
                                     <strong>@r.ClaseNombre</strong>
                                     <span style="display:block;color:#666;font-size:12px;">@r.ClaseTipo</span>
                                 </div>
                             </td>
+
                             <td>@r.Entrenador</td>
                             <td>@r.Fecha</td>
                             <td>@r.Horario</td>
+
                             <td>
                                 <div class="reserva-cupos-cell">
                                     <span class="reserva-cupos-text">@r.CuposOcupados / @r.CuposTotal</span>
@@ -93,12 +98,14 @@
                                     </div>
                                 </div>
                             </td>
+
                             <td>
                                 <span class="reserva-estado-badge reserva-estado-@NormalizeEstado(r.Estado)">
                                     <span class="reserva-estado-dot"></span>
                                     @r.Estado
                                 </span>
                             </td>
+
                             <td>
                                 <div style="display:flex;gap:6px;">
                                     <button class="action-button" title="Ver detalle" @onclick="() => ShowModal(r)">👁</button>
@@ -122,6 +129,7 @@
                     <h2>Detalles de la Reserva</h2>
                     <button class="close-btn" @onclick="CloseModal">✖</button>
                 </div>
+
                 <div class="modal-body">
                     <div class="detail-section">
                         <h3>Socio</h3>
@@ -136,7 +144,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="detail-section">
                         <h3>Clase / Sesión</h3>
                         <div class="detail-grid">
@@ -182,6 +190,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button class="btn-cerrar" @onclick="CloseModal">Cerrar</button>
                 </div>
@@ -193,12 +202,19 @@
 
 <style>
     .modal-backdrop {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
         background: rgba(0, 0, 0, 0.7);
-        display: flex; justify-content: center; align-items: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         z-index: 1000;
         backdrop-filter: blur(5px);
     }
+
     .dark-theme-modal {
         background: #1e1e1e;
         border: 1px solid #333;
@@ -210,36 +226,120 @@
         overflow: hidden;
         animation: fadeIn 0.2s ease-out;
     }
+
     @@keyframes fadeIn {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
+
     .modal-header {
-        display: flex; justify-content: space-between; align-items: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding: 16px 20px;
         border-bottom: 1px solid #333;
         background: #252525;
     }
-    .modal-header h2 { margin: 0; font-size: 18px; font-weight: 600; color: #fff; }
-    .close-btn { background: none; border: none; color: #888; font-size: 20px; cursor: pointer; transition: 0.2s; }
-    .close-btn:hover { color: #fff; }
-    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-    .detail-section h3 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #aaa; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .detail-item { display: flex; flex-direction: column; gap: 4px; }
-    .detail-label { font-size: 12px; color: #888; }
-    .detail-value { font-size: 14px; color: #fff; font-weight: 500; }
-    .modal-footer { padding: 16px 20px; border-top: 1px solid #333; display: flex; justify-content: flex-end; background: #252525; }
-    .btn-cerrar { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: 0.2s; }
-    .btn-cerrar:hover { background: #444; }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 20px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+    .modal-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .detail-section h3 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        text-transform: uppercase;
+        color: #aaa;
+        letter-spacing: 1px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .modal-footer {
+        padding: 16px 20px;
+        border-top: 1px solid #333;
+        display: flex;
+        justify-content: flex-end;
+        background: #252525;
+    }
+
+    .btn-cerrar {
+        background: #333;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+        .btn-cerrar:hover {
+            background: #444;
+        }
 </style>
 
 @code {
     private string TextoBusqueda = "";
-    private string FiltroEstado  = "Todas";
+    private string FiltroEstado = "Todas";
 
     private bool IsModalVisible = false;
     private ReservaVista? SelectedReserva = null;
+
+    private List<ReservaVista> Reservas { get; set; } = new();
 
     private void ShowModal(ReservaVista reserva)
     {
@@ -270,36 +370,26 @@
             if (!string.IsNullOrWhiteSpace(TextoBusqueda))
             {
                 string t = TextoBusqueda.Trim();
+
                 resultado = resultado.Where(r =>
                     r.SocioNombre.Contains(t, StringComparison.OrdinalIgnoreCase) ||
                     r.ClaseNombre.Contains(t, StringComparison.OrdinalIgnoreCase) ||
-                    r.Entrenador.Contains(t, StringComparison.OrdinalIgnoreCase));
+                    r.Entrenador.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                    r.Salon.Contains(t, StringComparison.OrdinalIgnoreCase));
             }
 
-            return resultado;
+            return resultado.OrderBy(r => r.Fecha)
+                            .ThenBy(r => r.Horario)
+                            .ThenBy(r => r.SocioNombre);
         }
     }
 
-    private int GetCuposPct(int ocupados, int total) =>
-        total == 0 ? 0 : (int)Math.Round((double)ocupados / total * 100);
-
-    private string GetBarColor(int ocupados, int total)
+    protected override async Task OnInitializedAsync()
     {
-        if (total == 0) return "reserva-bar-green";
-        double pct = (double)ocupados / total;
-        return pct >= 0.9 ? "reserva-bar-red"
-             : pct >= 0.6 ? "reserva-bar-yellow"
-             : "reserva-bar-green";
+        await CargarReservas();
     }
 
-    private string NormalizeEstado(string estado) =>
-        estado.ToLower()
-              .Replace("ó", "o")
-              .Replace(" ", "");
-
-    private List<ReservaVista> Reservas { get; set; } = new();
-
-    protected override async Task OnInitializedAsync()
+    private async Task CargarReservas()
     {
         var reservasTask = ReservaService.ListarReservasAsync();
         var sociosTask = SocioService.ListarSociosAsync();
@@ -313,70 +403,141 @@
 
         Reservas.Clear();
 
-        foreach (var r in reservasResult)
+        var reservasSinDuplicar = reservasResult
+            .Where(r => r.SesionClase?.ClaseGrupal != null)
+            .OrderByDescending(r => r.Activo)
+            .ThenBy(r => r.SesionClase!.FechaSesion)
+            .ThenBy(r => r.SesionClase!.HoraInicio)
+            .ThenBy(r => r.IdReserva)
+            .GroupBy(r => new
+            {
+                r.IdUsuario,
+                IdClase = r.SesionClase!.ClaseGrupal!.IdClase
+            })
+            .Select(g => g.First())
+            .ToList();
+
+        foreach (var r in reservasSinDuplicar)
         {
             var socio = dictSocios.ContainsKey(r.IdUsuario) ? dictSocios[r.IdUsuario] : null;
 
             var sesion = r.SesionClase;
             var claseGrupal = sesion?.ClaseGrupal;
             var entrenador = sesion?.Entrenador;
+            var salon = sesion?.Salon;
 
-            int cuposTotal = claseGrupal?.Vacantes ?? 0;
-            int cuposDisp = sesion?.CuposDisponibles ?? 0;
-            int cuposOcupados = cuposTotal - cuposDisp;
-            if (cuposOcupados < 0) cuposOcupados = 0;
+            int cuposTotal = salon?.AforoMaximo ?? sesion?.CuposDisponibles ?? 0;
+
+            int cuposOcupados = reservasResult.Count(x =>
+                x.Activo &&
+                x.SesionClase?.IdSesion == sesion?.IdSesion);
+
+            if (cuposOcupados < 0)
+                cuposOcupados = 0;
+
+            if (cuposTotal > 0 && cuposOcupados > cuposTotal)
+                cuposOcupados = cuposTotal;
 
             Reservas.Add(new ReservaVista
             {
                 Id = r.IdReserva,
-                SocioNombre = socio != null ? $"{socio.Nombres} {socio.ApellidoPaterno}" : "Desconocido",
+                SocioNombre = socio != null ? $"{socio.Nombres} {socio.ApellidoPaterno}".Trim() : "Desconocido",
                 SocioDni = socio != null ? socio.Dni.ToString() : "-",
-                ClaseNombre = claseGrupal != null ? claseGrupal.Nombre : "-",
-                ClaseTipo = claseGrupal != null ? claseGrupal.NivelDificultad : "-",
-                Entrenador = entrenador != null ? $"{entrenador.Nombres} {entrenador.ApellidoPaterno}" : "-",
-                Fecha = r.FechaTexto.Split(' ')[0],
+                ClaseNombre = claseGrupal?.Nombre ?? claseGrupal?.NombreDisciplina ?? "-",
+                ClaseTipo = claseGrupal?.NivelDificultad ?? claseGrupal?.Nivel ?? "-",
+                Entrenador = entrenador != null
+                    ? $"{entrenador.Nombres} {entrenador.ApellidoPaterno}".Trim()
+                    : "Sin asignar",
+                Salon = salon?.Nombre ?? salon?.NombreSalon ?? "Sin asignar",
+                Fecha = sesion != null ? sesion.FechaSesion.ToString("yyyy-MM-dd") : "-",
                 Horario = sesion != null ? $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}" : "-",
                 CuposOcupados = cuposOcupados,
                 CuposTotal = cuposTotal,
-                Estado = r.EstadoTexto
+                Estado = ObtenerEstadoReserva(r)
             });
         }
     }
 
+    private static string ObtenerEstadoReserva(ReservaDTO reserva)
+    {
+        if (!reserva.Activo)
+            return "Canceladas";
+
+        if (reserva.Asistio)
+            return "Asistió";
+
+        if (reserva.SesionClase != null &&
+            reserva.SesionClase.FechaHoraFin != default &&
+            reserva.SesionClase.FechaHoraFin < DateTime.Now)
+        {
+            return "Pendientes";
+        }
+
+        return "Confirmadas";
+    }
+
+    private int GetCuposPct(int ocupados, int total)
+    {
+        if (total <= 0)
+            return 0;
+
+        return (int)Math.Round((double)ocupados / total * 100);
+    }
+
+    private string GetBarColor(int ocupados, int total)
+    {
+        if (total <= 0)
+            return "reserva-bar-green";
+
+        double pct = (double)ocupados / total;
+
+        return pct >= 0.9 ? "reserva-bar-red"
+             : pct >= 0.6 ? "reserva-bar-yellow"
+             : "reserva-bar-green";
+    }
+
+    private string NormalizeEstado(string estado) =>
+        estado.ToLower()
+              .Replace("ó", "o")
+              .Replace(" ", "");
+
     private class ReservaVista
     {
         [JsonPropertyName("idReserva")]
-        public int    Id             { get; set; }
-        
+        public int Id { get; set; }
+
         [JsonPropertyName("socioNombre")]
-        public string SocioNombre   { get; set; } = "";
-        
+        public string SocioNombre { get; set; } = "";
+
         [JsonPropertyName("socioDni")]
-        public string SocioDni      { get; set; } = "";
-        
+        public string SocioDni { get; set; } = "";
+
         [JsonPropertyName("claseNombre")]
-        public string ClaseNombre   { get; set; } = "";
-        
+        public string ClaseNombre { get; set; } = "";
+
         [JsonPropertyName("claseTipo")]
-        public string ClaseTipo     { get; set; } = "";
-        
+        public string ClaseTipo { get; set; } = "";
+
         [JsonPropertyName("entrenador")]
-        public string Entrenador    { get; set; } = "";
-        
+        public string Entrenador { get; set; } = "";
+
+        [JsonPropertyName("salon")]
+        public string Salon { get; set; } = "";
+
         [JsonPropertyName("fechaAsignada")]
-        public string Fecha         { get; set; } = "";
-        
+        public string Fecha { get; set; } = "";
+
         [JsonPropertyName("horario")]
-        public string Horario       { get; set; } = "";
-        
+        public string Horario { get; set; } = "";
+
         [JsonPropertyName("cuposOcupados")]
-        public int    CuposOcupados { get; set; }
-        
+        public int CuposOcupados { get; set; }
+
         [JsonPropertyName("cuposTotal")]
-        public int    CuposTotal    { get; set; }
-        
+        public int CuposTotal { get; set; }
+
         [JsonPropertyName("estado")]
-        public string Estado        { get; set; } = "";
+        public string Estado { get; set; } = "";
 
         public string Iniciales
         {

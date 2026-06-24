@@ -38,7 +38,7 @@ public class EntrenadorServicio
     }
 
     /// <summary>
-    /// POST /EntrenadorRS — Registra un nuevo entrenador.
+    /// POST /EntrenadorRS — Registra un nuevo entrenador.  
     /// </summary>
     public async Task<string> RegistrarAsync(EntrenadorDTO entrenador)
     {

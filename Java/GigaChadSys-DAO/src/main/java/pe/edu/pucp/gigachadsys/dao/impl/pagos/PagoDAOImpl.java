@@ -27,7 +27,7 @@ public class PagoDAOImpl implements PagoDAO {
                         rs.getString("tipo"),
                         rs.getInt("idMetodoPago")
                 );
-                p.setActive(rs.getBoolean("activo"));
+                p.setActivo(rs.getBoolean("activo"));
                 lista.add(p);
             }
 
@@ -40,8 +40,8 @@ public class PagoDAOImpl implements PagoDAO {
 
     @Override
     public Pago load(Integer id) {
-        String sql= "select idPago, fechaPago, montoTotal, tipo, idMetodoPago, activo "
-                + "FROM Pago where = idPago = ?";
+        String sql = "select idPago, fechaPago, montoTotal, tipo, idMetodoPago, activo "
+                + "FROM Pago WHERE idPago = ?";
 
         try(Connection con = DBManager.getInstance().getConnection();
             PreparedStatement ps = con.prepareStatement(sql)) {
@@ -50,13 +50,13 @@ public class PagoDAOImpl implements PagoDAO {
             ResultSet rs = ps.executeQuery();
 
             if(rs.next()){
-                Pago p = new Pago(); //agregarle constructor
+                Pago p = new Pago();
                 p.setIdPago(rs.getInt(1));
                 p.setFechaPago(rs.getDate(2));
                 p.setMonto(rs.getDouble(3));
                 p.setTipo(rs.getString(4));
                 p.setMetodoPago(rs.getInt(5));
-                p.setActivo(rs.getBoolean(rs.getInt(6)));
+                p.setActivo(rs.getBoolean(6));
                 return p;
             }
 
@@ -69,6 +69,13 @@ public class PagoDAOImpl implements PagoDAO {
 
     @Override
     public Pago save(Pago p) {
+
+        System.out.println("=== INSERTANDO PAGO ===");
+        System.out.println("Fecha: " + p.getFechaPago());
+        System.out.println("Monto: " + p.getMonto());
+        System.out.println("Tipo: " + p.getTipo());
+        System.out.println("Metodo: " + p.getMetodoPago());
+
         String sql = "INSERT INTO Pago(fechaPago, montoTotal, tipo, idMetodoPago, activo) VALUES (?,?,?,?,1)";
 
         try(Connection con = DBManager.getInstance().getConnection();
@@ -79,13 +86,19 @@ public class PagoDAOImpl implements PagoDAO {
             ps.setString(3, p.getTipo());
             ps.setInt(4, p.getMetodoPago());
 
-            ps.executeUpdate();
+            int filas = ps.executeUpdate();
+
+            System.out.println("Filas afectadas: " + filas);
+
             ResultSet rs = ps.getGeneratedKeys();
+
             if(rs.next()){
                 p.setIdPago(rs.getInt(1));
+                System.out.println("ID generado: " + p.getIdPago());
             }
 
         } catch(SQLException e){
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
 

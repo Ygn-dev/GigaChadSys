@@ -1,4 +1,5 @@
 @page "/admin/sesiones/editar/{Id:int}"
+@using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject SesionClaseServicio SesionService
@@ -11,18 +12,23 @@
 
 <div class="socio-form-page">
 
-    <!-- Breadcrumb -->
     <nav class="sf-breadcrumb">
         <a href="/admin/sesiones">Sesiones</a>
         <span class="sf-bc-sep">›</span>
         <span class="sf-bc-current">Editar</span>
     </nav>
 
-    <!-- Page Header -->
     <div class="sf-page-header">
         <h1>Editar Sesión</h1>
         <p class="sf-page-subtitle">Modifica los datos de la sesión programada</p>
     </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    {
+        <div class="@ClaseMensajeFormulario">
+            @MensajeFormulario
+        </div>
+    }
 
     @if (Cargando)
     {
@@ -36,10 +42,8 @@
     {
         <div class="sf-edit-layout">
 
-            <!-- ── Left column ── -->
             <div>
 
-                <!-- Datos de la Sesión -->
                 <div class="sf-section-card">
                     <div class="sf-section-title">
                         <div class="sf-section-icon icon-blue">📅</div>
@@ -50,6 +54,7 @@
                     </div>
 
                     <div class="sf-form-grid">
+
                         <div class="sf-form-group">
                             <label>CLASE <span class="sf-req">*</span></label>
                             <select @bind="claseId" class="@(errores.ContainsKey("claseId") ? "sf-input-error" : "")">
@@ -96,18 +101,26 @@
                         </div>
 
                         <div class="sf-form-group">
-                            <label>CUPOS MÁXIMOS <span class="sf-req">*</span></label>
-                            <input type="number" @bind="cuposMax" min="1" max="200"
-                                   class="@(errores.ContainsKey("cuposMax") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("cuposMax"))
+                            <label>CUPOS DISPONIBLES <span class="sf-req">*</span></label>
+                            <input type="number"
+                                   value="@CuposDisponiblesInput"
+                                   @oninput="CambiarCuposDisponiblesInput"
+                                   @onchange="CambiarCuposDisponiblesInput"
+                                   min="0"
+                                   max="200"
+                                   class="@(errores.ContainsKey("cuposDisponibles") ? "sf-input-error" : "")" />
+                            @if (errores.ContainsKey("cuposDisponibles"))
                             {
-                                <span class="sf-error-msg">@errores["cuposMax"]</span>
+                                <span class="sf-error-msg">@errores["cuposDisponibles"]</span>
                             }
                         </div>
 
                         <div class="sf-form-group">
                             <label>FECHA <span class="sf-req">*</span></label>
-                            <input type="date" @bind="fecha"
+                            <input type="date"
+                                   value="@FechaInput"
+                                   @oninput="CambiarFechaInput"
+                                   @onchange="CambiarFechaInput"
                                    class="@(errores.ContainsKey("fecha") ? "sf-input-error" : "")" />
                             @if (errores.ContainsKey("fecha"))
                             {
@@ -115,14 +128,14 @@
                             }
                         </div>
 
-                        <div class="sf-form-group">
-                            <!-- spacer -->
-                        </div>
+                        <div class="sf-form-group"></div>
 
                         <div class="sf-form-group">
                             <label>HORA DE INICIO <span class="sf-req">*</span></label>
-                            <input type="time" value="@horaInicio?.ToString("HH:mm")"
-                                   @onchange="e => horaInicio = TimeOnly.TryParse(e.Value?.ToString(), out var t) ? t : horaInicio"
+                            <input type="time"
+                                   value="@HoraInicioInput"
+                                   @oninput="CambiarHoraInicioInput"
+                                   @onchange="CambiarHoraInicioInput"
                                    class="@(errores.ContainsKey("horaInicio") ? "sf-input-error" : "")" />
                             @if (errores.ContainsKey("horaInicio"))
                             {
@@ -132,18 +145,50 @@
 
                         <div class="sf-form-group">
                             <label>HORA DE FIN <span class="sf-req">*</span></label>
-                            <input type="time" value="@horaFin?.ToString("HH:mm")"
-                                   @onchange="e => horaFin = TimeOnly.TryParse(e.Value?.ToString(), out var t) ? t : horaFin"
+                            <input type="time"
+                                   value="@HoraFinInput"
+                                   @oninput="CambiarHoraFinInput"
+                                   @onchange="CambiarHoraFinInput"
                                    class="@(errores.ContainsKey("horaFin") ? "sf-input-error" : "")" />
                             @if (errores.ContainsKey("horaFin"))
                             {
                                 <span class="sf-error-msg">@errores["horaFin"]</span>
                             }
                         </div>
+
                     </div>
                 </div>
 
-                <!-- Actions -->
+                <div class="sf-section-card">
+                    <div class="sf-section-title">
+                        <div class="sf-section-icon icon-green">✅</div>
+                        <div>
+                            <h3>Estado de la Sesión</h3>
+                            <span>Controla si la sesión está disponible o cancelada</span>
+                        </div>
+                    </div>
+
+                    <p class="sf-sublabel">ESTADO ADMINISTRATIVO</p>
+
+                    <div class="sf-estado-row">
+                        <button type="button"
+                                class="sf-estado-btn @(estadoAdministrativo == "Programada" ? "sf-estado-activo" : "")"
+                                @onclick='() => estadoAdministrativo = "Programada"'>
+                            <span class="sf-estado-dot dot-green"></span> Programada
+                        </button>
+
+                        <button type="button"
+                                class="sf-estado-btn @(estadoAdministrativo == "Cancelada" ? "sf-estado-inactivo" : "")"
+                                @onclick='() => estadoAdministrativo = "Cancelada"'>
+                            <span class="sf-estado-dot dot-red"></span> Cancelada
+                        </button>
+                    </div>
+
+                    <p style="margin-top:12px;color:#aaa;font-size:13px;">
+                        Si la fecha y hora ya pasaron, se mostrará como Finalizada automáticamente.
+                    </p>
+                </div>
+
                 <div class="sf-form-actions">
                     <button class="sf-btn-primary" @onclick="GuardarCambios" disabled="@guardando">
                         @if (guardando)
@@ -155,7 +200,9 @@
                             <span>💾</span> <span>Guardar Cambios</span>
                         }
                     </button>
+
                     <button class="sf-btn-secondary" @onclick="Cancelar">Cancelar</button>
+
                     <div class="sf-back-link">
                         <a href="/admin/sesiones">← Volver a Sesiones</a>
                     </div>
@@ -163,38 +210,44 @@
 
             </div>
 
-            <!-- ── Right column: Resumen ── -->
             <div class="sf-resumen-col">
                 <div class="sf-resumen-card">
                     <h4>Resumen</h4>
+
                     <div class="sf-resumen-rows">
                         <div class="sf-resumen-row">
                             <span>Clase</span>
                             <strong>@NombreClase</strong>
                         </div>
+
                         <div class="sf-resumen-row">
                             <span>Entrenador</span>
                             <strong>@NombreEntrenador</strong>
                         </div>
+
                         <div class="sf-resumen-row">
                             <span>Salón</span>
                             <strong>@NombreSalon</strong>
                         </div>
+
                         <div class="sf-resumen-row">
                             <span>Fecha</span>
-                            <strong>@(fecha == default ? "—" : fecha.ToString("dd/MM/yyyy"))</strong>
+                            <strong>@FechaResumen</strong>
                         </div>
+
                         <div class="sf-resumen-row">
                             <span>Horario</span>
-                            <strong>@(horaInicio == null ? "—" : $"{horaInicio?.ToString("HH:mm")} - {horaFin?.ToString("HH:mm")}")</strong>
+                            <strong>@HoraInicioInput - @HoraFinInput</strong>
                         </div>
+
                         <div class="sf-resumen-row">
-                            <span>Cupos</span>
-                            <strong>@(cuposMax > 0 ? cuposMax.ToString() : "—")</strong>
+                            <span>Cupos disponibles</span>
+                            <strong>@CuposDisponiblesInput</strong>
                         </div>
+
                         <div class="sf-resumen-row">
-                            <span>Estado</span>
-                            <strong class="@EstadoClass">@estado</strong>
+                            <span>Estado visual</span>
+                            <strong class="@EstadoClass">@EstadoVisual</strong>
                         </div>
                     </div>
                 </div>
@@ -210,33 +263,98 @@
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter]
+    public int Id { get; set; }
 
     private SesionClaseDTO? sesionOriginal;
 
-    // Form fields
-    private int      claseId      = 0;
-    private int      entrenadorId = 0;
-    private int      salonId      = 0;
-    private int      cuposMax     = 20;
-    private DateTime fecha        = DateTime.Today;
-    private TimeOnly? horaInicio;
-    private TimeOnly? horaFin;
-    private string   estado       = "Programada";
+    private int claseId = 0;
+    private int entrenadorId = 0;
+    private int salonId = 0;
 
-    private bool   guardando    = false;
-    private bool   Cargando     = true;
+    private string FechaInput { get; set; } = "";
+    private string HoraInicioInput { get; set; } = "";
+    private string HoraFinInput { get; set; } = "";
+    private string CuposDisponiblesInput { get; set; } = "0";
+
+    private string estadoAdministrativo = "Programada";
+
+    private bool guardando = false;
+    private bool Cargando = true;
+
+    private string MensajeFormulario = "";
+    private string ClaseMensajeFormulario = "";
+
     private Dictionary<string, string> errores = new();
 
     private List<ClaseGrupalDTO> clasesDisponibles = new();
     private List<EntrenadorDTO> entrenadoresDisponibles = new();
     private List<SalonDTO> salonesDisponibles = new();
 
-    // Computed display names
-    private string NombreClase      => clasesDisponibles.FirstOrDefault(c => c.IdClase == claseId)?.NombreDisciplina ?? "—";
+    private static readonly string[] FormatosHora =
+    {
+        "HH:mm",
+        "H:mm",
+        "HH:mm:ss",
+        "H:mm:ss"
+    };
+
+    private string NombreClase => clasesDisponibles.FirstOrDefault(c => c.IdClase == claseId)?.NombreDisciplina ?? "—";
     private string NombreEntrenador => entrenadoresDisponibles.FirstOrDefault(e => e.IdUsuario == entrenadorId)?.NombreCompleto ?? "—";
-    private string NombreSalon      => salonesDisponibles.FirstOrDefault(s => s.IdSalon == salonId)?.NombreSalon     ?? "—";
-    private string EstadoClass      => estado switch { "Programada" => "rsm-activo", "Cancelada" => "rsm-inactivo", "Finalizada" => "rsm-finalizada", _ => "" };
+    private string NombreSalon => salonesDisponibles.FirstOrDefault(s => s.IdSalon == salonId)?.NombreSalon ?? "—";
+
+    private string FechaResumen
+    {
+        get
+        {
+            if (DateTime.TryParseExact(
+                    FechaInput,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var fecha
+                ))
+            {
+                return fecha.ToString("dd/MM/yyyy");
+            }
+
+            return "—";
+        }
+    }
+
+    private string EstadoVisual
+    {
+        get
+        {
+            if (estadoAdministrativo == "Cancelada")
+                return "Cancelada";
+
+            if (DateTime.TryParseExact(
+                    FechaInput,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var fecha
+                ) &&
+                TryParseHora(HoraFinInput, out var horaFin))
+            {
+                var fechaHoraFin = fecha.Date.Add(horaFin.ToTimeSpan());
+
+                if (fechaHoraFin < DateTime.Now)
+                    return "Finalizada";
+            }
+
+            return "Programada";
+        }
+    }
+
+    private string EstadoClass => EstadoVisual switch
+    {
+        "Programada" => "rsm-activo",
+        "Cancelada" => "rsm-inactivo",
+        "Finalizada" => "rsm-finalizada",
+        _ => ""
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -260,17 +378,16 @@
                 entrenadorId = sesionOriginal.Entrenador?.IdUsuario ?? 0;
                 salonId = sesionOriginal.Salon?.IdSalon ?? 0;
 
-                fecha = sesionOriginal.FechaSesion;
-                horaInicio = TimeOnly.FromDateTime(sesionOriginal.HoraInicio);
-                horaFin = TimeOnly.FromDateTime(sesionOriginal.HoraFin);
+                CuposDisponiblesInput = sesionOriginal.CuposDisponibles.ToString();
 
-                var aforoOriginal = sesionOriginal.Salon?.AforoMaximo ?? 20;
-                cuposMax = aforoOriginal; // simplificación
+                FechaInput = sesionOriginal.FechaSesion == default
+                    ? DateTime.Today.ToString("yyyy-MM-dd")
+                    : sesionOriginal.FechaSesion.ToString("yyyy-MM-dd");
 
-                if (sesionOriginal.HoraFin < DateTime.Now)
-                    estado = "Finalizada";
-                else
-                    estado = "Programada";
+                HoraInicioInput = NormalizarHoraParaInput(sesionOriginal.HoraInicio);
+                HoraFinInput = NormalizarHoraParaInput(sesionOriginal.HoraFin);
+
+                estadoAdministrativo = sesionOriginal.Activo ? "Programada" : "Cancelada";
             }
         }
         finally
@@ -279,58 +396,185 @@
         }
     }
 
-    private bool Validar()
+    private void CambiarFechaInput(ChangeEventArgs e)
+    {
+        FechaInput = e.Value?.ToString() ?? "";
+        errores.Remove("fecha");
+    }
+
+    private void CambiarHoraInicioInput(ChangeEventArgs e)
+    {
+        HoraInicioInput = NormalizarHoraTexto(e.Value?.ToString() ?? "");
+        errores.Remove("horaInicio");
+    }
+
+    private void CambiarHoraFinInput(ChangeEventArgs e)
+    {
+        HoraFinInput = NormalizarHoraTexto(e.Value?.ToString() ?? "");
+        errores.Remove("horaFin");
+    }
+
+    private void CambiarCuposDisponiblesInput(ChangeEventArgs e)
+    {
+        CuposDisponiblesInput = e.Value?.ToString() ?? "";
+        errores.Remove("cuposDisponibles");
+    }
+
+    private bool Validar(out DateTime fechaSesion, out TimeOnly horaInicio, out TimeOnly horaFin, out int cuposDisponibles)
     {
         errores.Clear();
-        if (claseId == 0)                           errores["claseId"]      = "Selecciona una clase.";
-        if (entrenadorId == 0)                      errores["entrenadorId"] = "Selecciona un entrenador.";
-        if (salonId == 0)                           errores["salonId"]      = "Selecciona un salón.";
-        if (cuposMax < 1)                           errores["cuposMax"]     = "Los cupos deben ser al menos 1.";
-        if (fecha == default)                       errores["fecha"]        = "La fecha es obligatoria.";
-        if (horaInicio == null)                     errores["horaInicio"]   = "La hora de inicio es obligatoria.";
-        if (horaFin == null)                        errores["horaFin"]      = "La hora de fin es obligatoria.";
-        else if (horaInicio != null && horaFin <= horaInicio)
-                                                    errores["horaFin"]      = "La hora de fin debe ser mayor a la de inicio.";
+
+        fechaSesion = default;
+        horaInicio = default;
+        horaFin = default;
+        cuposDisponibles = 0;
+
+        FechaInput = FechaInput?.Trim() ?? "";
+        HoraInicioInput = NormalizarHoraTexto(HoraInicioInput);
+        HoraFinInput = NormalizarHoraTexto(HoraFinInput);
+        CuposDisponiblesInput = CuposDisponiblesInput?.Trim() ?? "";
+
+        if (claseId == 0)
+            errores["claseId"] = "Selecciona una clase.";
+
+        if (entrenadorId == 0)
+            errores["entrenadorId"] = "Selecciona un entrenador.";
+
+        if (salonId == 0)
+            errores["salonId"] = "Selecciona un salón.";
+
+        if (!int.TryParse(CuposDisponiblesInput, out cuposDisponibles))
+            errores["cuposDisponibles"] = "Los cupos disponibles deben ser numéricos.";
+        else if (cuposDisponibles < 0)
+            errores["cuposDisponibles"] = "Los cupos disponibles no pueden ser negativos.";
+
+        if (!DateTime.TryParseExact(
+                FechaInput,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out fechaSesion
+            ))
+        {
+            errores["fecha"] = "La fecha es obligatoria.";
+        }
+
+        bool horaInicioValida = TryParseHora(HoraInicioInput, out horaInicio);
+        bool horaFinValida = TryParseHora(HoraFinInput, out horaFin);
+
+        if (!horaInicioValida)
+            errores["horaInicio"] = "La hora de inicio es obligatoria.";
+
+        if (!horaFinValida)
+            errores["horaFin"] = "La hora de fin es obligatoria.";
+
+        if (horaInicioValida && horaFinValida && horaFin <= horaInicio)
+            errores["horaFin"] = "La hora de fin debe ser mayor a la de inicio.";
+
         return errores.Count == 0;
     }
 
     private async Task GuardarCambios()
     {
-        if (!Validar()) return;
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+
+        if (!Validar(out var fechaSesion, out var horaInicio, out var horaFin, out var cuposDisponibles))
+            return;
 
         guardando = true;
 
-        var fechaInicio = fecha.Date.AddTicks(horaInicio!.Value.Ticks);
-        var fechaFin = fecha.Date.AddTicks(horaFin!.Value.Ticks);
-
-        // Calculate availability based on the updated max capacity
-        var selectedSalon = salonesDisponibles.FirstOrDefault(s => s.IdSalon == salonId);
-        int aforo = selectedSalon?.AforoMaximo ?? cuposMax;
-        
-        // This logic assumes we aren't tracking exactly how many people are registered right now
-        // But for UI/DTO completeness we'll send cuposMax as cuposDisponibles initially.
-        int cuposDisp = cuposMax;
+        var fechaInicio = fechaSesion.Date.Add(horaInicio.ToTimeSpan());
+        var fechaFin = fechaSesion.Date.Add(horaFin.ToTimeSpan());
 
         var sesionEditada = new SesionClaseDTO
         {
             IdSesion = Id,
-            FechaSesion = fecha,
+
+            // Al mediodía para evitar desfase de fecha por zona horaria en Java/MySQL.
+            FechaSesion = fechaSesion.Date.AddHours(12),
+
             HoraInicio = fechaInicio,
             HoraFin = fechaFin,
-            CuposDisponibles = cuposDisp,
+            CuposDisponibles = cuposDisponibles,
+            Activo = estadoAdministrativo == "Programada",
             ClaseGrupal = new ClaseGrupalDTO { IdClase = claseId },
             Entrenador = new EntrenadorDTO { IdUsuario = entrenadorId },
             Salon = new SalonDTO { IdSalon = salonId }
         };
 
-        await SesionService.ActualizarAsync(Id, sesionEditada);
+        var resultado = await SesionService.ActualizarAsync(Id, sesionEditada);
 
         guardando = false;
-        Navigation.NavigateTo("/admin/sesiones");
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MostrarExito("Sesión actualizada correctamente.");
+            await Task.Delay(800);
+            Navigation.NavigateTo("/admin/sesiones");
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
     }
 
     private void Cancelar()
     {
         Navigation.NavigateTo("/admin/sesiones");
+    }
+
+    private static bool TryParseHora(string valor, out TimeOnly hora)
+    {
+        valor = NormalizarHoraTexto(valor);
+
+        return TimeOnly.TryParseExact(
+            valor,
+            FormatosHora,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out hora
+        );
+    }
+
+    private static string NormalizarHoraParaInput(DateTime hora)
+    {
+        if (hora == default)
+            return "";
+
+        return hora.ToString("HH:mm");
+    }
+
+    private static string NormalizarHoraTexto(string valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+            return "";
+
+        valor = valor.Trim();
+
+        if (TimeOnly.TryParseExact(
+                valor,
+                FormatosHora,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var hora
+            ))
+        {
+            return hora.ToString("HH:mm");
+        }
+
+        return valor;
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message error";
+    }
+
+    private void MostrarExito(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message success";
     }
 }

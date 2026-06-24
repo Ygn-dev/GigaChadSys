@@ -1,13 +1,25 @@
 @page "/socio/perfil"
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @using GigaChadSysWeb.Components.Layout
 @layout SocioLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
+@inject SocioServicio SocioService
+@inject SuscripcionServicio SuscripcionService
 
 <section class="perfil-page">
     <div class="perfil-header">
         <h1>Mi Perfil</h1>
         <p class="perfil-subtitle">Tu información personal y membresía</p>
     </div>
+
+    @if (!string.IsNullOrWhiteSpace(mensaje))
+    {
+        <div class="@claseMensaje" style="padding: 12px 18px; border-radius: 8px; margin-bottom: 16px; font-size: 0.95rem;">
+            @mensaje
+        </div>
+    }
 
     <!-- Profile Card -->
     <div class="perfil-card">
@@ -30,10 +42,10 @@
         </div>
         <div class="perfil-card-actions">
             <button class="btn-perfil-edit" @onclick="ToggleEditar">
-                ✏️ Editar Perfil
+                @(editando ? "✕ Cancelar" : "✏️ Editar Perfil")
             </button>
-            <button class="btn-perfil-password">
-                ⚙ Cambiar Contraseña
+            <button class="btn-perfil-password" @onclick="ToggleCambiarContrasenia">
+                @(cambiandoContrasenia ? "✕ Cancelar" : "⚙ Cambiar Contraseña")
             </button>
         </div>
     </div>
@@ -59,7 +71,14 @@
                 </div>
                 <div>
                     <span class="perfil-info-label">Nombre Completo</span>
-                    <strong>@perfil.NombreCompleto</strong>
+                    @if (editando)
+                    {
+                        <input type="text" @bind="editNombres" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Nombres" />
+                    }
+                    else
+                    {
+                        <strong>@perfil.NombreCompleto</strong>
+                    }
                 </div>
             </div>
 
@@ -69,7 +88,14 @@
                 </div>
                 <div>
                     <span class="perfil-info-label">Teléfono</span>
-                    <strong>@perfil.Telefono</strong>
+                    @if (editando)
+                    {
+                        <input type="text" @bind="editTelefono" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Teléfono" />
+                    }
+                    else
+                    {
+                        <strong>@perfil.Telefono</strong>
+                    }
                 </div>
             </div>
 
@@ -79,7 +105,14 @@
                 </div>
                 <div>
                     <span class="perfil-info-label">Correo Electrónico</span>
-                    <strong>@perfil.Correo</strong>
+                    @if (editando)
+                    {
+                        <input type="email" @bind="editEmail" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Email" />
+                    }
+                    else
+                    {
+                        <strong>@perfil.Correo</strong>
+                    }
                 </div>
             </div>
 
@@ -103,30 +136,192 @@
                 </div>
             </div>
         </div>
+
+        @if (editando)
+        {
+            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button class="btn-perfil-edit" @onclick="GuardarPerfil" style="background: #22c55e; border-color: #22c55e;">
+                    💾 Guardar Cambios
+                </button>
+                <button class="btn-perfil-password" @onclick="ToggleEditar">
+                    ✕ Cancelar
+                </button>
+            </div>
+        }
     </div>
+
+    @if (cambiandoContrasenia)
+    {
+        <div class="perfil-info-card" style="margin-top: 16px;">
+            <h3>Cambiar Contraseña</h3>
+            <div class="perfil-info-list">
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon"><span>🔒</span></div>
+                    <div style="flex:1;">
+                        <span class="perfil-info-label">Nueva Contraseña</span>
+                        <input type="password" @bind="nuevaContrasenia" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Nueva contraseña" />
+                    </div>
+                </div>
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon"><span>🔒</span></div>
+                    <div style="flex:1;">
+                        <span class="perfil-info-label">Confirmar Contraseña</span>
+                        <input type="password" @bind="confirmarContrasenia" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Confirmar contraseña" />
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button class="btn-perfil-edit" @onclick="GuardarContrasenia" style="background: #22c55e; border-color: #22c55e;">
+                    💾 Guardar Contraseña
+                </button>
+                <button class="btn-perfil-password" @onclick="ToggleCambiarContrasenia">
+                    ✕ Cancelar
+                </button>
+            </div>
+        </div>
+    }
 </section>
 
 @code {
     private PerfilSocio perfil = new();
+    private SocioDTO? socioActual;
 
-    protected override void OnInitialized()
+    private bool editando = false;
+    private bool cambiandoContrasenia = false;
+
+    private string editNombres = "";
+    private string editTelefono = "";
+    private string editEmail = "";
+
+    private string nuevaContrasenia = "";
+    private string confirmarContrasenia = "";
+
+    private string mensaje = "";
+    private string claseMensaje = "";
+
+    protected override async Task OnInitializedAsync()
     {
-        perfil = new PerfilSocio
+        if (!Session.EstaAutenticado) return;
+
+        socioActual = await SocioService.ObtenerPorIdAsync(Session.IdUsuario);
+
+        if (socioActual != null)
         {
-            DNI = "40234123",
-            NombreCompleto = "Lucia Torres",
-            Telefono = "987654321",
-            Correo = "lucia@email.com",
-            FechaRegistro = new DateTime(2024, 2, 1),
-            Estado = "Activo",
-            TipoMembresia = "Black",
-            EstadoMembresia = "Activa"
-        };
+            // Cargar membresía
+            string tipoMembresia = "Sin membresía";
+            string estadoMembresia = "Inactiva";
+
+            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+            var suscripcion = suscripciones.FirstOrDefault(s => s.IdUsuario == Session.IdUsuario && s.Activo);
+            if (suscripcion != null)
+            {
+                tipoMembresia = suscripcion.TipoPlan;
+                estadoMembresia = "Activa";
+            }
+
+            perfil = new PerfilSocio
+            {
+                DNI = socioActual.Dni.ToString(),
+                NombreCompleto = socioActual.NombreCompleto,
+                Telefono = socioActual.Telefono.ToString(),
+                Correo = socioActual.Email,
+                FechaRegistro = DateTime.Today, // El DTO no tiene fecha de registro
+                Estado = socioActual.Activo ? "Activo" : "Inactivo",
+                TipoMembresia = tipoMembresia,
+                EstadoMembresia = estadoMembresia
+            };
+
+            // Inicializar campos de edición
+            editNombres = socioActual.Nombres;
+            editTelefono = socioActual.Telefono.ToString();
+            editEmail = socioActual.Email;
+        }
     }
 
     private void ToggleEditar()
     {
-        // Se conectará con BL después
+        editando = !editando;
+        cambiandoContrasenia = false;
+        mensaje = "";
+
+        if (editando && socioActual != null)
+        {
+            editNombres = socioActual.Nombres;
+            editTelefono = socioActual.Telefono.ToString();
+            editEmail = socioActual.Email;
+        }
+    }
+
+    private void ToggleCambiarContrasenia()
+    {
+        cambiandoContrasenia = !cambiandoContrasenia;
+        editando = false;
+        mensaje = "";
+        nuevaContrasenia = "";
+        confirmarContrasenia = "";
+    }
+
+    private async Task GuardarPerfil()
+    {
+        if (socioActual == null) return;
+
+        socioActual.Nombres = editNombres;
+        socioActual.Email = editEmail;
+        if (int.TryParse(editTelefono, out int tel))
+            socioActual.Telefono = tel;
+
+        var resultado = await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+
+        if (!resultado.ToLower().Contains("error"))
+        {
+            perfil.NombreCompleto = socioActual.NombreCompleto;
+            perfil.Correo = socioActual.Email;
+            perfil.Telefono = socioActual.Telefono.ToString();
+            editando = false;
+            mensaje = "✓ Perfil actualizado correctamente.";
+            claseMensaje = "renew-message success";
+        }
+        else
+        {
+            mensaje = "✗ Error al actualizar: " + resultado;
+            claseMensaje = "renew-message error";
+        }
+    }
+
+    private async Task GuardarContrasenia()
+    {
+        if (socioActual == null) return;
+
+        if (string.IsNullOrWhiteSpace(nuevaContrasenia))
+        {
+            mensaje = "✗ Debes ingresar una contraseña.";
+            claseMensaje = "renew-message error";
+            return;
+        }
+
+        if (nuevaContrasenia != confirmarContrasenia)
+        {
+            mensaje = "✗ Las contraseñas no coinciden.";
+            claseMensaje = "renew-message error";
+            return;
+        }
+
+        socioActual.Contrasenia = nuevaContrasenia;
+        var resultado = await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+
+        if (!resultado.ToLower().Contains("error"))
+        {
+            cambiandoContrasenia = false;
+            nuevaContrasenia = "";
+            confirmarContrasenia = "";
+            mensaje = "✓ Contraseña actualizada correctamente.";
+            claseMensaje = "renew-message success";
+        }
+        else
+        {
+            mensaje = "✗ Error al actualizar contraseña: " + resultado;
+            claseMensaje = "renew-message error";
+        }
     }
 
     private class PerfilSocio

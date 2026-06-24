@@ -1,4 +1,5 @@
 @page "/admin/suscripciones/nuevo/{PlanTipo}"
+@using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @layout AdminLayout
@@ -110,14 +111,14 @@
                     <div class="subscribe-field">
                         <label>Fecha de inicio</label>
                         <input type="date"
-                               value="@FechaInicio"
+                               value="@FechaInicioInput"
                                @onchange="CambiarFechaInicio" />
                     </div>
 
                     <div class="subscribe-field">
                         <label>Fecha de vencimiento</label>
                         <input type="date"
-                               value="@FechaVencimiento"
+                               value="@FechaVencimientoInput"
                                @onchange="CambiarFechaVencimiento" />
                     </div>
                 </div>
@@ -209,10 +210,17 @@
     public string PlanTipo { get; set; } = "basic";
 
     private string TextoBusqueda { get; set; } = "";
+
     private DateTime FechaInicio { get; set; } = DateTime.Today;
     private DateTime FechaVencimiento { get; set; } = DateTime.Today.AddMonths(1);
+
     private bool SuscripcionActiva { get; set; } = true;
 
+    // Formato obligatorio para input type="date"
+    private string FechaInicioInput => FechaInicio.ToString("yyyy-MM-dd");
+    private string FechaVencimientoInput => FechaVencimiento.ToString("yyyy-MM-dd");
+
+    // Texto mostrado en el resumen
     private string FechaInicioTexto => FechaInicio.ToString("yyyy-MM-dd");
     private string FechaVencimientoTexto => FechaVencimiento.ToString("yyyy-MM-dd");
 
@@ -224,7 +232,7 @@
     private string NombrePlan => PlanTipo.ToLower() == "black" ? "Membresía Black" : "Membresía Basic";
     private string PrecioPlan { get; set; } = "0.00";
     private int IdPlanSeleccionado { get; set; } = 1;
-    
+
     private string IconoPlan => PlanTipo.ToLower() == "black" ? "♛" : "◎";
 
     private string ClaseEstadoActiva => SuscripcionActiva ? "subscribe-status-button active" : "subscribe-status-button";
@@ -265,11 +273,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Cargar precios reales
         if (PlanTipo.ToLower() == "black")
         {
             var planes = await MembresiaBlackService.ListarMembresiasBlackAsync();
             var plan = planes.FirstOrDefault();
+
             if (plan != null)
             {
                 IdPlanSeleccionado = plan.IdMembresiaBlack;
@@ -280,6 +288,7 @@
         {
             var planes = await MembresiaBasicService.ListarMembresiasBasicAsync();
             var plan = planes.FirstOrDefault();
+
             if (plan != null)
             {
                 IdPlanSeleccionado = plan.IdMembresiaBasic;
@@ -287,7 +296,6 @@
             }
         }
 
-        // Cargar socios reales y sus suscripciones
         var listaSocios = await SocioService.ListarSociosAsync();
         var listaSuscripciones = await SuscripcionService.ListarSuscripcionesAsync();
 
@@ -300,7 +308,7 @@
             {
                 IdUsuario = s.IdUsuario,
                 Dni = s.Dni.ToString(),
-                NombreCompleto = $"{s.Nombres} {s.ApellidoPaterno}",
+                NombreCompleto = s.NombreCompleto,
                 Email = s.CorreoElectronico,
                 EstadoMembresia = estado
             });
@@ -331,17 +339,38 @@
 
     private void CambiarFechaInicio(ChangeEventArgs e)
     {
-        if (DateTime.TryParse(e.Value?.ToString(), out DateTime dt))
+        var valor = e.Value?.ToString();
+
+        if (DateTime.TryParseExact(
+                valor,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateTime fecha
+            ))
         {
-            FechaInicio = dt;
+            FechaInicio = fecha;
+
+            if (FechaVencimiento <= FechaInicio)
+            {
+                FechaVencimiento = FechaInicio.AddMonths(1);
+            }
         }
     }
 
     private void CambiarFechaVencimiento(ChangeEventArgs e)
     {
-        if (DateTime.TryParse(e.Value?.ToString(), out DateTime dt))
+        var valor = e.Value?.ToString();
+
+        if (DateTime.TryParseExact(
+                valor,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateTime fecha
+            ))
         {
-            FechaVencimiento = dt;
+            FechaVencimiento = fecha;
         }
     }
 
@@ -380,6 +409,12 @@
             return;
         }
 
+        if (FechaVencimiento <= FechaInicio)
+        {
+            MostrarError("La fecha de vencimiento debe ser posterior a la fecha de inicio.");
+            return;
+        }
+
         var nuevaSuscripcion = new SuscripcionDTO
         {
             IdUsuario = SocioSeleccionado.IdUsuario,
@@ -387,7 +422,7 @@
             FechaIngreso = FechaInicio,
             FechaFinMembresia = FechaVencimiento,
             Activo = SuscripcionActiva,
-            IdPago = 1 // Hardcodeado por ahora ya que no hay pago vinculado en este formulario
+            IdPago = 1
         };
 
         if (PlanTipo.ToLower() == "black")
