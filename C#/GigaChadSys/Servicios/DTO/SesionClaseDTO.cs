@@ -27,7 +27,6 @@ namespace GigaChadSys.Servicios.DTO
         [JsonPropertyName("activo")]
         public bool Activo { get; set; } = true;
 
-        // Compatibilidad por si Java también manda "active".
         [JsonPropertyName("active")]
         public bool Active
         {
@@ -53,6 +52,33 @@ namespace GigaChadSys.Servicios.DTO
         public string HorarioTexto => HoraInicio == default || HoraFin == default
             ? "—"
             : $"{HoraInicio:HH:mm} - {HoraFin:HH:mm}";
+
+        [JsonIgnore]
+        public DateTime FechaHoraInicio =>
+            FechaSesion == default || HoraInicio == default
+                ? default
+                : FechaSesion.Date.Add(HoraInicio.TimeOfDay);
+
+        [JsonIgnore]
+        public DateTime FechaHoraFin =>
+            FechaSesion == default || HoraFin == default
+                ? default
+                : FechaSesion.Date.Add(HoraFin.TimeOfDay);
+
+        [JsonIgnore]
+        public string EstadoTexto
+        {
+            get
+            {
+                if (!Activo)
+                    return "Cancelada";
+
+                if (FechaHoraFin != default && FechaHoraFin < DateTime.Now)
+                    return "Finalizada";
+
+                return "Programada";
+            }
+        }
     }
 
     public class FlexibleSesionDateTimeConverter : JsonConverter<DateTime>
@@ -75,13 +101,15 @@ namespace GigaChadSys.Servicios.DTO
 
                 text = text.Replace("[UTC]", "").Trim();
 
+                if (text.EndsWith("Z", StringComparison.OrdinalIgnoreCase))
+                    text = text[..^1];
+
                 string[] formats =
                 {
                     "yyyy-MM-dd",
                     "yyyy-MM-ddTHH:mm:ss",
-                    "yyyy-MM-ddTHH:mm:ssZ",
                     "yyyy-MM-ddTHH:mm:ss.fff",
-                    "yyyy-MM-ddTHH:mm:ss.fffZ",
+                    "yyyy-MM-dd HH:mm:ss",
                     "dd/MM/yyyy",
                     "MM/dd/yyyy"
                 };
@@ -90,18 +118,25 @@ namespace GigaChadSys.Servicios.DTO
                         text,
                         formats,
                         CultureInfo.InvariantCulture,
-                        DateTimeStyles.AssumeLocal,
+                        DateTimeStyles.None,
                         out DateTime exactDate
                     ))
                 {
-                    return exactDate;
+                    return DateTime.SpecifyKind(exactDate, DateTimeKind.Unspecified);
                 }
 
-                if (DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime parsedDate))
-                    return parsedDate;
+                if (DateTime.TryParse(
+                        text,
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out DateTime parsedDate
+                    ))
+                {
+                    return DateTime.SpecifyKind(parsedDate, DateTimeKind.Unspecified);
+                }
 
                 if (DateTime.TryParse(text, out DateTime fallbackDate))
-                    return fallbackDate;
+                    return DateTime.SpecifyKind(fallbackDate, DateTimeKind.Unspecified);
 
                 return default;
             }
@@ -177,9 +212,13 @@ namespace GigaChadSys.Servicios.DTO
         )
         {
             if (value == default)
+            {
                 writer.WriteNullValue();
-            else
-                writer.WriteStringValue(value.ToString("yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
+                return;
+            }
+
+            var limpio = DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
+            writer.WriteStringValue(limpio.ToString("yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
         }
 
         private static int ObtenerEntero(JsonElement root, string propertyName)

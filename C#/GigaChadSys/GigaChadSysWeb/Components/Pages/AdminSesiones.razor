@@ -12,6 +12,7 @@
             <h1>Sesiones Programadas</h1>
             <p>Calendario y gestión de sesiones de clases.</p>
         </div>
+
         <a class="new-button" href="/admin/sesiones/nuevo">
             + Nueva Sesión
         </a>
@@ -27,8 +28,8 @@
         <input class="admin-search"
                style="max-width: 180px; flex: none;"
                type="date"
-               @bind="FechaFiltro"
-               @bind:event="onchange" />
+               value="@FechaFiltroInput"
+               @onchange="CambiarFechaFiltro" />
 
         <div class="admin-filter-group">
             <button class="@FiltroClaseTodos" @onclick="MostrarTodos">Todos</button>
@@ -60,6 +61,7 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @if (sesiones.Count == 0)
                     {
@@ -75,10 +77,15 @@
                             var clase = sesion.ClaseGrupal;
                             var entrenador = sesion.Entrenador;
 
-                            var cuposMaximos = salon?.AforoMaximo ?? 0;
-                            var cuposOcupados = cuposMaximos - sesion.CuposDisponibles;
-                            var porcentajeCupos = cuposMaximos > 0 ? (int)((double)cuposOcupados / cuposMaximos * 100) : 0;
-                            var estado = sesion.HoraFin < DateTime.Now ? "Finalizada" : "Programada";
+                            var cuposMaximos = salon?.AforoMaximo ?? sesion.CuposDisponibles;
+                            var cuposDisponibles = Math.Max(0, sesion.CuposDisponibles);
+                            var cuposOcupados = Math.Max(0, cuposMaximos - cuposDisponibles);
+                            var porcentajeCupos = cuposMaximos > 0
+                                ? Math.Min(100, (int)((double)cuposOcupados / cuposMaximos * 100))
+                                : 0;
+
+                            var estado = ObtenerEstadoSesion(sesion);
+
                             var nombreClase = clase?.NombreDisciplina ?? "Sin Clase";
                             var nombreEntrenador = entrenador != null ? entrenador.NombreCompleto : "Sin Entrenador";
                             var nombreSalon = salon?.NombreSalon ?? "Sin Salón";
@@ -122,8 +129,12 @@
                                 </td>
 
                                 <td>
-                                    <button type="button" class="action-button" title="Ver">👁</button>
-                                    <button type="button" class="action-button" title="Editar" @onclick="() => IrAEditarSesion(sesion.IdSesion)">✎</button>
+                                    <button type="button"
+                                            class="action-button"
+                                            title="Editar"
+                                            @onclick="() => IrAEditarSesion(sesion.IdSesion)">
+                                        ✎
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -137,6 +148,7 @@
 @code {
     private string TextoBusqueda { get; set; } = "";
     private string FiltroEstado { get; set; } = "Todos";
+    private string FechaFiltroInput { get; set; } = "";
     private DateTime? FechaFiltro { get; set; } = null;
     private bool Cargando { get; set; } = true;
 
@@ -147,13 +159,15 @@
     private string FiltroClaseCanceladas => FiltroEstado == "Cancelada" ? "filter-button active" : "filter-button";
     private string FiltroClaseFinalizadas => FiltroEstado == "Finalizada" ? "filter-button active" : "filter-button";
 
-    private void MostrarTodos() => FiltroEstado = "Todos";
-    private void MostrarProgramadas() => FiltroEstado = "Programada";
-    private void MostrarCanceladas() => FiltroEstado = "Cancelada";
-    private void MostrarFinalizadas() => FiltroEstado = "Finalizada";
-
     protected override async Task OnInitializedAsync()
     {
+        await CargarSesiones();
+    }
+
+    private async Task CargarSesiones()
+    {
+        Cargando = true;
+
         try
         {
             ListaSesiones = await SesionService.ListarSesionesAsync();
@@ -161,6 +175,31 @@
         finally
         {
             Cargando = false;
+        }
+    }
+
+    private void MostrarTodos() => FiltroEstado = "Todos";
+    private void MostrarProgramadas() => FiltroEstado = "Programada";
+    private void MostrarCanceladas() => FiltroEstado = "Cancelada";
+    private void MostrarFinalizadas() => FiltroEstado = "Finalizada";
+
+    private void CambiarFechaFiltro(ChangeEventArgs e)
+    {
+        FechaFiltroInput = e.Value?.ToString() ?? "";
+
+        if (DateTime.TryParseExact(
+                FechaFiltroInput,
+                "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out var fecha
+            ))
+        {
+            FechaFiltro = fecha;
+        }
+        else
+        {
+            FechaFiltro = null;
         }
     }
 
@@ -177,22 +216,18 @@
 
             if (FiltroEstado != "Todos")
             {
-                if (FiltroEstado == "Finalizada")
-                {
-                    resultado = resultado.Where(s => s.HoraFin < DateTime.Now);
-                }
-                else if (FiltroEstado == "Programada")
-                {
-                    resultado = resultado.Where(s => s.HoraFin >= DateTime.Now);
-                }
+                resultado = resultado.Where(s => ObtenerEstadoSesion(s) == FiltroEstado);
             }
 
             if (FechaFiltro.HasValue)
+            {
                 resultado = resultado.Where(s => s.FechaSesion.Date == FechaFiltro.Value.Date);
+            }
 
             if (!string.IsNullOrWhiteSpace(TextoBusqueda))
             {
                 string texto = TextoBusqueda.Trim();
+
                 resultado = resultado.Where(s =>
                     (s.ClaseGrupal?.NombreDisciplina?.Contains(texto, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (s.Entrenador?.Nombres?.Contains(texto, StringComparison.OrdinalIgnoreCase) ?? false) ||
@@ -201,7 +236,20 @@
                 );
             }
 
-            return resultado.OrderBy(s => s.FechaSesion).ThenBy(s => s.HoraInicio);
+            return resultado.OrderBy(s => s.FechaSesion.Date).ThenBy(s => s.HoraInicio);
         }
+    }
+
+    private static string ObtenerEstadoSesion(SesionClaseDTO sesion)
+    {
+        if (!sesion.Activo)
+            return "Cancelada";
+
+        var fechaHoraFin = sesion.FechaSesion.Date.Add(sesion.HoraFin.TimeOfDay);
+
+        if (fechaHoraFin < DateTime.Now)
+            return "Finalizada";
+
+        return "Programada";
     }
 }
