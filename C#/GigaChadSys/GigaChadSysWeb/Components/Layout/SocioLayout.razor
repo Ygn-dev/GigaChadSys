@@ -107,16 +107,17 @@
     protected override void OnInitialized()
     {
         ToggleSvc.OnChange += HandleToggleChange;
+        ToggleSvc.OnAutoClick += HandleAutoClick;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async void HandleAutoClick()
     {
-        if (ToggleSvc.Visible && ToggleSvc.AutoClick)
+        await InvokeAsync(async () =>
         {
-            ToggleSvc.ResetAutoClick();
-            await Task.Delay(500);
+            StateHasChanged();
+            await Task.Delay(300);
             await JS.InvokeVoidAsync("eval", "document.querySelector('.gc-btn-danger-float')?.click()");
-        }
+        });
     }
 
     private async void HandleToggleChange()
@@ -133,5 +134,6 @@
     public void Dispose()
     {
         ToggleSvc.OnChange -= HandleToggleChange;
+        ToggleSvc.OnAutoClick -= HandleAutoClick;
     }
 }

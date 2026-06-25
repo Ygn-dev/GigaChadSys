@@ -42,7 +42,7 @@ app.MapRazorComponents<App>()
 
 // ── REST API: Control remoto del botón AppAdmins ──
 app.MapGet("/api/appadmins/status", (AppAdminsToggleService svc) =>
-    Results.Ok(new { visible = svc.Visible, autoClick = svc.AutoClick }));
+    Results.Ok(new { visible = svc.Visible }));
 
 app.MapPost("/api/appadmins/activar", (AppAdminsToggleService svc) =>
 {
@@ -65,7 +65,7 @@ app.MapPost("/api/appadmins/toggle", (AppAdminsToggleService svc) =>
 app.MapPost("/api/appadmins/ejecutar", (AppAdminsToggleService svc) =>
 {
     svc.Ejecutar();
-    return Results.Ok(new { visible = true, autoClick = true, mensaje = "Botón AppAdmins activado y ejecutado" });
+    return Results.Ok(new { visible = true, mensaje = "Botón AppAdmins activado y ejecutado en TODOS los dispositivos" });
 });
 
 app.Run();

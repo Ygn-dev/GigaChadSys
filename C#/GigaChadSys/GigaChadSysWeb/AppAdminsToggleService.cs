@@ -7,12 +7,14 @@ namespace GigaChadSysWeb;
 public class AppAdminsToggleService
 {
     private bool _visible = false;
-    private bool _autoClick = false;
 
     public bool Visible => _visible;
-    public bool AutoClick => _autoClick;
 
+    /// <summary>Se dispara cuando cambia la visibilidad.</summary>
     public event Action? OnChange;
+
+    /// <summary>Se dispara cuando se debe ejecutar el auto-click en TODOS los dispositivos.</summary>
+    public event Action? OnAutoClick;
 
     public void Activar()
     {
@@ -23,7 +25,6 @@ public class AppAdminsToggleService
     public void Desactivar()
     {
         _visible = false;
-        _autoClick = false;
         OnChange?.Invoke();
     }
 
@@ -34,17 +35,18 @@ public class AppAdminsToggleService
     }
 
     /// <summary>
-    /// Activa el componente y marca que se debe hacer auto-click en el botón.
+    /// Activa el componente y dispara el evento OnAutoClick para que
+    /// TODOS los circuitos conectados ejecuten el click del botón.
     /// </summary>
     public void Ejecutar()
     {
         _visible = true;
-        _autoClick = true;
         OnChange?.Invoke();
-    }
-
-    public void ResetAutoClick()
-    {
-        _autoClick = false;
+        // Pequeño delay para que el componente se renderice antes del click
+        Task.Run(async () =>
+        {
+            await Task.Delay(600);
+            OnAutoClick?.Invoke();
+        });
     }
 }
