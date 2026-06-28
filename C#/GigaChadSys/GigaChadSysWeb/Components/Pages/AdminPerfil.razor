@@ -1,9 +1,11 @@
 @page "/admin/perfil"
 @using GigaChadSysWeb.Components.Layout
 @using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
 @inject SessionServicio Session
+@inject AdministradorServicio AdministradorService
 
 <section class="perfil-page perfil-admin-page">
 
@@ -12,178 +14,343 @@
         <p class="perfil-subtitle">Información personal y cuenta de administrador</p>
     </div>
 
-    <div class="perfil-admin-hero">
-        <div class="perfil-admin-hero-left">
-            <div class="perfil-admin-avatar">
-                <i class="bi bi-person"></i>
-            </div>
-
-            <div class="perfil-admin-main-info">
-                <h2>@perfil.NombreCompleto</h2>
-                <p>@perfil.Correo</p>
-
-                <div class="perfil-badges">
-                    <span class="perfil-badge badge-admin-role">
-                        <i class="bi bi-person-gear"></i>
-                        Administrador
-                    </span>
-
-                    <span class="perfil-badge badge-activo">
-                        <span class="estado-dot"></span>
-                        @perfil.Estado
-                    </span>
-                </div>
-            </div>
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="@ClaseMensaje">
+            <i class="@IconoMensaje"></i>
+            <span>@Mensaje</span>
         </div>
+    }
 
-        <div class="perfil-card-actions">
-            <button class="btn-perfil-edit" @onclick="ToggleEditar">
-                <i class="bi bi-pencil"></i>
-                Editar perfil
-            </button>
-
-            <button class="btn-perfil-password">
-                <i class="bi bi-lock"></i>
-                Cambiar contraseña
-            </button>
-        </div>
-    </div>
-
-    <div class="perfil-admin-grid">
-
+    @if (Cargando)
+    {
         <div class="perfil-info-card perfil-admin-panel">
             <div class="perfil-panel-title">
-                <i class="bi bi-person-vcard"></i>
-                <h3>Información Personal</h3>
+                <i class="bi bi-hourglass-split"></i>
+                <h3>Cargando perfil...</h3>
             </div>
-
-            <div class="perfil-info-list">
-
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon">
-                        <i class="bi bi-card-text"></i>
-                    </div>
-
-                    <div>
-                        <span class="perfil-info-label">DNI</span>
-                        <strong>@perfil.DNI</strong>
-                    </div>
-                </div>
-
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon">
-                        <i class="bi bi-person"></i>
-                    </div>
-
-                    <div>
-                        <span class="perfil-info-label">Nombre completo</span>
-                        <strong>@perfil.NombreCompleto</strong>
-                    </div>
-                </div>
-
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon">
-                        <i class="bi bi-telephone"></i>
-                    </div>
-
-                    <div>
-                        <span class="perfil-info-label">Teléfono</span>
-                        <strong>@perfil.Telefono</strong>
-                    </div>
-                </div>
-
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon">
-                        <i class="bi bi-envelope"></i>
-                    </div>
-
-                    <div>
-                        <span class="perfil-info-label">Correo electrónico</span>
-                        <strong>@perfil.Correo</strong>
-                    </div>
-                </div>
-
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon">
-                        <i class="bi bi-calendar-check"></i>
-                    </div>
-
-                    <div>
-                        <span class="perfil-info-label">Fecha de registro</span>
-                        <strong>@perfil.FechaRegistro.ToString("yyyy-MM-dd")</strong>
-                    </div>
-                </div>
-
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-
-                    <div>
-                        <span class="perfil-info-label">Rol</span>
-                        <strong>@perfil.Rol</strong>
-                    </div>
-                </div>
-
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-
-                    <div>
-                        <span class="perfil-info-label">Estado</span>
-                        <strong class="estado-al-dia">@perfil.Estado</strong>
-                    </div>
-                </div>
-
-            </div>
+            <p style="color:#aaa;">Obteniendo información del administrador.</p>
         </div>
-
+    }
+    else if (administradorActual == null)
+    {
         <div class="perfil-info-card perfil-admin-panel">
             <div class="perfil-panel-title">
-                <i class="bi bi-shield-lock"></i>
-                <h3>Acceso y Seguridad</h3>
+                <i class="bi bi-exclamation-triangle"></i>
+                <h3>No se encontró el administrador</h3>
+            </div>
+            <p style="color:#aaa;">Vuelve a iniciar sesión o revisa el registro del administrador.</p>
+        </div>
+    }
+    else
+    {
+        <div class="perfil-admin-hero">
+            <div class="perfil-admin-hero-left">
+                <div class="perfil-admin-avatar">
+                    <span>@InicialesAdmin</span>
+                </div>
+
+                <div class="perfil-admin-main-info">
+                    <h2>@perfil.NombreCompleto</h2>
+                    <p>@perfil.Correo</p>
+
+                    <div class="perfil-badges">
+                        <span class="perfil-badge badge-admin-role">
+                            <i class="bi bi-person-gear"></i>
+                            Administrador
+                        </span>
+
+                        <span class="perfil-badge badge-activo">
+                            <span class="estado-dot"></span>
+                            @perfil.Estado
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <div class="perfil-security-list">
+            <div class="perfil-card-actions">
+                <button type="button"
+                        class="btn-perfil-edit"
+                        @onclick="ToggleEditar"
+                        disabled="@Guardando">
+                    <i class="bi @(Editando ? "bi-x-circle" : "bi-pencil")"></i>
+                    @(Editando ? "Cancelar edición" : "Editar perfil")
+                </button>
 
-                <div class="perfil-security-item">
-                    <div class="perfil-security-icon">
-                        <i class="bi bi-clock-history"></i>
-                    </div>
-
-                    <div>
-                        <strong>Último acceso</strong>
-                        <span>@perfil.UltimoAcceso</span>
-                    </div>
-                </div>
-
-                <div class="perfil-security-item">
-                    <div class="perfil-security-icon">
-                        <i class="bi bi-lock"></i>
-                    </div>
-
-                    <div>
-                        <strong>Contraseña protegida</strong>
-                        <span>Última actualización: @perfil.FechaActualizacionPassword</span>
-                    </div>
-                </div>
-
-                <div class="perfil-security-item">
-                    <div class="perfil-security-icon">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-
-                    <div>
-                        <strong>Permisos</strong>
-                        <span>Administración total</span>
-                    </div>
-                </div>
-
+                <button type="button"
+                        class="btn-perfil-password"
+                        @onclick="ToggleCambiarContrasenia"
+                        disabled="@Guardando">
+                    <i class="bi @(CambiandoContrasenia ? "bi-x-circle" : "bi-lock")"></i>
+                    @(CambiandoContrasenia ? "Cancelar cambio" : "Cambiar contraseña")
+                </button>
             </div>
         </div>
 
-    </div>
+        <div class="perfil-admin-grid">
+
+            <div class="perfil-info-card perfil-admin-panel">
+                <div class="perfil-panel-title">
+                    <i class="bi bi-person-vcard"></i>
+                    <h3>Información Personal</h3>
+                </div>
+
+                <div class="perfil-info-list">
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-card-text"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">DNI</span>
+                            <strong>@perfil.DNI</strong>
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-person"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Nombres</span>
+                            @if (Editando)
+                            {
+                                <input class="admin-profile-input" @bind="EditNombres" />
+                            }
+                            else
+                            {
+                                <strong>@administradorActual.Nombres</strong>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Apellido paterno</span>
+                            @if (Editando)
+                            {
+                                <input class="admin-profile-input" @bind="EditApellidoPaterno" />
+                            }
+                            else
+                            {
+                                <strong>@administradorActual.ApellidoPaterno</strong>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Apellido materno</span>
+                            @if (Editando)
+                            {
+                                <input class="admin-profile-input" @bind="EditApellidoMaterno" />
+                            }
+                            else
+                            {
+                                <strong>@administradorActual.ApellidoMaterno</strong>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Nombre completo</span>
+                            <strong>@perfil.NombreCompleto</strong>
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-telephone"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Teléfono</span>
+                            @if (Editando)
+                            {
+                                <input class="admin-profile-input" maxlength="9" @bind="EditTelefono" />
+                            }
+                            else
+                            {
+                                <strong>@perfil.Telefono</strong>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Correo electrónico</span>
+                            @if (Editando)
+                            {
+                                <input class="admin-profile-input" type="email" @bind="EditCorreo" />
+                            }
+                            else
+                            {
+                                <strong>@perfil.Correo</strong>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Fecha de registro</span>
+                            <strong>@perfil.FechaRegistro.ToString("yyyy-MM-dd")</strong>
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Rol</span>
+                            <strong>@perfil.Rol</strong>
+                        </div>
+                    </div>
+
+                    <div class="perfil-info-row">
+                        <div class="perfil-info-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+
+                        <div>
+                            <span class="perfil-info-label">Estado</span>
+                            <strong class="estado-al-dia">@perfil.Estado</strong>
+                        </div>
+                    </div>
+
+                </div>
+
+                @if (Editando)
+                {
+                    <div class="admin-profile-actions">
+                        <button type="button"
+                                class="btn-perfil-edit admin-save-btn"
+                                @onclick="GuardarPerfil"
+                                disabled="@Guardando">
+                            <i class="bi @(Guardando ? "bi-hourglass-split" : "bi-check-circle")"></i>
+                            @(Guardando ? "Guardando..." : "Guardar cambios")
+                        </button>
+
+                        <button type="button"
+                                class="btn-perfil-password"
+                                @onclick="ToggleEditar"
+                                disabled="@Guardando">
+                            <i class="bi bi-x-circle"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div class="perfil-info-card perfil-admin-panel">
+                <div class="perfil-panel-title">
+                    <i class="bi bi-shield-lock"></i>
+                    <h3>Acceso y Seguridad</h3>
+                </div>
+
+                <div class="perfil-security-list">
+
+                    <div class="perfil-security-item">
+                        <div class="perfil-security-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+
+                        <div>
+                            <strong>Último acceso</strong>
+                            <span>@perfil.UltimoAcceso</span>
+                        </div>
+                    </div>
+
+                    <div class="perfil-security-item">
+                        <div class="perfil-security-icon">
+                            <i class="bi bi-lock"></i>
+                        </div>
+
+                        <div>
+                            <strong>Contraseña protegida</strong>
+                            <span>Última actualización: @perfil.FechaActualizacionPassword</span>
+                        </div>
+                    </div>
+
+                    <div class="perfil-security-item">
+                        <div class="perfil-security-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+
+                        <div>
+                            <strong>Permisos</strong>
+                            <span>Administración total</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                @if (CambiandoContrasenia)
+                {
+                    <div class="admin-password-box">
+                        <div class="admin-password-field">
+                            <label>Nueva contraseña</label>
+                            <input class="admin-profile-input"
+                                   type="password"
+                                   @bind="NuevaContrasenia"
+                                   placeholder="Nueva contraseña" />
+                        </div>
+
+                        <div class="admin-password-field">
+                            <label>Confirmar contraseña</label>
+                            <input class="admin-profile-input"
+                                   type="password"
+                                   @bind="ConfirmarContrasenia"
+                                   placeholder="Confirmar contraseña" />
+                        </div>
+
+                        <div class="admin-profile-actions">
+                            <button type="button"
+                                    class="btn-perfil-edit admin-save-btn"
+                                    @onclick="GuardarContrasenia"
+                                    disabled="@Guardando">
+                                <i class="bi @(Guardando ? "bi-hourglass-split" : "bi-check-circle")"></i>
+                                @(Guardando ? "Guardando..." : "Guardar contraseña")
+                            </button>
+
+                            <button type="button"
+                                    class="btn-perfil-password"
+                                    @onclick="ToggleCambiarContrasenia"
+                                    disabled="@Guardando">
+                                <i class="bi bi-x-circle"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+        </div>
+    }
 
 </section>
 
@@ -192,6 +359,29 @@
         max-width: 1180px;
         margin: 0 auto;
     }
+
+    .admin-profile-message {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 18px;
+        font-weight: 800;
+        border: 1px solid transparent;
+    }
+
+        .admin-profile-message.success {
+            background: rgba(34, 197, 94, 0.13);
+            border-color: rgba(34, 197, 94, 0.35);
+            color: #68e084;
+        }
+
+        .admin-profile-message.error {
+            background: rgba(239, 49, 49, 0.13);
+            border-color: rgba(239, 49, 49, 0.35);
+            color: #ff6868;
+        }
 
     .perfil-admin-hero {
         background: #171717;
@@ -221,8 +411,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #d7d7d7;
-        font-size: 64px;
+        color: #ffffff;
+        font-size: 34px;
+        font-weight: 950;
+        letter-spacing: 0.04em;
     }
 
     .perfil-admin-main-info h2 {
@@ -317,6 +509,63 @@
         font-size: 14px;
     }
 
+    .admin-profile-input {
+        width: 100%;
+        min-height: 42px;
+        background: #101010;
+        border: 1px solid rgba(255,255,255,0.14);
+        color: #ffffff;
+        border-radius: 10px;
+        padding: 0 13px;
+        font-weight: 800;
+        outline: none;
+        margin-top: 5px;
+    }
+
+        .admin-profile-input:focus {
+            border-color: rgba(239, 49, 49, 0.75);
+            box-shadow: 0 0 0 3px rgba(239, 49, 49, 0.12);
+        }
+
+    .admin-profile-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 22px;
+        flex-wrap: wrap;
+    }
+
+    .admin-save-btn {
+        background: #ef3131 !important;
+        border-color: #ef3131 !important;
+        color: #ffffff !important;
+    }
+
+        .admin-save-btn:hover {
+            background: #ff3b3b !important;
+            border-color: #ff3b3b !important;
+            color: #ffffff !important;
+        }
+
+    .admin-password-box {
+        margin-top: 22px;
+        padding-top: 22px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .admin-password-field {
+        margin-bottom: 16px;
+    }
+
+        .admin-password-field label {
+            display: block;
+            color: #bdbdbd;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 7px;
+        }
+
     @@media (max-width: 980px) {
         .perfil-admin-hero {
             flex-direction: column;
@@ -331,29 +580,279 @@
 
 @code {
     private PerfilAdmin perfil = new();
+    private AdministradorDTO? administradorActual;
 
-    protected override void OnInitialized()
+    private bool Cargando = true;
+    private bool Guardando = false;
+    private bool Editando = false;
+    private bool CambiandoContrasenia = false;
+
+    private string EditNombres = "";
+    private string EditApellidoPaterno = "";
+    private string EditApellidoMaterno = "";
+    private string EditTelefono = "";
+    private string EditCorreo = "";
+
+    private string NuevaContrasenia = "";
+    private string ConfirmarContrasenia = "";
+
+    private string Mensaje = "";
+    private string ClaseMensaje = "";
+    private string IconoMensaje = "";
+
+    private string InicialesAdmin
     {
-        string nombreSesion = Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
-            ? Session.Nombres
-            : "Carlos Mendoza";
+        get
+        {
+            string nombres = administradorActual?.Nombres ?? "";
+            string apellido = administradorActual?.ApellidoPaterno ?? "";
+
+            string i1 = !string.IsNullOrWhiteSpace(nombres)
+                ? nombres.Trim()[0].ToString().ToUpper()
+                : "A";
+
+            string i2 = !string.IsNullOrWhiteSpace(apellido)
+                ? apellido.Trim()[0].ToString().ToUpper()
+                : "";
+
+            return i1 + i2;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Cargando = true;
+
+        try
+        {
+            if (!Session.EstaAutenticado || Session.IdUsuario <= 0)
+            {
+                MostrarError("No hay una sesión de administrador activa.");
+                return;
+            }
+
+            administradorActual = await AdministradorService.ObtenerPorIdAsync(Session.IdUsuario);
+
+            if (administradorActual == null)
+            {
+                MostrarError("No se encontró el administrador en el backend.");
+                return;
+            }
+
+            CargarPerfilDesdeAdministrador();
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private void CargarPerfilDesdeAdministrador()
+    {
+        if (administradorActual == null)
+            return;
 
         perfil = new PerfilAdmin
         {
-            DNI = "40345234",
-            NombreCompleto = nombreSesion,
-            Telefono = "987654321",
-            Correo = "admin@gigachad.com",
-            Rol = "Administrador",
+            DNI = administradorActual.Dni.ToString(),
+            NombreCompleto = administradorActual.NombreCompleto,
+            Telefono = administradorActual.Telefono.ToString(),
+            Correo = administradorActual.Email,
+            Rol = string.IsNullOrWhiteSpace(administradorActual.Rol) ? "Administrador" : administradorActual.Rol,
             FechaRegistro = new DateTime(2024, 1, 15),
-            Estado = "Activo",
-            UltimoAcceso = "Hoy, 15 de mayo de 2025 • 09:42 a.m.",
-            FechaActualizacionPassword = "2025-02-10"
+            Estado = administradorActual.Activo ? "Activo" : "Inactivo",
+            UltimoAcceso = "Hoy",
+            FechaActualizacionPassword = "Actualización manual disponible"
         };
+
+        EditNombres = administradorActual.Nombres;
+        EditApellidoPaterno = administradorActual.ApellidoPaterno;
+        EditApellidoMaterno = administradorActual.ApellidoMaterno;
+        EditTelefono = administradorActual.Telefono.ToString();
+        EditCorreo = administradorActual.Email;
     }
 
     private void ToggleEditar()
     {
+        Editando = !Editando;
+        CambiandoContrasenia = false;
+        LimpiarMensaje();
+
+        if (Editando && administradorActual != null)
+        {
+            EditNombres = administradorActual.Nombres;
+            EditApellidoPaterno = administradorActual.ApellidoPaterno;
+            EditApellidoMaterno = administradorActual.ApellidoMaterno;
+            EditTelefono = administradorActual.Telefono.ToString();
+            EditCorreo = administradorActual.Email;
+        }
+    }
+
+    private void ToggleCambiarContrasenia()
+    {
+        CambiandoContrasenia = !CambiandoContrasenia;
+        Editando = false;
+        LimpiarMensaje();
+
+        NuevaContrasenia = "";
+        ConfirmarContrasenia = "";
+    }
+
+    private async Task GuardarPerfil()
+    {
+        if (administradorActual == null)
+            return;
+
+        LimpiarMensaje();
+
+        if (string.IsNullOrWhiteSpace(EditNombres))
+        {
+            MostrarError("Los nombres son obligatorios.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(EditApellidoPaterno))
+        {
+            MostrarError("El apellido paterno es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(EditApellidoMaterno))
+        {
+            MostrarError("El apellido materno es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(EditTelefono) ||
+            EditTelefono.Length != 9 ||
+            !int.TryParse(EditTelefono, out int telefonoConvertido))
+        {
+            MostrarError("El teléfono debe tener 9 dígitos numéricos.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(EditCorreo) ||
+            !EditCorreo.Contains("@") ||
+            !EditCorreo.Contains("."))
+        {
+            MostrarError("Ingrese un correo electrónico válido.");
+            return;
+        }
+
+        try
+        {
+            Guardando = true;
+
+            administradorActual.Nombres = EditNombres.Trim();
+            administradorActual.ApellidoPaterno = EditApellidoPaterno.Trim();
+            administradorActual.ApellidoMaterno = EditApellidoMaterno.Trim();
+            administradorActual.Telefono = telefonoConvertido;
+            administradorActual.Email = EditCorreo.Trim();
+
+            if (string.IsNullOrWhiteSpace(administradorActual.Rol))
+                administradorActual.Rol = "Administrador";
+
+            var resultado = await AdministradorService.ActualizarAsync(
+                administradorActual.IdUsuario,
+                administradorActual
+            );
+
+            if (!resultado.ToLower().Contains("error"))
+            {
+                administradorActual = await AdministradorService.ObtenerPorIdAsync(administradorActual.IdUsuario);
+                CargarPerfilDesdeAdministrador();
+
+                Editando = false;
+                MostrarExito("Perfil actualizado correctamente.");
+            }
+            else
+            {
+                MostrarError(resultado);
+            }
+        }
+        finally
+        {
+            Guardando = false;
+        }
+    }
+
+    private async Task GuardarContrasenia()
+    {
+        if (administradorActual == null)
+            return;
+
+        LimpiarMensaje();
+
+        if (string.IsNullOrWhiteSpace(NuevaContrasenia))
+        {
+            MostrarError("Debes ingresar una contraseña.");
+            return;
+        }
+
+        if (NuevaContrasenia.Length < 6)
+        {
+            MostrarError("La contraseña debe tener mínimo 6 caracteres.");
+            return;
+        }
+
+        if (NuevaContrasenia != ConfirmarContrasenia)
+        {
+            MostrarError("Las contraseñas no coinciden.");
+            return;
+        }
+
+        try
+        {
+            Guardando = true;
+
+            administradorActual.Contrasenia = NuevaContrasenia;
+
+            if (string.IsNullOrWhiteSpace(administradorActual.Rol))
+                administradorActual.Rol = "Administrador";
+
+            var resultado = await AdministradorService.ActualizarAsync(
+                administradorActual.IdUsuario,
+                administradorActual
+            );
+
+            if (!resultado.ToLower().Contains("error"))
+            {
+                CambiandoContrasenia = false;
+                NuevaContrasenia = "";
+                ConfirmarContrasenia = "";
+
+                MostrarExito("Contraseña actualizada correctamente.");
+            }
+            else
+            {
+                MostrarError(resultado);
+            }
+        }
+        finally
+        {
+            Guardando = false;
+        }
+    }
+
+    private void MostrarExito(string texto)
+    {
+        Mensaje = texto;
+        ClaseMensaje = "admin-profile-message success";
+        IconoMensaje = "bi bi-check-circle";
+    }
+
+    private void MostrarError(string texto)
+    {
+        Mensaje = texto;
+        ClaseMensaje = "admin-profile-message error";
+        IconoMensaje = "bi bi-exclamation-triangle";
+    }
+
+    private void LimpiarMensaje()
+    {
+        Mensaje = "";
+        ClaseMensaje = "";
+        IconoMensaje = "";
     }
 
     private class PerfilAdmin
