@@ -8,6 +8,7 @@
 @inject PagoServicio PagoService
 @inject SuscripcionServicio SuscripcionService
 @inject SocioServicio SocioService
+@inject EntrenadorServicio EntrenadorService
 @inject MetodoPagoServicio MetodoPagoService
 @inject NavigationManager Navigation
 
@@ -185,7 +186,11 @@
 
                                         <div>
                                             <strong>@pago.UsuarioNombre</strong>
-                                            <span>@pago.UsuarioDetalle</span>
+
+                                            @if (!string.IsNullOrWhiteSpace(pago.UsuarioDetalle))
+                                            {
+                                                <span>@pago.UsuarioDetalle</span>
+                                            }
                                         </div>
                                     </div>
                                 </td>
@@ -334,10 +339,13 @@
                         <strong>@PagoSeleccionado.RolUsuario</strong>
                     </div>
 
-                    <div class="salon-modal-info">
-                        <span>Detalle usuario</span>
-                        <strong>@PagoSeleccionado.UsuarioDetalle</strong>
-                    </div>
+                    @if (!string.IsNullOrWhiteSpace(PagoSeleccionado.UsuarioDetalle))
+                    {
+                        <div class="salon-modal-info">
+                            <span>DNI</span>
+                            <strong>@PagoSeleccionado.UsuarioDetalle</strong>
+                        </div>
+                    }
 
                     <div class="salon-modal-info">
                         <span>Tipo movimiento</span>
@@ -637,13 +645,21 @@
             var pagosTask = PagoService.ListarPagosAsync();
             var suscripcionesTask = SuscripcionService.ListarSuscripcionesAsync();
             var sociosTask = SocioService.ListarSociosAsync();
+            var entrenadoresTask = EntrenadorService.ListarEntrenadoresAsync();
             var metodosTask = MetodoPagoService.ListarMetodosDePagoAsync();
 
-            await Task.WhenAll(pagosTask, suscripcionesTask, sociosTask, metodosTask);
+            await Task.WhenAll(
+                pagosTask,
+                suscripcionesTask,
+                sociosTask,
+                entrenadoresTask,
+                metodosTask
+            );
 
             var pagosResult = pagosTask.Result;
             var suscripcionesResult = suscripcionesTask.Result;
             var sociosResult = sociosTask.Result;
+            var entrenadoresResult = entrenadoresTask.Result;
             var metodosResult = metodosTask.Result;
 
             var dictSocios = sociosResult.ToDictionary(s => s.IdUsuario, s => s);
@@ -671,9 +687,21 @@
 
                 if (esEgreso)
                 {
-                    usuarioNombre = ObtenerNombreEntrenadorDesdePago(pago);
-                    usuarioDetalle = "Pago de sueldo";
-                    iniciales = ObtenerInicialesTexto(usuarioNombre);
+                    var entrenador = ObtenerEntrenadorDesdePago(pago, entrenadoresResult);
+
+                    if (entrenador != null)
+                    {
+                        usuarioNombre = ObtenerNombreEntrenador(entrenador);
+                        usuarioDetalle = entrenador.Dni.ToString();
+                        iniciales = ObtenerInicialesEntrenador(entrenador);
+                    }
+                    else
+                    {
+                        usuarioNombre = ExtraerNombreEntrenadorDesdePago(pago);
+                        usuarioDetalle = "";
+                        iniciales = ObtenerInicialesTexto(usuarioNombre);
+                    }
+
                     rolUsuario = "Entrenador";
                     concepto = pago.Tipo ?? "Sueldo de entrenador";
                 }
@@ -880,7 +908,29 @@
                tipo.Contains("entrenador");
     }
 
-    private static string ObtenerNombreEntrenadorDesdePago(PagoDTO pago)
+    private static EntrenadorDTO? ObtenerEntrenadorDesdePago(
+        PagoDTO pago,
+        List<EntrenadorDTO> entrenadores)
+    {
+        string nombreExtraido = ExtraerNombreEntrenadorDesdePago(pago);
+
+        if (string.IsNullOrWhiteSpace(nombreExtraido))
+            return null;
+
+        string buscado = NormalizarTexto(nombreExtraido);
+
+        return entrenadores.FirstOrDefault(e =>
+        {
+            string nombres = NormalizarTexto(e.Nombres);
+            string completo = NormalizarTexto(ObtenerNombreEntrenador(e));
+
+            return nombres == buscado ||
+                   nombres.StartsWith(buscado) ||
+                   completo.Contains(buscado);
+        });
+    }
+
+    private static string ExtraerNombreEntrenadorDesdePago(PagoDTO pago)
     {
         if (string.IsNullOrWhiteSpace(pago.Tipo))
             return "Entrenador";
@@ -899,6 +949,33 @@
         return string.IsNullOrWhiteSpace(texto) ? "Entrenador" : texto;
     }
 
+    private static string ObtenerNombreEntrenador(EntrenadorDTO entrenador)
+    {
+        string nombre = $"{entrenador.Nombres} {entrenador.ApellidoPaterno} {entrenador.ApellidoMaterno}".Trim();
+
+        return string.IsNullOrWhiteSpace(nombre)
+            ? "Entrenador sin nombre"
+            : nombre;
+    }
+
+    private static string ObtenerInicialesEntrenador(EntrenadorDTO entrenador)
+    {
+        string nombres = entrenador.Nombres ?? "";
+        string apellido = entrenador.ApellidoPaterno ?? "";
+
+        string inicialNombre = !string.IsNullOrWhiteSpace(nombres)
+            ? nombres.Trim()[0].ToString().ToUpper()
+            : "";
+
+        string inicialApellido = !string.IsNullOrWhiteSpace(apellido)
+            ? apellido.Trim()[0].ToString().ToUpper()
+            : "";
+
+        string iniciales = $"{inicialNombre}{inicialApellido}";
+
+        return string.IsNullOrWhiteSpace(iniciales) ? "E" : iniciales;
+    }
+
     private static string ObtenerInicialesTexto(string texto)
     {
         if (string.IsNullOrWhiteSpace(texto))
@@ -911,6 +988,19 @@
             return partes[0][0].ToString().ToUpper();
 
         return $"{partes[0][0]}{partes[1][0]}".ToUpper();
+    }
+
+    private static string NormalizarTexto(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+            return "";
+
+        string normalizado = texto.Normalize(System.Text.NormalizationForm.FormD);
+        var chars = normalizado
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .ToArray();
+
+        return new string(chars).Trim().ToLowerInvariant();
     }
 
     private class PagoItem

@@ -4,24 +4,50 @@ import java.math.BigDecimal;
 
 public class ReportePagoAdministradorDTO {
 
+    private String usuario;
+    private String rolUsuario;
     private String concepto;
-    private String tipo;
+    private String movimiento;
     private String metodo;
-    private BigDecimal monto;
     private String fecha;
     private String estado;
+    private BigDecimal monto;
 
     public ReportePagoAdministradorDTO() {
     }
 
-    public ReportePagoAdministradorDTO(String concepto, String tipo, String metodo,
-                                       BigDecimal monto, String fecha, String estado) {
+    public ReportePagoAdministradorDTO(String usuario,
+                                       String rolUsuario,
+                                       String concepto,
+                                       String movimiento,
+                                       String metodo,
+                                       String fecha,
+                                       String estado,
+                                       BigDecimal monto) {
+        this.usuario = usuario;
+        this.rolUsuario = rolUsuario;
         this.concepto = concepto;
-        this.tipo = tipo;
+        this.movimiento = movimiento;
         this.metodo = metodo;
-        this.monto = monto;
         this.fecha = fecha;
         this.estado = estado;
+        this.monto = monto;
+    }
+
+    public String getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
+    }
+
+    public String getRolUsuario() {
+        return rolUsuario;
+    }
+
+    public void setRolUsuario(String rolUsuario) {
+        this.rolUsuario = rolUsuario;
     }
 
     public String getConcepto() {
@@ -32,12 +58,12 @@ public class ReportePagoAdministradorDTO {
         this.concepto = concepto;
     }
 
-    public String getTipo() {
-        return tipo;
+    public String getMovimiento() {
+        return movimiento;
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setMovimiento(String movimiento) {
+        this.movimiento = movimiento;
     }
 
     public String getMetodo() {
@@ -46,14 +72,6 @@ public class ReportePagoAdministradorDTO {
 
     public void setMetodo(String metodo) {
         this.metodo = metodo;
-    }
-
-    public BigDecimal getMonto() {
-        return monto;
-    }
-
-    public void setMonto(BigDecimal monto) {
-        this.monto = monto;
     }
 
     public String getFecha() {
@@ -70,5 +88,13 @@ public class ReportePagoAdministradorDTO {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public BigDecimal getMonto() {
+        return monto;
+    }
+
+    public void setMonto(BigDecimal monto) {
+        this.monto = monto;
     }
 }
