@@ -13,26 +13,42 @@ public class PagoDAOImpl implements PagoDAO {
     @Override
     public List<Pago> listAll() {
         List<Pago> lista = new ArrayList<>();
-        String sql = "select idPago, fechaPago, montoTotal, tipo, idMetodoPago, activo FROM Pago WHERE activo = 1";
 
-        try(Connection con = DBManager.getInstance().getConnection();
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(sql)) {
+        /*
+         * IMPORTANTE:
+         * NO filtramos por activo = 1.
+         *
+         * En este sistema ustedes están usando:
+         * activo = 1  -> pago pagado
+         * activo = 0  -> pago pendiente
+         *
+         * Si ponemos WHERE activo = 1, los pagos pendientes nunca aparecerían.
+         */
+        String sql =
+                "SELECT idPago, fechaPago, montoTotal, tipo, idMetodoPago, activo " +
+                        "FROM Pago " +
+                        "ORDER BY fechaPago DESC, idPago DESC";
 
-            while(rs.next()){
-                Pago p = new Pago(
-                        rs.getInt("idPago"),
-                        rs.getDate("fechaPago"),
-                        rs.getDouble("montoTotal"),
-                        rs.getString("tipo"),
-                        rs.getInt("idMetodoPago")
-                );
+        try (
+                Connection con = DBManager.getInstance().getConnection();
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery(sql)
+        ) {
+            while (rs.next()) {
+                Pago p = new Pago();
+
+                p.setIdPago(rs.getInt("idPago"));
+                p.setFechaPago(rs.getDate("fechaPago"));
+                p.setMonto(rs.getDouble("montoTotal"));
+                p.setTipo(rs.getString("tipo"));
+                p.setMetodoPago(rs.getInt("idMetodoPago"));
                 p.setActivo(rs.getBoolean("activo"));
+
                 lista.add(p);
             }
 
-        } catch(SQLException e){
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al listar pagos", e);
         }
 
         return lista;
@@ -40,28 +56,34 @@ public class PagoDAOImpl implements PagoDAO {
 
     @Override
     public Pago load(Integer id) {
-        String sql = "select idPago, fechaPago, montoTotal, tipo, idMetodoPago, activo "
-                + "FROM Pago WHERE idPago = ?";
+        String sql =
+                "SELECT idPago, fechaPago, montoTotal, tipo, idMetodoPago, activo " +
+                        "FROM Pago " +
+                        "WHERE idPago = ?";
 
-        try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql)) {
-
+        try (
+                Connection con = DBManager.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)
+        ) {
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
 
-            if(rs.next()){
-                Pago p = new Pago();
-                p.setIdPago(rs.getInt(1));
-                p.setFechaPago(rs.getDate(2));
-                p.setMonto(rs.getDouble(3));
-                p.setTipo(rs.getString(4));
-                p.setMetodoPago(rs.getInt(5));
-                p.setActivo(rs.getBoolean(6));
-                return p;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Pago p = new Pago();
+
+                    p.setIdPago(rs.getInt("idPago"));
+                    p.setFechaPago(rs.getDate("fechaPago"));
+                    p.setMonto(rs.getDouble("montoTotal"));
+                    p.setTipo(rs.getString("tipo"));
+                    p.setMetodoPago(rs.getInt("idMetodoPago"));
+                    p.setActivo(rs.getBoolean("activo"));
+
+                    return p;
+                }
             }
 
-        } catch(SQLException e){
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al obtener pago por ID", e);
         }
 
         return null;
@@ -69,77 +91,124 @@ public class PagoDAOImpl implements PagoDAO {
 
     @Override
     public Pago save(Pago p) {
+        /*
+         * BUG CORREGIDO:
+         * Antes el SQL tenía activo fijo en 1:
+         * VALUES (?,?,?,?,1)
+         *
+         * Eso hacía que TODO pago se registre como pagado.
+         *
+         * Ahora activo se recibe desde C#:
+         * true  -> pagado
+         * false -> pendiente
+         */
+        String sql =
+                "INSERT INTO Pago(fechaPago, montoTotal, tipo, idMetodoPago, activo) " +
+                        "VALUES (?, ?, ?, ?, ?)";
 
-        System.out.println("=== INSERTANDO PAGO ===");
-        System.out.println("Fecha: " + p.getFechaPago());
-        System.out.println("Monto: " + p.getMonto());
-        System.out.println("Tipo: " + p.getTipo());
-        System.out.println("Metodo: " + p.getMetodoPago());
+        try (
+                Connection con = DBManager.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+        ) {
+            java.util.Date fecha = p.getFechaPago();
 
-        String sql = "INSERT INTO Pago(fechaPago, montoTotal, tipo, idMetodoPago, activo) VALUES (?,?,?,?,1)";
+            if (fecha != null) {
+                ps.setDate(1, new java.sql.Date(fecha.getTime()));
+            } else {
+                ps.setDate(1, new java.sql.Date(System.currentTimeMillis()));
+            }
 
-        try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            ps.setDate(1, new java.sql.Date(p.getFechaPago().getTime()));
             ps.setDouble(2, p.getMonto());
             ps.setString(3, p.getTipo());
             ps.setInt(4, p.getMetodoPago());
+            ps.setBoolean(5, p.isActivo());
 
             int filas = ps.executeUpdate();
 
-            System.out.println("Filas afectadas: " + filas);
-
-            ResultSet rs = ps.getGeneratedKeys();
-
-            if(rs.next()){
-                p.setIdPago(rs.getInt(1));
-                System.out.println("ID generado: " + p.getIdPago());
+            if (filas > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        p.setIdPago(rs.getInt(1));
+                    }
+                }
             }
 
-        } catch(SQLException e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+            return p;
 
-        return p;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al registrar pago", e);
+        }
     }
 
     @Override
     public Pago update(Pago p) {
-        String sql = "UPDATE Pago SET fechaPago=?, montoTotal=?, tipo=?, idMetodoPago=? WHERE idPago=?";
+        /*
+         * BUG CORREGIDO:
+         * Antes el SQL no incluía activo = ?,
+         * pero abajo se hacía setBoolean(6, ...).
+         *
+         * Ahora sí actualiza también el estado del pago.
+         */
+        String sql =
+                "UPDATE Pago SET " +
+                        "fechaPago = ?, " +
+                        "montoTotal = ?, " +
+                        "tipo = ?, " +
+                        "idMetodoPago = ?, " +
+                        "activo = ? " +
+                        "WHERE idPago = ?";
 
-        try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement ps = con.prepareStatement(sql)) {
+        try (
+                Connection con = DBManager.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)
+        ) {
+            java.util.Date fecha = p.getFechaPago();
 
-            ps.setDate(1, new java.sql.Date(p.getFechaPago().getTime()));
-            ps.setDouble(2,p.getMonto());
+            if (fecha != null) {
+                ps.setDate(1, new java.sql.Date(fecha.getTime()));
+            } else {
+                ps.setDate(1, new java.sql.Date(System.currentTimeMillis()));
+            }
+
+            ps.setDouble(2, p.getMonto());
             ps.setString(3, p.getTipo());
             ps.setInt(4, p.getMetodoPago());
-            ps.setInt(5, p.getIdPago());
-            ps.setBoolean(6,p.isActivo());
+            ps.setBoolean(5, p.isActivo());
+            ps.setInt(6, p.getIdPago());
+
             ps.executeUpdate();
 
-        } catch(SQLException e){
-            throw new RuntimeException(e);
-        }
+            return p;
 
-        return p;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar pago", e);
+        }
     }
 
     @Override
     public void remove(Pago p) {
-        String sql = "UPDATE Pago SET activo=? WHERE idPago=?";
+        /*
+         * OJO:
+         * En este sistema activo se está usando como estado del pago:
+         * activo = 1 -> pagado
+         * activo = 0 -> pendiente
+         *
+         * Por eso NO conviene usar activo = 0 para eliminar,
+         * porque se confundiría con "pendiente".
+         *
+         * Para eliminar de verdad, hacemos DELETE físico.
+         */
+        String sql = "DELETE FROM Pago WHERE idPago = ?";
 
-        try(Connection con = DBManager.getInstance().getConnection();
-            PreparedStatement pstmt = con.prepareStatement(sql)) {
+        try (
+                Connection con = DBManager.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)
+        ) {
+            ps.setInt(1, p.getIdPago());
+            ps.executeUpdate();
 
-            pstmt.setBoolean(1, p.isActivo());
-            pstmt.setInt(2, p.getIdPago());
-            pstmt.executeUpdate();
-
-        } catch(SQLException e){
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al eliminar pago", e);
         }
     }
 }

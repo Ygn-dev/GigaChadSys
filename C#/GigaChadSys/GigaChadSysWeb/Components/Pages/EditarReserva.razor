@@ -6,6 +6,8 @@
 @inject ReservaServicio ReservaService
 @inject SocioServicio SocioService
 @inject SesionClaseServicio SesionClaseService
+@inject NavigationManager Navigation
+
 <div class="socio-form-page">
 
     <!-- Breadcrumb -->
@@ -26,220 +28,311 @@
         @toastMessage
     </div>
 
-    <div class="sf-edit-layout">
-
-        <!-- ── Left column ── -->
-        <div>
-
-            <!-- Datos de la Reserva -->
-            <div class="sf-section-card">
-                <div class="sf-section-title">
-                    <div class="sf-section-icon icon-red">🎫</div>
-                    <div>
-                        <h3>Datos de la Reserva</h3>
-                        <span>Socio, sesión y detalles</span>
-                    </div>
+    @if (cargando)
+    {
+        <div class="sf-section-card" style="min-height:240px;display:flex;align-items:center;justify-content:center;text-align:center;">
+            <div>
+                <div class="sf-section-icon icon-red" style="margin:0 auto 18px auto;">
+                    <i class="bi bi-hourglass-split"></i>
                 </div>
 
-                <div class="sf-form-grid">
-                    <!-- Socio (solo lectura: la reserva ya tiene un socio asignado) -->
-                    <div class="sf-form-group sf-form-full">
-                        <label>SOCIO</label>
-                        <input type="text" value="@socioNombre" disabled />
-                        <span class="sf-error-msg" style="color:#666;font-size:11px;">El socio no puede modificarse. Cancela esta reserva y crea una nueva si necesitas cambiarlo.</span>
-                    </div>
-
-                    <div class="sf-form-group">
-                        <label>SESIÓN <span class="sf-req">*</span></label>
-                        <select value="@idSesionSeleccionada" @onchange="OnSesionSeleccionada" class="@(errores.ContainsKey("claseNombre") ? "sf-input-error" : "")">
-                            <option value="0">Seleccionar sesión...</option>
-                            @foreach (var s in sesionesDisponibles)
-                            {
-                                <option value="@s.IdSesion">@s.ClaseGrupal?.Nombre - @s.FechaSesion.ToString("dd/MM/yyyy")</option>
-                            }
-                        </select>
-                        @if (errores.ContainsKey("claseNombre"))
-                        {
-                            <span class="sf-error-msg">@errores["claseNombre"]</span>
-                        }
-                    </div>
-
-                    <div class="sf-form-group">
-                        <label>ENTRENADOR</label>
-                        <input type="text" value="@entrenadorNombre" disabled />
-                    </div>
-
-                    <div class="sf-form-group">
-                        <label>FECHA</label>
-                        <input type="text" value="@fecha.ToString("dd/MM/yyyy")" disabled />
-                    </div>
-
-                    <div class="sf-form-group">
-                        <label>HORARIO</label>
-                        <input type="text" value="@horario" disabled />
-                    </div>
-                </div>
+                <h3 style="margin-bottom:8px;">Cargando reserva...</h3>
+                <p style="color:#aaa;margin:0;">
+                    Conectando con el servidor y obteniendo los datos actualizados.
+                </p>
             </div>
-
-            <!-- Estado de la Reserva -->
-            <div class="sf-section-card">
-                <div class="sf-section-title">
-                    <div class="sf-section-icon icon-yellow">🔖</div>
-                    <div>
-                        <h3>Estado de la Reserva</h3>
-                        <span>Controla el seguimiento del socio</span>
-                    </div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorCarga))
+    {
+        <div class="sf-section-card" style="min-height:220px;display:flex;align-items:center;justify-content:center;text-align:center;">
+            <div>
+                <div class="sf-section-icon icon-red" style="margin:0 auto 18px auto;">
+                    <i class="bi bi-exclamation-triangle"></i>
                 </div>
 
-                <p class="sf-sublabel">ESTADO</p>
-                <div class="sf-estado-row" style="flex-wrap:wrap;">
-                    <button type="button"
-                            class="sf-estado-btn @(estado == "Confirmadas" ? "sf-estado-activo" : "")"
-                            @onclick='() => estado = "Confirmadas"'>
-                        <span class="sf-estado-dot dot-green"></span> Confirmada
-                    </button>
-                    <button type="button"
-                            class="sf-estado-btn"
-                            style="@(estado == "Pendientes" ? "border-color:rgba(255,193,7,0.5);background:rgba(255,193,7,0.10);color:#FFC107;" : "")"
-                            @onclick='() => estado = "Pendientes"'>
-                        <span class="sf-estado-dot" style="background:#FFC107;"></span> Pendiente
-                    </button>
-                    <button type="button"
-                            class="sf-estado-btn"
-                            style="@(estado == "Asistió" ? "border-color:rgba(66,165,245,0.5);background:rgba(66,165,245,0.10);color:#42A5F5;" : "")"
-                            @onclick='() => estado = "Asistió"'>
-                        <span class="sf-estado-dot" style="background:#42A5F5;"></span> Asistió
-                    </button>
-                    <button type="button"
-                            class="sf-estado-btn @(estado == "Canceladas" ? "sf-estado-inactivo" : "")"
-                            @onclick='() => estado = "Canceladas"'>
-                        <span class="sf-estado-dot dot-red"></span> Cancelada
-                    </button>
-                </div>
+                <h3 style="margin-bottom:8px;">No se pudo cargar la reserva</h3>
+                <p style="color:#aaa;margin-bottom:20px;">@errorCarga</p>
+
+                <a href="/admin/reservas" class="sf-btn-secondary">
+                    Volver a Reservas
+                </a>
             </div>
+        </div>
+    }
+    else
+    {
+        <div class="sf-edit-layout">
 
-            <!-- Motivo (si se cancela) -->
-            @if (estado == "Canceladas")
-            {
+            <!-- ── Left column ── -->
+            <div>
+
+                <!-- Datos de la Reserva -->
                 <div class="sf-section-card">
                     <div class="sf-section-title">
-                        <div class="sf-section-icon icon-red">📝</div>
+                        <div class="sf-section-icon icon-red">
+                            <i class="bi bi-ticket-perforated"></i>
+                        </div>
+
                         <div>
-                            <h3>Motivo de Cancelación</h3>
-                            <span>Indica el motivo administrativo</span>
+                            <h3>Datos de la Reserva</h3>
+                            <span>Socio, sesión y detalles</span>
                         </div>
                     </div>
-                    <div class="sf-form-group">
-                        <label>MOTIVO</label>
-                        <textarea @bind="motivoCancelacion" rows="3" placeholder="Describe brevemente el motivo de la cancelación..."></textarea>
+
+                    <div class="sf-form-grid">
+                        <!-- Socio -->
+                        <div class="sf-form-group sf-form-full">
+                            <label>SOCIO</label>
+                            <input type="text" value="@socioNombre" disabled />
+                            <span class="sf-error-msg" style="color:#666;font-size:11px;">
+                                El socio no puede modificarse. Cancela esta reserva y crea una nueva si necesitas cambiarlo.
+                            </span>
+                        </div>
+
+                        <div class="sf-form-group">
+                            <label>SESIÓN <span class="sf-req">*</span></label>
+
+                            <select value="@idSesionSeleccionada"
+                                    @onchange="OnSesionSeleccionada"
+                                    class="@(errores.ContainsKey("claseNombre") ? "sf-input-error" : "")">
+                                <option value="0">Seleccionar sesión...</option>
+
+                                @foreach (var s in sesionesDisponibles)
+                                {
+                                    <option value="@s.IdSesion">
+                                        @ObtenerTextoSesion(s)
+                                    </option>
+                                }
+                            </select>
+
+                            @if (errores.ContainsKey("claseNombre"))
+                            {
+                                <span class="sf-error-msg">@errores["claseNombre"]</span>
+                            }
+                        </div>
+
+                        <div class="sf-form-group">
+                            <label>ENTRENADOR</label>
+                            <input type="text" value="@entrenadorNombre" disabled />
+                        </div>
+
+                        <div class="sf-form-group">
+                            <label>FECHA</label>
+                            <input type="text" value="@FechaTexto" disabled />
+                        </div>
+
+                        <div class="sf-form-group">
+                            <label>HORARIO</label>
+                            <input type="text" value="@horario" disabled />
+                        </div>
                     </div>
                 </div>
-            }
 
-            <!-- Actions -->
-            <div class="sf-form-actions">
-                <button class="sf-btn-primary" @onclick="GuardarCambios" disabled="@guardando">
-                    @if (guardando)
-                    {
-                        <span>⏳</span> <span>Guardando...</span>
-                    }
-                    else
-                    {
-                        <span>💾</span> <span>Guardar Cambios</span>
-                    }
-                </button>
-                <a href="/admin/reservas" class="sf-btn-secondary">Cancelar</a>
-                <div class="sf-back-link">
-                    <a href="/admin/reservas">← Volver a Reservas</a>
+                <!-- Estado de la Reserva -->
+                <div class="sf-section-card">
+                    <div class="sf-section-title">
+                        <div class="sf-section-icon icon-yellow">
+                            <i class="bi bi-bookmark-check"></i>
+                        </div>
+
+                        <div>
+                            <h3>Estado de la Reserva</h3>
+                            <span>Controla el seguimiento del socio</span>
+                        </div>
+                    </div>
+
+                    <p class="sf-sublabel">ESTADO</p>
+
+                    <div class="sf-estado-row" style="flex-wrap:wrap;">
+                        <button type="button"
+                                class="sf-estado-btn @(estado == "Confirmadas" ? "sf-estado-activo" : "")"
+                                @onclick='() => estado = "Confirmadas"'>
+                            <span class="sf-estado-dot dot-green"></span>
+                            Confirmada
+                        </button>
+
+                        <button type="button"
+                                class="sf-estado-btn"
+                                style="@(estado == "Pendientes" ? "border-color:rgba(255,193,7,0.5);background:rgba(255,193,7,0.10);color:#FFC107;" : "")"
+                                @onclick='() => estado = "Pendientes"'>
+                            <span class="sf-estado-dot" style="background:#FFC107;"></span>
+                            Pendiente
+                        </button>
+
+                        <button type="button"
+                                class="sf-estado-btn"
+                                style="@(estado == "Asistió" ? "border-color:rgba(66,165,245,0.5);background:rgba(66,165,245,0.10);color:#42A5F5;" : "")"
+                                @onclick='() => estado = "Asistió"'>
+                            <span class="sf-estado-dot" style="background:#42A5F5;"></span>
+                            Asistió
+                        </button>
+
+                        <button type="button"
+                                class="sf-estado-btn @(estado == "Canceladas" ? "sf-estado-inactivo" : "")"
+                                @onclick='() => estado = "Canceladas"'>
+                            <span class="sf-estado-dot dot-red"></span>
+                            Cancelada
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Motivo -->
+                @if (estado == "Canceladas")
+                {
+                    <div class="sf-section-card">
+                        <div class="sf-section-title">
+                            <div class="sf-section-icon icon-red">
+                                <i class="bi bi-journal-text"></i>
+                            </div>
+
+                            <div>
+                                <h3>Motivo de Cancelación</h3>
+                                <span>Indica el motivo administrativo</span>
+                            </div>
+                        </div>
+
+                        <div class="sf-form-group">
+                            <label>MOTIVO</label>
+                            <textarea @bind="motivoCancelacion"
+                                      rows="3"
+                                      placeholder="Describe brevemente el motivo de la cancelación..."></textarea>
+                        </div>
+                    </div>
+                }
+
+                <!-- Actions -->
+                <div class="sf-form-actions">
+                    <button class="sf-btn-primary"
+                            @onclick="GuardarCambios"
+                            disabled="@guardando">
+                        @if (guardando)
+                        {
+                            <span><i class="bi bi-hourglass-split"></i></span>
+                            <span>Guardando...</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-save"></i></span>
+                            <span>Guardar Cambios</span>
+                        }
+                    </button>
+
+                    <a href="/admin/reservas" class="sf-btn-secondary">
+                        Cancelar
+                    </a>
+
+                    <div class="sf-back-link">
+                        <a href="/admin/reservas">← Volver a Reservas</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ── Right column: Resumen ── -->
+            <div class="sf-resumen-col">
+                <div class="sf-resumen-card">
+                    <h4>Resumen</h4>
+
+                    <div class="sf-resumen-rows">
+                        <div class="sf-resumen-row">
+                            <span>Socio</span>
+                            <strong>@socioNombre</strong>
+                        </div>
+
+                        <div class="sf-resumen-row">
+                            <span>DNI</span>
+                            <strong>@socioDni</strong>
+                        </div>
+
+                        <div class="sf-resumen-row">
+                            <span>Clase</span>
+                            <strong>@(string.IsNullOrWhiteSpace(claseNombre) ? "—" : claseNombre)</strong>
+                        </div>
+
+                        <div class="sf-resumen-row">
+                            <span>Entrenador</span>
+                            <strong>@(string.IsNullOrWhiteSpace(entrenadorNombre) ? "—" : entrenadorNombre)</strong>
+                        </div>
+
+                        <div class="sf-resumen-row">
+                            <span>Fecha</span>
+                            <strong>@(fecha == default ? "—" : fecha.ToString("dd/MM/yyyy"))</strong>
+                        </div>
+
+                        <div class="sf-resumen-row">
+                            <span>Horario</span>
+                            <strong>@(string.IsNullOrWhiteSpace(horario) ? "—" : horario)</strong>
+                        </div>
+
+                        <div class="sf-resumen-row">
+                            <span>Estado</span>
+                            <strong class="@EstadoClass">@EstadoLabel</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sf-admin-nota">
+                    <span class="sf-nota-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </span>
+
+                    <p>
+                        Desde aquí puedes confirmar, marcar asistencia o cancelar la reserva del socio por motivos administrativos.
+                    </p>
                 </div>
             </div>
 
         </div>
-
-        <!-- ── Right column: Resumen ── -->
-        <div class="sf-resumen-col">
-            <div class="sf-resumen-card">
-                <h4>Resumen</h4>
-                <div class="sf-resumen-rows">
-                    <div class="sf-resumen-row">
-                        <span>Socio</span>
-                        <strong>@socioNombre</strong>
-                    </div>
-                    <div class="sf-resumen-row">
-                        <span>DNI</span>
-                        <strong>@socioDni</strong>
-                    </div>
-                    <div class="sf-resumen-row">
-                        <span>Clase</span>
-                        <strong>@(string.IsNullOrWhiteSpace(claseNombre) ? "—" : claseNombre)</strong>
-                    </div>
-                    <div class="sf-resumen-row">
-                        <span>Entrenador</span>
-                        <strong>@(string.IsNullOrWhiteSpace(entrenadorNombre) ? "—" : entrenadorNombre)</strong>
-                    </div>
-                    <div class="sf-resumen-row">
-                        <span>Fecha</span>
-                        <strong>@(fecha == default ? "—" : fecha.ToString("dd/MM/yyyy"))</strong>
-                    </div>
-                    <div class="sf-resumen-row">
-                        <span>Horario</span>
-                        <strong>@(string.IsNullOrWhiteSpace(horario) ? "—" : horario)</strong>
-                    </div>
-                    <div class="sf-resumen-row">
-                        <span>Estado</span>
-                        <strong class="@EstadoClass">@EstadoLabel</strong>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sf-admin-nota">
-                <span class="sf-nota-icon">⚠️</span>
-                <p>Desde aquí puedes confirmar, marcar asistencia o cancelar la reserva del socio por motivos administrativos.</p>
-            </div>
-        </div>
-
-    </div>
+    }
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter]
+    public int Id { get; set; }
 
-    // Form fields
     private ReservaDTO? reservaActual;
-    private string socioNombre        = "";
-    private string socioDni           = "";
-    private int idSesionSeleccionada  = 0;
-    
-    // UI details
-    private string claseNombre        = "";
-    private string entrenadorNombre   = "";
-    private DateOnly fecha            = DateOnly.FromDateTime(DateTime.Today);
-    private string horario            = "";
-    private string estado             = "Confirmadas";
-    private string motivoCancelacion  = "";
 
-    private bool guardando    = false;
+    private string socioNombre = "";
+    private string socioDni = "";
+    private int idSesionSeleccionada = 0;
+
+    private string claseNombre = "";
+    private string entrenadorNombre = "";
+    private DateOnly fecha = default;
+    private string horario = "";
+    private string estado = "Confirmadas";
+    private string motivoCancelacion = "";
+
+    private bool cargando = true;
+    private string errorCarga = "";
+
+    private bool guardando = false;
     private bool toastVisible = false;
     private bool toastIsError = false;
     private string toastMessage = "";
+
     private Dictionary<string, string> errores = new();
+    private List<SesionClaseDTO> sesionesDisponibles = new();
+
+    private string FechaTexto =>
+        fecha == default ? "—" : fecha.ToString("dd/MM/yyyy");
 
     private string EstadoClass => estado switch
     {
         "Confirmadas" => "rsm-activo",
-        "Canceladas"  => "rsm-inactivo",
-        _             => ""
+        "Canceladas" => "rsm-inactivo",
+        _ => ""
     };
+
     private string EstadoLabel => estado switch
     {
         "Confirmadas" => "Confirmada",
-        "Canceladas"  => "Cancelada",
-        "Pendientes"  => "Pendiente",
-        "Asistió"     => "Asistió",
-        _             => estado
+        "Canceladas" => "Cancelada",
+        "Pendientes" => "Pendiente",
+        "Asistió" => "Asistió",
+        _ => estado
     };
-
-    private List<SesionClaseDTO> sesionesDisponibles = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -248,32 +341,80 @@
 
     private async Task CargarDatos()
     {
-        sesionesDisponibles = await SesionClaseService.ListarSesionesAsync();
-        var todasLasReservas = await ReservaService.ListarReservasAsync();
-        reservaActual = todasLasReservas.FirstOrDefault(r => r.IdReserva == Id);
-
-        if (reservaActual != null)
+        try
         {
-            var socio = (await SocioService.ListarSociosAsync()).FirstOrDefault(s => s.IdUsuario == reservaActual.IdUsuario);
+            cargando = true;
+            errorCarga = "";
+
+            var sesionesTask = SesionClaseService.ListarSesionesAsync();
+            var reservasTask = ReservaService.ListarReservasAsync();
+            var sociosTask = SocioService.ListarSociosAsync();
+
+            await Task.WhenAll(sesionesTask, reservasTask, sociosTask);
+
+            sesionesDisponibles = sesionesTask.Result;
+            var todasLasReservas = reservasTask.Result;
+            var socios = sociosTask.Result;
+
+            reservaActual = todasLasReservas.FirstOrDefault(r => r.IdReserva == Id);
+
+            if (reservaActual == null)
+            {
+                errorCarga = "No se encontró la reserva solicitada.";
+                return;
+            }
+
+            var socio = socios.FirstOrDefault(s => s.IdUsuario == reservaActual.IdUsuario);
+
             if (socio != null)
             {
-                socioNombre = $"{socio.Nombres} {socio.ApellidoPaterno}";
+                socioNombre = $"{socio.Nombres} {socio.ApellidoPaterno}".Trim();
                 socioDni = socio.Dni.ToString();
+            }
+            else
+            {
+                socioNombre = "Socio no encontrado";
+                socioDni = "-";
             }
 
             idSesionSeleccionada = reservaActual.SesionClase?.IdSesion ?? 0;
-            estado = reservaActual.Asistio ? "Asistió" : "Confirmadas"; // O según la lógica de negocio
+
+            if (!reservaActual.Activo)
+            {
+                estado = "Canceladas";
+            }
+            else if (reservaActual.Asistio)
+            {
+                estado = "Asistió";
+            }
+            else
+            {
+                estado = "Confirmadas";
+            }
+
             ActualizarDetallesSesion();
+        }
+        catch (Exception ex)
+        {
+            errorCarga = "Error al cargar los datos de la reserva: " + ex.Message;
+        }
+        finally
+        {
+            cargando = false;
         }
     }
 
     private void ActualizarDetallesSesion()
     {
         var sesion = sesionesDisponibles.FirstOrDefault(s => s.IdSesion == idSesionSeleccionada);
+
         if (sesion != null)
         {
-            claseNombre = sesion.ClaseGrupal?.Nombre ?? "";
-            entrenadorNombre = sesion.Entrenador != null ? $"{sesion.Entrenador.Nombres} {sesion.Entrenador.ApellidoPaterno}" : "";
+            claseNombre = sesion.ClaseGrupal?.Nombre ?? sesion.ClaseGrupal?.NombreDisciplina ?? "";
+            entrenadorNombre = sesion.Entrenador != null
+                ? $"{sesion.Entrenador.Nombres} {sesion.Entrenador.ApellidoPaterno}".Trim()
+                : "Sin entrenador";
+
             fecha = DateOnly.FromDateTime(sesion.FechaSesion);
             horario = $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}";
         }
@@ -281,6 +422,7 @@
         {
             claseNombre = "";
             entrenadorNombre = "";
+            fecha = default;
             horario = "";
         }
     }
@@ -297,48 +439,97 @@
     private bool Validar()
     {
         errores.Clear();
-        if (idSesionSeleccionada == 0) errores["claseNombre"] = "Selecciona una sesión.";
+
+        if (idSesionSeleccionada == 0)
+        {
+            errores["claseNombre"] = "Selecciona una sesión.";
+        }
+
         return errores.Count == 0;
     }
 
     private async Task GuardarCambios()
     {
-        if (!Validar() || reservaActual == null) return;
-
-        guardando = true;
-
-        reservaActual.Asistio = estado == "Asistió";
-        reservaActual.SesionClase = new SesionClaseDTO { IdSesion = idSesionSeleccionada };
-
-        var result = await ReservaService.ActualizarAsync(Id, reservaActual);
-
-        guardando = false;
-        
-        if (!result.StartsWith("Error"))
+        if (!Validar() || reservaActual == null)
         {
-            toastIsError = false;
-            toastMessage = "✅ Reserva actualizada correctamente.";
+            return;
+        }
+
+        try
+        {
+            guardando = true;
+
+            reservaActual.Asistio = estado == "Asistió";
+            reservaActual.SesionClase = new SesionClaseDTO
+            {
+                IdSesion = idSesionSeleccionada
+            };
+
+            var result = await ReservaService.ActualizarAsync(Id, reservaActual);
+
+            if (result.StartsWith("Error", StringComparison.OrdinalIgnoreCase) ||
+                result.ToLower().Contains("error"))
+            {
+                toastIsError = true;
+                toastMessage = result;
+                MostrarToast();
+                return;
+            }
+
             if (estado == "Canceladas")
             {
-                await ReservaService.EliminarAsync(Id); // Si el admin la cancela, la eliminamos
-                toastMessage = "✅ Reserva cancelada correctamente.";
+                var resultadoEliminar = await ReservaService.EliminarAsync(Id);
+
+                if (resultadoEliminar.StartsWith("Error", StringComparison.OrdinalIgnoreCase) ||
+                    resultadoEliminar.ToLower().Contains("error"))
+                {
+                    toastIsError = true;
+                    toastMessage = resultadoEliminar;
+                    MostrarToast();
+                    return;
+                }
             }
+
+            toastIsError = false;
+            toastMessage = estado == "Canceladas"
+                ? "Reserva cancelada correctamente."
+                : "Reserva actualizada correctamente.";
+
+            MostrarToast();
+
+            await Task.Delay(700);
+            Navigation.NavigateTo("/admin/reservas", forceLoad: true);
         }
-        else
+        catch (Exception ex)
         {
             toastIsError = true;
-            toastMessage = "❌ " + result;
+            toastMessage = "Error al guardar la reserva: " + ex.Message;
+            MostrarToast();
         }
-
-        MostrarToast();
+        finally
+        {
+            guardando = false;
+        }
     }
 
     private async void MostrarToast()
     {
         toastVisible = true;
         StateHasChanged();
-        await Task.Delay(3200);
+
+        await Task.Delay(2200);
+
         toastVisible = false;
         StateHasChanged();
+    }
+
+    private static string ObtenerTextoSesion(SesionClaseDTO sesion)
+    {
+        var nombreClase = sesion.ClaseGrupal?.Nombre ?? sesion.ClaseGrupal?.NombreDisciplina ?? "Clase";
+        var fechaSesion = sesion.FechaSesion.ToString("dd/MM/yyyy");
+        var horaInicio = sesion.HoraInicio.ToString("HH:mm");
+        var horaFin = sesion.HoraFin.ToString("HH:mm");
+
+        return $"{nombreClase} - {fechaSesion} - {horaInicio} a {horaFin}";
     }
 }

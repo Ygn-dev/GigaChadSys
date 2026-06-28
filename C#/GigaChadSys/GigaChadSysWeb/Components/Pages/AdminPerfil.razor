@@ -1,141 +1,359 @@
 @page "/admin/perfil"
 @using GigaChadSysWeb.Components.Layout
+@using GigaChadSys.Servicios
 @layout AdminLayout
 @rendermode InteractiveServer
+@inject SessionServicio Session
 
-<section class="perfil-page">
+<section class="perfil-page perfil-admin-page">
+
     <div class="perfil-header">
         <h1>Mi Perfil</h1>
-        <p class="perfil-subtitle">Tu información de administrador</p>
+        <p class="perfil-subtitle">Información personal y cuenta de administrador</p>
     </div>
 
-    <!-- Profile Card -->
-    <div class="perfil-card">
-        <div class="perfil-card-left">
-            <div class="perfil-avatar-large">
-                <span>👤</span>
+    <div class="perfil-admin-hero">
+        <div class="perfil-admin-hero-left">
+            <div class="perfil-admin-avatar">
+                <i class="bi bi-person"></i>
             </div>
-            <div class="perfil-card-info">
+
+            <div class="perfil-admin-main-info">
                 <h2>@perfil.NombreCompleto</h2>
-                <p class="perfil-email">@perfil.Correo</p>
+                <p>@perfil.Correo</p>
+
                 <div class="perfil-badges">
-                    <span class="perfil-badge badge-activo">
-                        <span class="estado-dot"></span> @perfil.Estado
-                    </span>
                     <span class="perfil-badge badge-admin-role">
-                        🛡️ Administrador
+                        <i class="bi bi-person-gear"></i>
+                        Administrador
+                    </span>
+
+                    <span class="perfil-badge badge-activo">
+                        <span class="estado-dot"></span>
+                        @perfil.Estado
                     </span>
                 </div>
             </div>
         </div>
+
         <div class="perfil-card-actions">
             <button class="btn-perfil-edit" @onclick="ToggleEditar">
-                ✏️ Editar Perfil
+                <i class="bi bi-pencil"></i>
+                Editar perfil
             </button>
+
             <button class="btn-perfil-password">
-                ⚙ Cambiar Contraseña
+                <i class="bi bi-lock"></i>
+                Cambiar contraseña
             </button>
         </div>
     </div>
 
-    <!-- Información Personal -->
-    <div class="perfil-info-card">
-        <h3>Información Personal</h3>
+    <div class="perfil-admin-grid">
 
-        <div class="perfil-info-list">
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>🪪</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">DNI</span>
-                    <strong>@perfil.DNI</strong>
-                </div>
+        <div class="perfil-info-card perfil-admin-panel">
+            <div class="perfil-panel-title">
+                <i class="bi bi-person-vcard"></i>
+                <h3>Información Personal</h3>
             </div>
 
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>👤</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Nombre Completo</span>
-                    <strong>@perfil.NombreCompleto</strong>
-                </div>
-            </div>
+            <div class="perfil-info-list">
 
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>📞</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Teléfono</span>
-                    <strong>@perfil.Telefono</strong>
-                </div>
-            </div>
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon">
+                        <i class="bi bi-card-text"></i>
+                    </div>
 
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>✉️</span>
+                    <div>
+                        <span class="perfil-info-label">DNI</span>
+                        <strong>@perfil.DNI</strong>
+                    </div>
                 </div>
-                <div>
-                    <span class="perfil-info-label">Correo Electrónico</span>
-                    <strong>@perfil.Correo</strong>
-                </div>
-            </div>
 
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>🛡️</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Rol</span>
-                    <strong>@perfil.Rol</strong>
-                </div>
-            </div>
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon">
+                        <i class="bi bi-person"></i>
+                    </div>
 
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>📅</span>
+                    <div>
+                        <span class="perfil-info-label">Nombre completo</span>
+                        <strong>@perfil.NombreCompleto</strong>
+                    </div>
                 </div>
-                <div>
-                    <span class="perfil-info-label">Fecha de Registro</span>
-                    <strong>@perfil.FechaRegistro.ToString("yyyy-MM-dd")</strong>
-                </div>
-            </div>
 
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>🏋️</span>
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon">
+                        <i class="bi bi-telephone"></i>
+                    </div>
+
+                    <div>
+                        <span class="perfil-info-label">Teléfono</span>
+                        <strong>@perfil.Telefono</strong>
+                    </div>
                 </div>
-                <div>
-                    <span class="perfil-info-label">Estado</span>
-                    <strong class="estado-al-dia">@perfil.Estado</strong>
+
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon">
+                        <i class="bi bi-envelope"></i>
+                    </div>
+
+                    <div>
+                        <span class="perfil-info-label">Correo electrónico</span>
+                        <strong>@perfil.Correo</strong>
+                    </div>
                 </div>
+
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+
+                    <div>
+                        <span class="perfil-info-label">Fecha de registro</span>
+                        <strong>@perfil.FechaRegistro.ToString("yyyy-MM-dd")</strong>
+                    </div>
+                </div>
+
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+
+                    <div>
+                        <span class="perfil-info-label">Rol</span>
+                        <strong>@perfil.Rol</strong>
+                    </div>
+                </div>
+
+                <div class="perfil-info-row">
+                    <div class="perfil-info-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+
+                    <div>
+                        <span class="perfil-info-label">Estado</span>
+                        <strong class="estado-al-dia">@perfil.Estado</strong>
+                    </div>
+                </div>
+
             </div>
         </div>
+
+        <div class="perfil-info-card perfil-admin-panel">
+            <div class="perfil-panel-title">
+                <i class="bi bi-shield-lock"></i>
+                <h3>Acceso y Seguridad</h3>
+            </div>
+
+            <div class="perfil-security-list">
+
+                <div class="perfil-security-item">
+                    <div class="perfil-security-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+
+                    <div>
+                        <strong>Último acceso</strong>
+                        <span>@perfil.UltimoAcceso</span>
+                    </div>
+                </div>
+
+                <div class="perfil-security-item">
+                    <div class="perfil-security-icon">
+                        <i class="bi bi-lock"></i>
+                    </div>
+
+                    <div>
+                        <strong>Contraseña protegida</strong>
+                        <span>Última actualización: @perfil.FechaActualizacionPassword</span>
+                    </div>
+                </div>
+
+                <div class="perfil-security-item">
+                    <div class="perfil-security-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+
+                    <div>
+                        <strong>Permisos</strong>
+                        <span>Administración total</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
+
 </section>
+
+<style>
+    .perfil-admin-page {
+        max-width: 1180px;
+        margin: 0 auto;
+    }
+
+    .perfil-admin-hero {
+        background: #171717;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        padding: 34px 38px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+        margin-bottom: 28px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.22);
+    }
+
+    .perfil-admin-hero-left {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+    }
+
+    .perfil-admin-avatar {
+        width: 118px;
+        height: 118px;
+        border-radius: 50%;
+        background: radial-gradient(circle at center, #2b2b2b 0%, #202020 70%);
+        border: 1px solid rgba(255,255,255,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #d7d7d7;
+        font-size: 64px;
+    }
+
+    .perfil-admin-main-info h2 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .perfil-admin-main-info p {
+        margin: 6px 0 14px 0;
+        color: #cfcfcf;
+        font-size: 15px;
+    }
+
+    .perfil-admin-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .perfil-admin-panel {
+        margin: 0;
+        min-height: 100%;
+    }
+
+    .perfil-panel-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+        .perfil-panel-title i {
+            color: #ef3737;
+            font-size: 22px;
+        }
+
+        .perfil-panel-title h3 {
+            margin: 0;
+        }
+
+    .perfil-info-icon i {
+        font-size: 20px;
+    }
+
+    .perfil-badge i,
+    .btn-perfil-edit i,
+    .btn-perfil-password i {
+        margin-right: 6px;
+    }
+
+    .perfil-security-list {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .perfil-security-item {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 14px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .perfil-security-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #dcdcdc;
+        font-size: 26px;
+        flex-shrink: 0;
+    }
+
+    .perfil-security-item strong {
+        display: block;
+        color: #ffffff;
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+
+    .perfil-security-item span {
+        color: #aaa;
+        font-size: 14px;
+    }
+
+    @@media (max-width: 980px) {
+        .perfil-admin-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .perfil-admin-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
 @code {
     private PerfilAdmin perfil = new();
 
     protected override void OnInitialized()
     {
+        string nombreSesion = Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
+            ? Session.Nombres
+            : "Carlos Mendoza";
+
         perfil = new PerfilAdmin
         {
-            DNI = "40000001",
-            NombreCompleto = "Administrador Principal",
-            Telefono = "900000001",
+            DNI = "40345234",
+            NombreCompleto = nombreSesion,
+            Telefono = "987654321",
             Correo = "admin@gigachad.com",
-            Rol = "Administrador General",
-            FechaRegistro = new DateTime(2023, 1, 1),
-            Estado = "Activo"
+            Rol = "Administrador",
+            FechaRegistro = new DateTime(2024, 1, 15),
+            Estado = "Activo",
+            UltimoAcceso = "Hoy, 15 de mayo de 2025 • 09:42 a.m.",
+            FechaActualizacionPassword = "2025-02-10"
         };
     }
 
     private void ToggleEditar()
     {
-        // Se conectará con BL después
     }
 
     private class PerfilAdmin
@@ -147,5 +365,7 @@
         public string Rol { get; set; } = "";
         public DateTime FechaRegistro { get; set; }
         public string Estado { get; set; } = "";
+        public string UltimoAcceso { get; set; } = "";
+        public string FechaActualizacionPassword { get; set; } = "";
     }
 }
