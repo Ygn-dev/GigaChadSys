@@ -9,6 +9,9 @@
 @inject SocioServicio SocioService
 @inject SuscripcionServicio SuscripcionService
 @inject PagoServicio PagoService
+@inject ReporteServicio ReporteService
+@inject IJSRuntime JS
+@using Microsoft.JSInterop
 
 <section class="reports-page">
 
@@ -16,6 +19,29 @@
         <h1>Reportes</h1>
         <p>Visualiza métricas y estadísticas del gimnasio.</p>
     </div>
+
+    <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+        <button type="button"
+                class="admin-report-button"
+                @onclick="DescargarReportePagos"
+                disabled="@DescargandoReporte">
+            @if (DescargandoReporte)
+            {
+                <span>
+                    <i class="bi bi-hourglass-split"></i>
+                    Generando PDF...
+                </span>
+            }
+            else
+            {
+                <span>
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Descargar reporte de pagos
+                </span>
+            }
+        </button>
+    </div>
+
 
     <div class="reports-tabs">
         <button class="@ClaseTabSocios" @onclick="MostrarReporteSocios">
@@ -321,6 +347,30 @@
     private void MostrarUltimoAnio()
     {
         PeriodoActual = "Anio";
+    }
+
+    private bool DescargandoReporte = false;
+
+    private async Task DescargarReportePagos()
+    {
+        try
+        {
+            DescargandoReporte = true;
+
+            var bytes = await ReporteService.DescargarReportePagosAdministradorAsync();
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JS.InvokeVoidAsync(
+                "downloadFileFromBytes",
+                "reporte_pagos_administrador.pdf",
+                "application/pdf",
+                base64
+            );
+        }
+        finally
+        {
+            DescargandoReporte = false;
+        }
     }
 
     protected override async Task OnInitializedAsync()

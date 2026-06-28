@@ -13290,3 +13290,27 @@ h1:focus {
         color: #cfcfcf;
         opacity: 0.95;
     }
+.admin-report-button {
+    min-height: 46px;
+    padding: 0 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(239, 49, 49, 0.75);
+    background: #ef3131;
+    color: #ffffff;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.18s;
+}
+
+    .admin-report-button:hover {
+        background: #ff3b3b;
+        color: #ffffff;
+    }
+
+    .admin-report-button:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }

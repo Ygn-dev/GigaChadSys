@@ -22,6 +22,9 @@ builder.Services.AddGigaChadSysServicios();
 // Singleton para controlar la visibilidad del botón AppAdmins
 builder.Services.AddSingleton<AppAdminsToggleService>();
 
+// Generar Reportes
+builder.Services.AddScoped<ReporteServicio>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
