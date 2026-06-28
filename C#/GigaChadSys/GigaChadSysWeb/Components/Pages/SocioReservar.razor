@@ -6,6 +6,7 @@
 @inject SessionServicio Session
 @inject SesionClaseServicio SesionClaseService
 @inject ReservaServicio ReservaService
+@inject NavigationManager Nav
 
 <section class="reservar-page">
 
@@ -16,7 +17,8 @@
         </div>
 
         <a href="/socio/reservas" class="btn-ver-reservas">
-            📋 Ver Mis Reservas
+            <i class="bi bi-clipboard-check"></i>
+            Ver Mis Reservas
         </a>
     </div>
 
@@ -56,20 +58,27 @@
         <button type="button"
                 class="btn-limpiar"
                 @onclick="LimpiarFiltros">
-            ⟳ Limpiar filtros
+            <i class="bi bi-arrow-clockwise"></i>
+            Limpiar filtros
         </button>
     </div>
 
     @if (Cargando)
     {
         <div class="reservas-empty">
-            <p>Cargando clases disponibles...</p>
+            <p>
+                <i class="bi bi-hourglass-split"></i>
+                Cargando clases disponibles...
+            </p>
         </div>
     }
     else if (!ClasesFiltradas.Any())
     {
         <div class="reservas-empty">
-            <p>No hay clases disponibles con los filtros actuales.</p>
+            <p>
+                <i class="bi bi-search"></i>
+                No hay clases disponibles con los filtros actuales.
+            </p>
         </div>
     }
     else
@@ -96,11 +105,30 @@
                     </p>
 
                     <div class="clase-detalles">
-                        <span>📅 @clase.Fecha</span>
-                        <span>🕐 @clase.Horario</span>
-                        <span>👤 @clase.Entrenador</span>
-                        <span>📍 @clase.Salon (Cap. @clase.Capacidad)</span>
-                        <span>🎯 Nivel: @clase.Nivel | @clase.Duracion min</span>
+                        <span>
+                            <i class="bi bi-calendar-event"></i>
+                            @clase.Fecha
+                        </span>
+
+                        <span>
+                            <i class="bi bi-clock"></i>
+                            @clase.Horario
+                        </span>
+
+                        <span>
+                            <i class="bi bi-person-badge"></i>
+                            @clase.Entrenador
+                        </span>
+
+                        <span>
+                            <i class="bi bi-geo-alt"></i>
+                            @clase.Salon (Cap. @clase.Capacidad)
+                        </span>
+
+                        <span>
+                            <i class="bi bi-speedometer2"></i>
+                            Nivel: @clase.Nivel | @clase.Duracion min
+                        </span>
                     </div>
 
                     <div class="clase-ocupacion">
@@ -121,15 +149,24 @@
                             @onclick="() => ReservarClase(clase.Codigo)">
                         @if (clase.YaReservada)
                         {
-                            <span>Ya reservada</span>
+                            <span>
+                                <i class="bi bi-check-circle"></i>
+                                Ya reservada
+                            </span>
                         }
                         else if (ReservandoIdSesion.Equals(clase.Codigo))
                         {
-                            <span>Reservando...</span>
+                            <span>
+                                <i class="bi bi-hourglass-split"></i>
+                                Reservando...
+                            </span>
                         }
                         else
                         {
-                            <span>Reservar</span>
+                            <span>
+                                <i class="bi bi-calendar-plus"></i>
+                                Reservar
+                            </span>
                         }
                     </button>
 
@@ -147,7 +184,9 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.45);
             background-color: @(ReservaFueExitosa ? "#1f9d55" : "#c0392b");
             display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 18px;">@(ReservaFueExitosa ? "✓" : "✕")</span>
+            <span style="font-size: 18px;">
+                <i class="bi @(ReservaFueExitosa ? "bi-check-circle" : "bi-x-circle")"></i>
+            </span>
             <span>@MensajeReserva</span>
         </div>
     }
@@ -349,8 +388,11 @@
 
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
-            MostrarMensaje("¡Te has reservado con éxito!", true);
-            await CargarClases();
+            MostrarMensaje("Reserva registrada correctamente.", true);
+
+            await Task.Delay(700);
+
+            Nav.NavigateTo($"/socio/reservar/confirmada/{idSesion}");
         }
         else
         {

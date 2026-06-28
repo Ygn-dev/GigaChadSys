@@ -12,10 +12,8 @@ public class SocioDAOImpl implements SocioDAO {
 
     @Override
     public List<Socio> listAll() {
-
         List<Socio> list = new ArrayList<>();
 
-        // SQL QUERY
         String sql =
                 "SELECT " +
                         "idUsuario, " +
@@ -30,46 +28,27 @@ public class SocioDAOImpl implements SocioDAO {
                         "rol, " +
                         "estadoMembresia, " +
                         "activo " +
-                        "FROM Socio ";
+                        "FROM Socio";
 
         try (
                 Connection connection = DBManager.getInstance().getConnection();
                 Statement stm = connection.createStatement();
                 ResultSet rs = stm.executeQuery(sql)
         ) {
-
             while (rs.next()) {
-
-                Socio socio = new Socio(
-                        rs.getInt("idUsuario"),
-                        rs.getString("nombres"),
-                        rs.getString("apellidoPaterno"),
-                        rs.getString("apellidoMaterno"),
-                        rs.getInt("edad"),
-                        rs.getInt("DNI"),
-                        rs.getString("email"),
-                        rs.getInt("telefono"),
-                        rs.getString("contrasenia"),
-                        rs.getString("rol"),
-                        rs.getBoolean("estadoMembresia")
-                );
-
-                socio.setActivo(rs.getBoolean("activo"));
-
+                Socio socio = mapearSocio(rs);
                 list.add(socio);
             }
 
             return list;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al listar socios", e);
         }
     }
 
     @Override
     public Socio load(Integer id) {
-
-        // SQL QUERY
         String sql =
                 "SELECT " +
                         "idUsuario, " +
@@ -91,34 +70,16 @@ public class SocioDAOImpl implements SocioDAO {
                 Connection connection = DBManager.getInstance().getConnection();
                 PreparedStatement pstmt = connection.prepareStatement(sql)
         ) {
-
             pstmt.setInt(1, id);
 
             try (ResultSet rs = pstmt.executeQuery()) {
-
-                Socio socio = new Socio();
-
                 if (rs.next()) {
-
-                    socio.setIdUsuario(rs.getInt("idUsuario"));
-                    socio.setNombres(rs.getString("nombres"));
-                    socio.setApellidoPaterno(rs.getString("apellidoPaterno"));
-                    socio.setApellidoMaterno(rs.getString("apellidoMaterno"));
-                    socio.setEdad(rs.getInt("edad"));
-                    socio.setDni(rs.getInt("DNI"));
-                    socio.setEmail(rs.getString("email"));
-                    socio.setTelefono(rs.getInt("telefono"));
-                    socio.setContrasenia(rs.getString("contrasenia"));
-                    socio.setRol(rs.getString("rol"));
-                    socio.setEstadoMembresia(rs.getBoolean("estadoMembresia"));
-                    socio.setActivo(rs.getBoolean("activo"));
-
-                    return socio;
+                    return mapearSocio(rs);
                 }
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al obtener socio por ID", e);
         }
 
         return null;
@@ -126,7 +87,8 @@ public class SocioDAOImpl implements SocioDAO {
 
     @Override
     public Socio save(Socio socio) {
-        // SQL QUERY
+        normalizarDatosAntesDeGuardar(socio);
+
         String sql =
                 "INSERT INTO Socio (" +
                         "nombres, " +
@@ -149,7 +111,6 @@ public class SocioDAOImpl implements SocioDAO {
                         Statement.RETURN_GENERATED_KEYS
                 )
         ) {
-
             pstmt.setString(1, socio.getNombres());
             pstmt.setString(2, socio.getApellidoPaterno());
             pstmt.setString(3, socio.getApellidoMaterno());
@@ -165,13 +126,9 @@ public class SocioDAOImpl implements SocioDAO {
             int affectedRows = pstmt.executeUpdate();
 
             if (affectedRows > 0) {
-
                 try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-
                     if (generatedKeys.next()) {
-
-                        int newId = generatedKeys.getInt(1);
-                        socio.setIdUsuario(newId);
+                        socio.setIdUsuario(generatedKeys.getInt(1));
                     }
                 }
             }
@@ -179,14 +136,38 @@ public class SocioDAOImpl implements SocioDAO {
             return socio;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al registrar socio", e);
         }
     }
 
     @Override
     public Socio update(Socio socio) {
+        Socio existente = load(socio.getIdUsuario());
 
-        // SQL QUERY
+        if (existente != null) {
+            if (esTextoVacio(socio.getContrasenia())) {
+                socio.setContrasenia(existente.getContrasenia());
+            }
+
+            if (esTextoVacio(socio.getRol())) {
+                socio.setRol(esTextoVacio(existente.getRol()) ? "Socio" : existente.getRol());
+            }
+
+            if (socio.getEdad() <= 0) {
+                socio.setEdad(existente.getEdad());
+            }
+
+            if (esTextoVacio(socio.getApellidoPaterno())) {
+                socio.setApellidoPaterno(existente.getApellidoPaterno());
+            }
+
+            if (esTextoVacio(socio.getApellidoMaterno())) {
+                socio.setApellidoMaterno(existente.getApellidoMaterno());
+            }
+        }
+
+        normalizarDatosAntesDeGuardar(socio);
+
         String sql =
                 "UPDATE Socio SET " +
                         "nombres = ?, " +
@@ -206,7 +187,6 @@ public class SocioDAOImpl implements SocioDAO {
                 Connection connection = DBManager.getInstance().getConnection();
                 PreparedStatement pstmt = connection.prepareStatement(sql)
         ) {
-
             pstmt.setString(1, socio.getNombres());
             pstmt.setString(2, socio.getApellidoPaterno());
             pstmt.setString(3, socio.getApellidoMaterno());
@@ -218,8 +198,6 @@ public class SocioDAOImpl implements SocioDAO {
             pstmt.setString(9, socio.getRol());
             pstmt.setBoolean(10, socio.getEstadoMembresia());
             pstmt.setBoolean(11, socio.getActivo());
-
-            // ID del WHERE
             pstmt.setInt(12, socio.getIdUsuario());
 
             int affectedRows = pstmt.executeUpdate();
@@ -229,7 +207,7 @@ public class SocioDAOImpl implements SocioDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al actualizar socio", e);
         }
 
         return null;
@@ -237,28 +215,73 @@ public class SocioDAOImpl implements SocioDAO {
 
     @Override
     public void remove(Socio socio) {
-
-        // Eliminación lógica
-        socio.setActivo(false);
-
-        // SQL QUERY
         String sql =
                 "UPDATE Socio " +
-                        "SET activo = ? " +
+                        "SET activo = 0 " +
                         "WHERE idUsuario = ?";
 
         try (
                 Connection connection = DBManager.getInstance().getConnection();
                 PreparedStatement pstmt = connection.prepareStatement(sql)
         ) {
-
-            pstmt.setBoolean(1, socio.getActivo());
-            pstmt.setInt(2, socio.getIdUsuario());
-
+            pstmt.setInt(1, socio.getIdUsuario());
             pstmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al eliminar socio", e);
         }
+    }
+
+    private Socio mapearSocio(ResultSet rs) throws SQLException {
+        Socio socio = new Socio();
+
+        socio.setIdUsuario(rs.getInt("idUsuario"));
+        socio.setNombres(rs.getString("nombres"));
+        socio.setApellidoPaterno(rs.getString("apellidoPaterno"));
+        socio.setApellidoMaterno(rs.getString("apellidoMaterno"));
+        socio.setEdad(rs.getInt("edad"));
+        socio.setDni(rs.getInt("DNI"));
+        socio.setEmail(rs.getString("email"));
+        socio.setTelefono(rs.getInt("telefono"));
+        socio.setContrasenia(rs.getString("contrasenia"));
+        socio.setRol(rs.getString("rol"));
+        socio.setEstadoMembresia(rs.getBoolean("estadoMembresia"));
+        socio.setActivo(rs.getBoolean("activo"));
+
+        return socio;
+    }
+
+    private void normalizarDatosAntesDeGuardar(Socio socio) {
+        if (socio.getNombres() != null) {
+            socio.setNombres(socio.getNombres().trim());
+        }
+
+        if (socio.getApellidoPaterno() != null) {
+            socio.setApellidoPaterno(socio.getApellidoPaterno().trim());
+        }
+
+        if (socio.getApellidoMaterno() != null) {
+            socio.setApellidoMaterno(socio.getApellidoMaterno().trim());
+        }
+
+        if (socio.getEmail() != null) {
+            socio.setEmail(socio.getEmail().trim());
+        }
+
+        if (esTextoVacio(socio.getRol())) {
+            socio.setRol("Socio");
+        }
+
+        if (esTextoVacio(socio.getContrasenia())) {
+            socio.setContrasenia("123456");
+        }
+
+        if (socio.getEdad() <= 0) {
+            socio.setEdad(18);
+        }
+    }
+
+    private boolean esTextoVacio(String texto) {
+        return texto == null || texto.trim().isEmpty();
     }
 }

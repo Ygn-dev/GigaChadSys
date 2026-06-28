@@ -9,178 +9,166 @@
 @inject ReservaServicio ReservaService
 @inject SuscripcionServicio SuscripcionService
 
-<section class="confirmada-page">
+<section class="rc-page">
 
-    <div class="confirmada-header">
-        <div>
-            <h1>Reserva Confirmada</h1>
-            <p>Tu reserva de clase se registró correctamente.</p>
-        </div>
-
-        <a class="confirmada-header-link" href="/socio/reservas">
-            Ver Mis Reservas
-        </a>
+    <div class="rc-header">
+        <h1>Reserva Confirmada</h1>
+        <p>Tu reserva de clase se registró correctamente</p>
     </div>
 
-    <div class="confirmada-banner">
-        <div class="confirmada-check">
-            ✓
+    @if (Cargando)
+    {
+        <div class="rc-banner">
+            <div class="rc-check">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+
+            <div>
+                <h2>Cargando reserva...</h2>
+                <p>Estamos obteniendo los detalles actualizados de tu reserva.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="rc-banner">
+            <div class="rc-check">
+                <i class="bi bi-check-lg"></i>
+            </div>
+
+            <div>
+                <h2>¡Todo listo, @NombreSocio!</h2>
+                <p>Tu lugar en la clase está asegurado. Te esperamos para que sigas alcanzando tus objetivos.</p>
+            </div>
         </div>
 
-        <div>
-            <span class="confirmada-eyebrow">Reserva exitosa</span>
-            <h2>¡Todo listo, @(Session.EstaAutenticado ? Session.Nombres : "Socio")!</h2>
-            <p>Tu lugar en la clase está asegurado. Te esperamos para que sigas alcanzando tus objetivos.</p>
-        </div>
-    </div>
+        <div class="rc-main-grid">
 
-    <div class="confirmada-main-grid">
-
-        <div class="confirmada-detalles-card">
-            <div class="confirmada-card-title">
-                <div class="confirmada-title-icon">▣</div>
+            <div class="rc-card">
                 <h3>Detalles de la reserva</h3>
-            </div>
 
-            <div class="detalle-lista">
+                <div class="rc-detail-list">
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">🏋️</span>
-                        <span>Clase</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-person-workspace"></i>
+                            <span>Clase</span>
+                        </div>
+                        <strong>@NombreClase</strong>
                     </div>
-                    <strong>@NombreClase</strong>
-                </div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">🎯</span>
-                        <span>Disciplina</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-activity"></i>
+                            <span>Disciplina</span>
+                        </div>
+                        <strong class="rc-red">@Disciplina</strong>
                     </div>
-                    <strong class="detalle-red">@Disciplina</strong>
-                </div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">📅</span>
-                        <span>Fecha</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>Fecha</span>
+                        </div>
+                        <strong>@Fecha</strong>
                     </div>
-                    <strong>@Fecha</strong>
-                </div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">🕐</span>
-                        <span>Hora</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-clock"></i>
+                            <span>Hora</span>
+                        </div>
+                        <strong>@Horario</strong>
                     </div>
-                    <strong>@Horario</strong>
-                </div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">👤</span>
-                        <span>Entrenador</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Entrenador</span>
+                        </div>
+                        <strong>@Entrenador</strong>
                     </div>
-                    <strong>@Entrenador</strong>
-                </div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">📍</span>
-                        <span>Salón</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Salón</span>
+                        </div>
+                        <strong>@Salon</strong>
                     </div>
-                    <strong>@Salon</strong>
-                </div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">🎟️</span>
-                        <span>Cupos restantes</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-people"></i>
+                            <span>Cupos restantes</span>
+                        </div>
+                        <strong class="rc-green">@CuposRestantes cupos</strong>
                     </div>
-                    <strong class="detalle-green">@CuposRestantes cupos</strong>
-                </div>
 
-                <div class="detalle-divider"></div>
+                    <div class="rc-divider"></div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">✅</span>
-                        <span>Estado de reserva</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Estado de reserva</span>
+                        </div>
+                        <span class="rc-status">
+                            <i class="bi bi-check-circle"></i>
+                            Confirmada
+                        </span>
                     </div>
-                    <span class="confirmada-status">Confirmada</span>
-                </div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">♛</span>
-                        <span>Membresía utilizada</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-gem"></i>
+                            <span>Membresía utilizada</span>
+                        </div>
+                        <strong>@TipoMembresia</strong>
                     </div>
-                    <strong>@TipoMembresia</strong>
-                </div>
 
-                <div class="detalle-row">
-                    <div class="detalle-left">
-                        <span class="detalle-icon">👤</span>
-                        <span>Socio</span>
+                    <div class="rc-detail-row">
+                        <div class="rc-detail-label">
+                            <i class="bi bi-person"></i>
+                            <span>Socio</span>
+                        </div>
+                        <strong>@NombreSocio</strong>
                     </div>
-                    <strong>@NombreSocio</strong>
-                </div>
 
-            </div>
-        </div>
-
-        <div class="confirmada-side">
-
-            <div class="confirmada-summary-card">
-                <h3>Resumen rápido</h3>
-
-                <div class="summary-mini-row">
-                    <span>Clase</span>
-                    <strong>@NombreClase</strong>
-                </div>
-
-                <div class="summary-mini-row">
-                    <span>Horario</span>
-                    <strong>@Horario</strong>
-                </div>
-
-                <div class="summary-mini-row">
-                    <span>Salón</span>
-                    <strong>@Salon</strong>
-                </div>
-
-                <div class="summary-mini-total">
-                    <span>Estado</span>
-                    <strong>Confirmada</strong>
                 </div>
             </div>
 
-            <div class="confirmada-pasos-card">
-                <div class="confirmada-card-title">
-                    <div class="confirmada-title-icon red">!</div>
-                    <h3>Próximos pasos</h3>
-                </div>
+            <div class="rc-card rc-steps-card">
+                <h3>Próximos pasos</h3>
 
-                <div class="pasos-lista">
+                <div class="rc-step-list">
 
-                    <div class="paso-item">
-                        <div class="paso-icon">⏰</div>
+                    <div class="rc-step-item">
+                        <div class="rc-step-icon">
+                            <i class="bi bi-clock"></i>
+                        </div>
+
                         <div>
                             <strong>Llega 10 minutos antes</strong>
                             <p>Te recomendamos llegar con anticipación para prepararte y disfrutar al máximo tu clase.</p>
                         </div>
                     </div>
 
-                    <div class="paso-item">
-                        <div class="paso-icon">🎒</div>
+                    <div class="rc-step-item">
+                        <div class="rc-step-icon">
+                            <i class="bi bi-droplet"></i>
+                        </div>
+
                         <div>
                             <strong>Trae lo necesario</strong>
                             <p>No olvides tu toalla, botella de agua y toda la energía para dar lo mejor de ti.</p>
                         </div>
                     </div>
 
-                    <div class="paso-item">
-                        <div class="paso-icon">📋</div>
+                    <div class="rc-step-item">
+                        <div class="rc-step-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+
                         <div>
                             <strong>Revisa tus reservas</strong>
                             <p>Puedes ver los detalles de esta y todas tus reservas en la sección Mis Reservas.</p>
@@ -189,36 +177,334 @@
 
                 </div>
 
-                <div class="paso-nota">
-                    <span>ⓘ</span>
-                    <p>Si no puedes asistir, recuerda cancelar tu reserva con anticipación para liberar tu cupo.</p>
+                <div class="rc-note">
+                    <i class="bi bi-info-circle"></i>
+                    <span>Si no puedes asistir, recuerda cancelar tu reserva con anticipación para liberar tu cupo.</span>
                 </div>
             </div>
 
         </div>
 
-    </div>
+        <div class="rc-actions">
+            <a href="/socio/reservas" class="rc-btn-primary">
+                <i class="bi bi-clipboard-check"></i>
+                Ver Mis Reservas
+            </a>
 
-    <div class="confirmada-actions">
-        <a href="/socio/reservas" class="btn-confirmada-primary">
-            Ver Mis Reservas
-        </a>
-
-        <a href="/socio/reservar" class="btn-confirmada-secondary">
-            Explorar Más Clases
-        </a>
-    </div>
+            <a href="/socio/reservar" class="rc-btn-secondary">
+                <i class="bi bi-search"></i>
+                Explorar Más Clases
+            </a>
+        </div>
+    }
 
 </section>
+
+<style>
+    .rc-page {
+        padding: 54px 64px;
+        color: #f5f5f5;
+    }
+
+    .rc-header {
+        margin-bottom: 28px;
+    }
+
+        .rc-header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: 950;
+            letter-spacing: -0.02em;
+        }
+
+        .rc-header p {
+            margin: 8px 0 0;
+            color: #bdbdbd;
+            font-size: 16px;
+        }
+
+    .rc-banner {
+        background: #171717;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 32px 38px;
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        margin-bottom: 24px;
+        box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+    }
+
+    .rc-check {
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        border: 3px solid rgba(69, 214, 96, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #eaffef;
+        font-size: 48px;
+        background: radial-gradient(circle, rgba(55, 210, 85, 0.22), rgba(55, 210, 85, 0.03));
+        box-shadow: 0 0 28px rgba(55, 210, 85, 0.34);
+        flex: none;
+    }
+
+    .rc-banner h2 {
+        margin: 0 0 8px;
+        color: #ffffff;
+        font-size: 23px;
+        font-weight: 900;
+    }
+
+    .rc-banner p {
+        margin: 0;
+        color: #bdbdbd;
+        line-height: 1.55;
+    }
+
+    .rc-main-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 24px;
+        align-items: stretch;
+    }
+
+    .rc-card {
+        background: #171717;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 28px 30px;
+        box-shadow: 0 18px 55px rgba(0,0,0,0.22);
+    }
+
+        .rc-card h3 {
+            margin: 0 0 24px;
+            color: #ffffff;
+            font-size: 19px;
+            font-weight: 900;
+        }
+
+    .rc-detail-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .rc-detail-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 13px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+        .rc-detail-row:last-child {
+            border-bottom: none;
+        }
+
+    .rc-detail-label {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        color: #9d9d9d;
+        min-width: 190px;
+    }
+
+        .rc-detail-label i {
+            width: 22px;
+            color: #bcbcbc;
+            font-size: 18px;
+            text-align: center;
+        }
+
+    .rc-detail-row strong {
+        color: #ffffff;
+        font-weight: 850;
+        text-align: right;
+    }
+
+    .rc-red {
+        color: #ff4b4b !important;
+    }
+
+    .rc-green {
+        color: #51d66e !important;
+    }
+
+    .rc-divider {
+        height: 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 10px;
+    }
+
+    .rc-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(50, 184, 83, 0.16);
+        border: 1px solid rgba(50, 184, 83, 0.38);
+        color: #61df78;
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .rc-steps-card {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .rc-step-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .rc-step-item {
+        display: flex;
+        gap: 18px;
+        padding: 18px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+        .rc-step-item:first-child {
+            padding-top: 0;
+        }
+
+    .rc-step-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: rgba(239, 49, 49, 0.08);
+        border: 1px solid rgba(239, 49, 49, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ff3838;
+        font-size: 27px;
+        flex: none;
+    }
+
+    .rc-step-item strong {
+        display: block;
+        color: #ffffff;
+        font-size: 15px;
+        margin-bottom: 6px;
+    }
+
+    .rc-step-item p {
+        margin: 0;
+        color: #a7a7a7;
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    .rc-note {
+        margin-top: auto;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 15px 17px;
+        color: #aaa;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+        .rc-note i {
+            color: #cfcfcf;
+            margin-top: 1px;
+        }
+
+    .rc-actions {
+        margin-top: 26px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .rc-btn-primary,
+    .rc-btn-secondary {
+        min-height: 58px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        font-weight: 950;
+        transition: 0.18s;
+    }
+
+    .rc-btn-primary {
+        background: #ef3131;
+        color: #ffffff;
+        border: 1px solid #ef3131;
+    }
+
+        .rc-btn-primary:hover {
+            background: #ff3b3b;
+            color: #ffffff;
+        }
+
+    .rc-btn-secondary {
+        background: transparent;
+        color: #ffffff;
+        border: 1px solid rgba(255,255,255,0.18);
+    }
+
+        .rc-btn-secondary:hover {
+            background: rgba(255,255,255,0.06);
+            color: #ffffff;
+        }
+
+    @@media (max-width: 1100px) {
+        .rc-page {
+            padding: 36px 24px;
+        }
+
+        .rc-main-grid,
+        .rc-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .rc-banner {
+            align-items: flex-start;
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .rc-banner {
+            flex-direction: column;
+        }
+
+        .rc-detail-row {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+            .rc-detail-row strong {
+                text-align: left;
+            }
+    }
+</style>
 
 @code {
     [Parameter]
     public string CodigoClase { get; set; } = "";
 
-    private string NombreClase = "Cargando...";
-    private string Disciplina = "-";
-    private string Fecha = "-";
-    private string Horario = "-";
+    private bool Cargando { get; set; } = true;
+
+    private string NombreClase = "Clase";
+    private string Disciplina = "—";
+    private string Fecha = "—";
+    private string Horario = "—";
     private string Entrenador = "Sin asignar";
     private string Salon = "Sin asignar";
     private int CuposRestantes = 0;
@@ -227,43 +513,120 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Nombre del socio
-        if (Session.EstaAutenticado)
-        {
-            NombreSocio = Session.Nombres;
+        Cargando = true;
 
-            // Obtener tipo de membresía
-            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
-            var suscripcion = suscripciones.FirstOrDefault(s => s.IdUsuario == Session.IdUsuario && s.Activo);
-            if (suscripcion != null)
-            {
-                TipoMembresia = $"Membresía {suscripcion.TipoPlan}";
-            }
+        try
+        {
+            await CargarSocioYMembresia();
+            await CargarSesion();
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private async Task CargarSocioYMembresia()
+    {
+        if (!Session.EstaAutenticado)
+        {
+            NombreSocio = "Socio";
+            TipoMembresia = "Sin membresía";
+            return;
         }
 
-        // Cargar datos de la sesión de clase
-        if (int.TryParse(CodigoClase, out int idSesion) && idSesion > 0)
+        NombreSocio = !string.IsNullOrWhiteSpace(Session.Nombres)
+            ? Session.Nombres
+            : "Socio";
+
+        var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+
+        var suscripcion = suscripciones
+            .Where(s => s.IdUsuario == Session.IdUsuario && s.Activo && s.EsActiva)
+            .OrderByDescending(s => s.FechaFinMembresia ?? DateTime.MinValue)
+            .ThenByDescending(s => s.IdSuscripcion)
+            .FirstOrDefault();
+
+        if (suscripcion != null)
         {
-            var sesiones = await SesionClaseService.ListarSesionesAsync();
-            var sesionDTO = sesiones.FirstOrDefault(s => s.IdSesion == idSesion);
-
-            if (sesionDTO != null)
-            {
-                NombreClase = sesionDTO.ClaseGrupal?.NombreDisciplina ?? "Clase General";
-                Disciplina = sesionDTO.ClaseGrupal?.NombreDisciplina ?? "-";
-                Fecha = sesionDTO.FechaSesion.ToString("yyyy-MM-dd");
-                Horario = $"{sesionDTO.HoraInicio:HH:mm} - {sesionDTO.HoraFin:HH:mm}";
-                Entrenador = sesionDTO.Entrenador != null
-                    ? $"{sesionDTO.Entrenador.Nombres} {sesionDTO.Entrenador.ApellidoPaterno}"
-                    : "Sin asignar";
-                Salon = sesionDTO.Salon?.NombreSalon ?? "Sin asignar";
-
-                // Calcular cupos restantes
-                var reservas = await ReservaService.ListarReservasAsync();
-                int inscritos = reservas.Count(r => r.SesionClase?.IdSesion == idSesion);
-                int capacidad = sesionDTO.Salon?.AforoMaximo ?? 0;
-                CuposRestantes = capacidad > 0 ? capacidad - inscritos : sesionDTO.CuposDisponibles;
-            }
+            TipoMembresia = $"Membresía {suscripcion.TipoPlan}";
         }
+    }
+
+    private async Task CargarSesion()
+    {
+        if (!int.TryParse(CodigoClase, out int idSesion) || idSesion <= 0)
+        {
+            NombreClase = "Reserva registrada";
+            return;
+        }
+
+        var sesiones = await SesionClaseService.ListarSesionesAsync();
+        var sesion = sesiones.FirstOrDefault(s => s.IdSesion == idSesion);
+
+        if (sesion == null)
+        {
+            NombreClase = "Reserva registrada";
+            return;
+        }
+
+        string nombreDisciplinaCompleto = sesion.ClaseGrupal?.NombreDisciplina ?? "Clase General";
+
+        NombreClase = ObtenerNombreClase(nombreDisciplinaCompleto);
+        Disciplina = ObtenerDisciplina(nombreDisciplinaCompleto);
+
+        Fecha = sesion.FechaSesion == default
+            ? "—"
+            : sesion.FechaSesion.ToString("yyyy-MM-dd");
+
+        Horario = sesion.HoraInicio == default || sesion.HoraFin == default
+            ? "—"
+            : $"{sesion.HoraInicio:HH:mm} - {sesion.HoraFin:HH:mm}";
+
+        Entrenador = sesion.Entrenador != null
+            ? $"{sesion.Entrenador.Nombres} {sesion.Entrenador.ApellidoPaterno}".Trim()
+            : "Sin asignar";
+
+        Salon = sesion.Salon?.NombreSalon ?? "Sin asignar";
+
+        var reservas = await ReservaService.ListarReservasAsync();
+
+        int inscritos = reservas.Count(r =>
+            r.Activo &&
+            r.SesionClase?.IdSesion == idSesion);
+
+        int capacidad = sesion.Salon?.AforoMaximo ?? 0;
+
+        CuposRestantes = capacidad > 0
+            ? Math.Max(0, capacidad - inscritos)
+            : Math.Max(0, sesion.CuposDisponibles);
+    }
+
+    private static string ObtenerDisciplina(string texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+            return "—";
+
+        if (texto.Contains(" - "))
+        {
+            var partes = texto.Split(new[] { " - " }, 2, StringSplitOptions.None);
+            return partes[0].Trim();
+        }
+
+        return texto.Trim();
+    }
+
+    private static string ObtenerNombreClase(string texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+            return "Clase";
+
+        if (texto.Contains(" - "))
+        {
+            var partes = texto.Split(new[] { " - " }, 2, StringSplitOptions.None);
+            return partes[1].Trim();
+        }
+
+        return texto.Trim();
     }
 }

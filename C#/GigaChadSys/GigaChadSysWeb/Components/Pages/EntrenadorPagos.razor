@@ -5,6 +5,8 @@
 @rendermode InteractiveServer
 @inject PagoServicio PagoService
 @inject MetodoPagoServicio MetodoPagoService
+@inject SessionServicio Session
+@inject EntrenadorServicio EntrenadorService
 
 <section class="pagos-page">
     <div class="pagos-header">
@@ -12,12 +14,12 @@
         <p class="pagos-subtitle">Historial de pagos de tu sueldo como entrenador</p>
     </div>
 
-    <!-- Stats Cards -->
     <div class="pagos-stats-grid">
         <div class="pagos-stat-card">
             <div class="pagos-stat-icon icon-green">
-                <span>💰</span>
+                <i class="bi bi-cash-stack"></i>
             </div>
+
             <div class="pagos-stat-info">
                 <span class="pagos-stat-label">TOTAL COBRADO</span>
                 <span class="pagos-stat-value">S/@totalCobrado.ToString("N0")</span>
@@ -27,8 +29,9 @@
 
         <div class="pagos-stat-card">
             <div class="pagos-stat-icon icon-yellow">
-                <span>⏳</span>
+                <i class="bi bi-clock-history"></i>
             </div>
+
             <div class="pagos-stat-info">
                 <span class="pagos-stat-label">PENDIENTE</span>
                 <span class="pagos-stat-value">S/@totalPendiente.ToString("N0")</span>
@@ -38,8 +41,9 @@
 
         <div class="pagos-stat-card">
             <div class="pagos-stat-icon icon-blue">
-                <span>📊</span>
+                <i class="bi bi-bar-chart-line"></i>
             </div>
+
             <div class="pagos-stat-info">
                 <span class="pagos-stat-label">PROMEDIO MENSUAL</span>
                 <span class="pagos-stat-value">S/@promedioMensual.ToString("N0")</span>
@@ -49,8 +53,9 @@
 
         <div class="pagos-stat-card">
             <div class="pagos-stat-icon icon-red">
-                <span>📅</span>
+                <i class="bi bi-calendar-check"></i>
             </div>
+
             <div class="pagos-stat-info">
                 <span class="pagos-stat-label">ÚLTIMO PAGO</span>
                 <span class="pagos-stat-value">S/@ultimoPagoMonto.ToString("N0")</span>
@@ -59,81 +64,120 @@
         </div>
     </div>
 
-    <!-- Content: Table + Info Panel -->
     <div class="pagos-content-grid">
-        <!-- Historial de Pagos Table -->
         <div class="pagos-table-card">
             <h3>Historial de Pagos</h3>
 
-            <div class="pagos-table-wrapper">
-                <table class="pagos-table">
-                    <thead>
-                        <tr>
-                            <th>CONCEPTO</th>
-                            <th>TIPO</th>
-                            <th>MÉTODO</th>
-                            <th>MONTO</th>
-                            <th>FECHA</th>
-                            <th>ESTADO</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var pago in pagos)
-                        {
+            @if (Cargando)
+            {
+                <div style="padding: 24px; color: rgba(255,255,255,0.72); display:flex; align-items:center; gap:10px;">
+                    <i class="bi bi-hourglass-split"></i>
+                    <span>Cargando pagos del entrenador...</span>
+                </div>
+            }
+            else
+            {
+                <div class="pagos-table-wrapper">
+                    <table class="pagos-table">
+                        <thead>
                             <tr>
-                                <td class="td-concepto">@pago.Concepto</td>
-                                <td>@pago.Tipo</td>
-                                <td>@pago.Metodo</td>
-                                <td class="td-monto">S/@pago.Monto.ToString("N0")</td>
-                                <td>@pago.Fecha.ToString("yyyy-MM-dd")</td>
-                                <td>
-                                    <span class="pagos-estado estado-@pago.Estado.ToLower()">
-                                        <span class="estado-dot"></span>
-                                        @pago.Estado
-                                    </span>
-                                </td>
+                                <th>CONCEPTO</th>
+                                <th>TIPO</th>
+                                <th>MÉTODO</th>
+                                <th>MONTO</th>
+                                <th>FECHA</th>
+                                <th>ESTADO</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+
+                        <tbody>
+                            @if (pagos.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="6" style="padding:24px; color:rgba(255,255,255,0.65);">
+                                        <i class="bi bi-info-circle"></i>
+                                        No se encontraron pagos de sueldo o bono.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var pago in pagos)
+                                {
+                                    <tr>
+                                        <td class="td-concepto">@pago.Concepto</td>
+
+                                        <td>
+                                            <span style="display:inline-flex; align-items:center; gap:8px;">
+                                                <i class="@ObtenerIconoTipo(pago.Tipo)"></i>
+                                                @pago.Tipo
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span style="display:inline-flex; align-items:center; gap:8px;">
+                                                <i class="@ObtenerIconoMetodo(pago.MetodoPagoId, pago.Metodo)"></i>
+                                                @ObtenerTextoMetodo(pago.MetodoPagoId, pago.Metodo)
+                                            </span>
+                                        </td>
+
+                                        <td class="td-monto">S/@pago.Monto.ToString("N0")</td>
+
+                                        <td>@pago.Fecha.ToString("yyyy-MM-dd")</td>
+
+                                        <td>
+                                            <span class="pagos-estado estado-@pago.Estado.ToLower()">
+                                                <span class="estado-dot"></span>
+                                                @pago.Estado
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
 
-        <!-- Info Panel -->
         <div class="pagos-info-panel">
             <h3>Información</h3>
+
             <p class="pagos-info-text">
-                Los pagos del entrenador son registrados por la administración del gimnasio y se depositan mensualmente.
+                Los pagos del entrenador son registrados por la administración del gimnasio y se depositan según la programación interna.
             </p>
 
             <div class="pagos-info-items">
                 <div class="pagos-info-item">
                     <div class="pagos-info-icon icon-red">
-                        <span>💪</span>
+                        <i class="bi bi-person-workspace"></i>
                     </div>
+
                     <div>
                         <span class="pagos-info-label">ESPECIALIDAD</span>
-                        <strong>CrossFit y Musculación</strong>
+                        <strong>@EspecialidadActual</strong>
                     </div>
                 </div>
 
                 <div class="pagos-info-item">
                     <div class="pagos-info-icon icon-blue">
-                        <span>🏦</span>
+                        <i class="@IconoFormaPagoActual"></i>
                     </div>
+
                     <div>
                         <span class="pagos-info-label">FORMA DE PAGO</span>
-                        <strong>Transferencia bancaria</strong>
+                        <strong>@FormaPagoActual</strong>
                     </div>
                 </div>
 
                 <div class="pagos-info-item">
                     <div class="pagos-info-icon icon-green">
-                        <span>✓</span>
+                        <i class="bi bi-check-circle"></i>
                     </div>
+
                     <div>
                         <span class="pagos-info-label">ESTADO ACTUAL</span>
-                        <strong class="estado-al-dia">Al día</strong>
+                        <strong class="estado-al-dia">@EstadoActualTexto</strong>
                     </div>
                 </div>
             </div>
@@ -143,49 +187,218 @@
 
 @code {
     private List<PagoEntrenador> pagos = new();
-    private decimal totalCobrado => pagos.Where(p => p.Estado == "Pagado").Sum(p => p.Monto);
-    private decimal totalPendiente => pagos.Where(p => p.Estado == "Pendiente").Sum(p => p.Monto);
-    private decimal promedioMensual => pagos.Where(p => p.Estado == "Pagado").Any()
-        ? pagos.Where(p => p.Estado == "Pagado" && p.Tipo == "Sueldo").Average(p => p.Monto)
-        : 0;
-    private decimal ultimoPagoMonto => pagos.Where(p => p.Estado == "Pagado").Any()
-        ? pagos.Where(p => p.Estado == "Pagado").OrderByDescending(p => p.Fecha).First().Monto
-        : 0;
-    private string ultimoPagoFecha => pagos.Where(p => p.Estado == "Pagado").Any()
-        ? pagos.Where(p => p.Estado == "Pagado").OrderByDescending(p => p.Fecha).First().Fecha.ToString("yyyy-MM-dd")
-        : "---";
+
+    private bool Cargando { get; set; } = true;
+
+    private string EspecialidadActual { get; set; } = "No especificada";
+
+    private decimal totalCobrado =>
+        pagos.Where(p => p.Estado == "Pagado").Sum(p => p.Monto);
+
+    private decimal totalPendiente =>
+        pagos.Where(p => p.Estado == "Pendiente").Sum(p => p.Monto);
+
+    private decimal promedioMensual =>
+        pagos.Any(p => p.Estado == "Pagado" && p.Tipo == "Sueldo")
+            ? pagos.Where(p => p.Estado == "Pagado" && p.Tipo == "Sueldo").Average(p => p.Monto)
+            : 0;
+
+    private decimal ultimoPagoMonto =>
+        pagos.Any(p => p.Estado == "Pagado")
+            ? pagos.Where(p => p.Estado == "Pagado").OrderByDescending(p => p.Fecha).First().Monto
+            : 0;
+
+    private string ultimoPagoFecha =>
+        pagos.Any(p => p.Estado == "Pagado")
+            ? pagos.Where(p => p.Estado == "Pagado").OrderByDescending(p => p.Fecha).First().Fecha.ToString("yyyy-MM-dd")
+            : "---";
+
+    private string EstadoActualTexto =>
+        totalPendiente > 0 ? "Con pagos pendientes" : "Al día";
+
+    private string FormaPagoActual
+    {
+        get
+        {
+            var ultimo = pagos
+                .OrderByDescending(p => p.Fecha)
+                .FirstOrDefault();
+
+            if (ultimo == null)
+                return "No registrado";
+
+            return ObtenerTextoMetodo(ultimo.MetodoPagoId, ultimo.Metodo);
+        }
+    }
+
+    private string IconoFormaPagoActual
+    {
+        get
+        {
+            var ultimo = pagos
+                .OrderByDescending(p => p.Fecha)
+                .FirstOrDefault();
+
+            if (ultimo == null)
+                return "bi bi-wallet2";
+
+            return ObtenerIconoMetodo(ultimo.MetodoPagoId, ultimo.Metodo);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        Cargando = true;
+
+        try
+        {
+            await CargarEntrenadorActual();
+            await CargarPagos();
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private async Task CargarEntrenadorActual()
+    {
+        if (!Session.EstaAutenticado)
+            return;
+
+        var entrenador = await EntrenadorService.ObtenerPorIdAsync(Session.IdUsuario);
+
+        if (entrenador != null && !string.IsNullOrWhiteSpace(entrenador.Especialidad))
+        {
+            EspecialidadActual = entrenador.Especialidad;
+        }
+    }
+
+    private async Task CargarPagos()
+    {
         var todosPagos = await PagoService.ListarPagosAsync();
-        var listaMetodos = await MetodoPagoService.ListarMetodosDePagoAsync(); // Nombre correcto del método
-        
+        var listaMetodos = await MetodoPagoService.ListarMetodosDePagoAsync();
+
         var pagosSueldo = todosPagos
-            .Where(p => p.Tipo != null && (p.Tipo.ToLower().Contains("sueldo") || p.Tipo.ToLower().Contains("bono")))
-            .OrderByDescending(p => p.FechaPago)
+            .Where(p =>
+                !string.IsNullOrWhiteSpace(p.Tipo) &&
+                (
+                    p.Tipo.ToLower().Contains("sueldo") ||
+                    p.Tipo.ToLower().Contains("bono")
+                )
+            )
+            .OrderByDescending(p => p.FechaPago ?? DateTime.MinValue)
+            .ThenByDescending(p => p.IdPago)
             .ToList();
 
         pagos.Clear();
+
         foreach (var p in pagosSueldo)
         {
             var metodo = listaMetodos.FirstOrDefault(m => m.IdMetodoPago == p.MetodoPago);
+
             pagos.Add(new PagoEntrenador
             {
                 Concepto = p.Tipo ?? "Sueldo",
                 Tipo = p.Tipo?.Contains("Bono", StringComparison.OrdinalIgnoreCase) == true ? "Bono" : "Sueldo",
-                Metodo = metodo?.Tipo ?? "Desconocido", // MetodoPagoDTO tiene Tipo, no Nombre
+                MetodoPagoId = p.MetodoPago,
+                Metodo = metodo?.Tipo ?? "Desconocido",
                 Monto = (decimal)p.Monto,
-                Fecha = p.FechaPago ?? DateTime.Now,
+                Fecha = p.FechaPago ?? DateTime.Today,
                 Estado = p.Activo ? "Pagado" : "Pendiente"
             });
         }
-        
+    }
+
+    private string ObtenerIconoTipo(string? tipo)
+    {
+        if (string.IsNullOrWhiteSpace(tipo))
+            return "bi bi-receipt";
+
+        var valor = tipo.Trim().ToLower();
+
+        if (valor.Contains("bono"))
+            return "bi bi-award";
+
+        if (valor.Contains("sueldo"))
+            return "bi bi-cash-coin";
+
+        return "bi bi-receipt";
+    }
+
+    private string ObtenerTextoMetodo(int metodoPagoId, string? metodo)
+    {
+        if (metodoPagoId == 1)
+            return "Efectivo";
+
+        if (metodoPagoId == 2)
+            return "Tarjeta Débito";
+
+        if (metodoPagoId == 3)
+            return "Tarjeta Crédito";
+
+        if (string.IsNullOrWhiteSpace(metodo))
+            return "No definido";
+
+        var valor = metodo.Trim().ToLower();
+
+        if (valor.Contains("efectivo"))
+            return "Efectivo";
+
+        if (valor.Contains("debito") || valor.Contains("débito"))
+            return "Tarjeta Débito";
+
+        if (valor.Contains("credito") || valor.Contains("crédito"))
+            return "Tarjeta Crédito";
+
+        if (valor.Contains("transferencia"))
+            return "Transferencia bancaria";
+
+        if (valor.Contains("tarjeta"))
+            return "Tarjeta";
+
+        return metodo.Trim();
+    }
+
+    private string ObtenerIconoMetodo(int metodoPagoId, string? metodo)
+    {
+        if (metodoPagoId == 1)
+            return "bi bi-cash-stack";
+
+        if (metodoPagoId == 2)
+            return "bi bi-credit-card-2-front";
+
+        if (metodoPagoId == 3)
+            return "bi bi-credit-card";
+
+        if (string.IsNullOrWhiteSpace(metodo))
+            return "bi bi-wallet2";
+
+        var valor = metodo.Trim().ToLower();
+
+        if (valor.Contains("efectivo"))
+            return "bi bi-cash-stack";
+
+        if (valor.Contains("debito") || valor.Contains("débito"))
+            return "bi bi-credit-card-2-front";
+
+        if (valor.Contains("credito") || valor.Contains("crédito"))
+            return "bi bi-credit-card";
+
+        if (valor.Contains("transferencia"))
+            return "bi bi-bank";
+
+        if (valor.Contains("tarjeta"))
+            return "bi bi-credit-card-2-front";
+
+        return "bi bi-wallet2";
     }
 
     private class PagoEntrenador
     {
         public string Concepto { get; set; } = "";
         public string Tipo { get; set; } = "";
+        public int MetodoPagoId { get; set; }
         public string Metodo { get; set; } = "";
         public decimal Monto { get; set; }
         public DateTime Fecha { get; set; }

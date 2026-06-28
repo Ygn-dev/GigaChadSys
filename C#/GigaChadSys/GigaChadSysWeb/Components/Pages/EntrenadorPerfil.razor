@@ -6,205 +6,861 @@
 @inject SessionServicio Session
 @inject EntrenadorServicio EntrenadorService
 
-<section class="perfil-page">
-    <div class="perfil-header">
+<section class="ep-page">
+
+    <div class="ep-header">
         <h1>Mi Perfil</h1>
-        <p class="perfil-subtitle">Tu información personal y profesional</p>
+        <p>Tu información personal y profesional</p>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(mensaje))
     {
-        <div class="@claseMensaje" style="padding: 12px 18px; border-radius: 8px; margin-bottom: 16px; font-size: 0.95rem;">
-            @mensaje
+        <div class="@claseMensaje">
+            <i class="@iconoMensaje"></i>
+            <span>@mensaje</span>
         </div>
     }
 
-    <!-- Profile Card -->
-    <div class="perfil-card">
-        <div class="perfil-card-left">
-            <div class="perfil-avatar-large">
-                <span>👤</span>
+    @if (cargando)
+    {
+        <div class="ep-card ep-loading">
+            <div class="ep-card-icon blue">
+                <i class="bi bi-hourglass-split"></i>
             </div>
-            <div class="perfil-card-info">
-                <h2>@perfil.NombreCompleto</h2>
-                <p class="perfil-email">@perfil.Correo</p>
-                <div class="perfil-badges">
-                    <span class="perfil-badge badge-activo">
-                        <span class="estado-dot"></span> @perfil.Estado
-                    </span>
-                    <span class="perfil-badge badge-especialidad">
-                        💪 @perfil.Especialidad
-                    </span>
-                </div>
+
+            <div>
+                <h2>Cargando perfil...</h2>
+                <p>Obteniendo tu información desde el servidor.</p>
             </div>
         </div>
-        <div class="perfil-card-actions">
-            <button class="btn-perfil-edit" @onclick="ToggleEditar">
-                @(editando ? "✕ Cancelar" : "✏️ Editar Perfil")
-            </button>
-            <button class="btn-perfil-password" @onclick="ToggleCambiarContrasenia">
-                @(cambiandoContrasenia ? "✕ Cancelar" : "⚙ Cambiar Contraseña")
-            </button>
-        </div>
-    </div>
-
-    <!-- Información Personal -->
-    <div class="perfil-info-card">
-        <h3>Información Personal</h3>
-
-        <div class="perfil-info-list">
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>🪪</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">DNI</span>
-                    <strong>@perfil.DNI</strong>
-                </div>
+    }
+    else if (entrenadorActual == null)
+    {
+        <div class="ep-card ep-loading">
+            <div class="ep-card-icon red">
+                <i class="bi bi-exclamation-triangle"></i>
             </div>
 
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>👤</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Nombre Completo</span>
-                    @if (editando)
-                    {
-                        <input type="text" @bind="editNombres" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Nombres" />
-                    }
-                    else
-                    {
-                        <strong>@perfil.NombreCompleto</strong>
-                    }
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>📞</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Teléfono</span>
-                    @if (editando)
-                    {
-                        <input type="text" @bind="editTelefono" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Teléfono" />
-                    }
-                    else
-                    {
-                        <strong>@perfil.Telefono</strong>
-                    }
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>✉️</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Correo Electrónico</span>
-                    @if (editando)
-                    {
-                        <input type="email" @bind="editEmail" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Email" />
-                    }
-                    else
-                    {
-                        <strong>@perfil.Correo</strong>
-                    }
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>💪</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Especialidad</span>
-                    @if (editando)
-                    {
-                        <input type="text" @bind="editEspecialidad" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Especialidad" />
-                    }
-                    else
-                    {
-                        <strong>@perfil.Especialidad</strong>
-                    }
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>📅</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Fecha de Ingreso</span>
-                    <strong>@perfil.FechaIngreso.ToString("yyyy-MM-dd")</strong>
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>🏋️</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Estado</span>
-                    <strong class="estado-al-dia">@perfil.Estado</strong>
-                </div>
+            <div>
+                <h2>No se encontró información del entrenador</h2>
+                <p>Vuelve a iniciar sesión o contacta al administrador.</p>
             </div>
         </div>
+    }
+    else
+    {
+        <div class="ep-profile-card">
 
-        @if (editando)
+            <div class="ep-profile-left">
+                <div class="ep-avatar">
+                    @InicialesPerfil
+                </div>
+
+                <div class="ep-profile-info">
+                    <h2>@perfil.NombreCompleto</h2>
+                    <p>@perfil.Correo</p>
+
+                    <div class="ep-badges">
+                        <span class="@ClaseBadgeEstado">
+                            <i class="bi bi-circle-fill"></i>
+                            @perfil.Estado
+                        </span>
+
+                        <span class="ep-badge specialty">
+                            <i class="bi bi-person-badge"></i>
+                            @perfil.Especialidad
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ep-profile-actions">
+                <button type="button"
+                        class="ep-outline-btn"
+                        @onclick="ToggleEditar"
+                        disabled="@guardando">
+                    <i class="bi @(editando ? "bi-x-circle" : "bi-pencil")"></i>
+                    @(editando ? "Cancelar edición" : "Editar Perfil")
+                </button>
+
+                <button type="button"
+                        class="ep-outline-btn"
+                        @onclick="ToggleCambiarContrasenia"
+                        disabled="@guardando">
+                    <i class="bi @(cambiandoContrasenia ? "bi-x-circle" : "bi-lock")"></i>
+                    @(cambiandoContrasenia ? "Cancelar cambio" : "Cambiar Contraseña")
+                </button>
+            </div>
+
+        </div>
+
+        <div class="ep-grid">
+
+            <div class="ep-card">
+                <div class="ep-card-title">
+                    <div class="ep-card-icon red">
+                        <i class="bi bi-person-vcard"></i>
+                    </div>
+
+                    <div>
+                        <h3>Información Personal</h3>
+                        <p>Datos principales de tu cuenta</p>
+                    </div>
+                </div>
+
+                <div class="ep-info-list">
+
+                    <div class="ep-info-row">
+                        <div class="ep-info-label">
+                            <i class="bi bi-credit-card-2-front"></i>
+                            <span>DNI</span>
+                        </div>
+                        <strong>@perfil.DNI</strong>
+                    </div>
+
+                    <div class="ep-info-row">
+                        <div class="ep-info-label">
+                            <i class="bi bi-person"></i>
+                            <span>Nombres</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="ep-input"
+                                   type="text"
+                                   @bind="editNombres"
+                                   placeholder="Nombres" />
+                        }
+                        else
+                        {
+                            <strong>@entrenadorActual.Nombres</strong>
+                        }
+                    </div>
+
+                    <div class="ep-info-row">
+                        <div class="ep-info-label">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>Apellido paterno</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="ep-input"
+                                   type="text"
+                                   @bind="editApellidoPaterno"
+                                   placeholder="Apellido paterno" />
+                        }
+                        else
+                        {
+                            <strong>@entrenadorActual.ApellidoPaterno</strong>
+                        }
+                    </div>
+
+                    <div class="ep-info-row">
+                        <div class="ep-info-label">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>Apellido materno</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="ep-input"
+                                   type="text"
+                                   @bind="editApellidoMaterno"
+                                   placeholder="Apellido materno" />
+                        }
+                        else
+                        {
+                            <strong>@entrenadorActual.ApellidoMaterno</strong>
+                        }
+                    </div>
+
+                    <div class="ep-info-row">
+                        <div class="ep-info-label">
+                            <i class="bi bi-telephone"></i>
+                            <span>Teléfono</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="ep-input"
+                                   type="text"
+                                   maxlength="9"
+                                   @bind="editTelefono"
+                                   placeholder="Teléfono" />
+                        }
+                        else
+                        {
+                            <strong>@perfil.Telefono</strong>
+                        }
+                    </div>
+
+                    <div class="ep-info-row">
+                        <div class="ep-info-label">
+                            <i class="bi bi-envelope"></i>
+                            <span>Correo electrónico</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="ep-input"
+                                   type="email"
+                                   @bind="editEmail"
+                                   placeholder="Correo electrónico" />
+                        }
+                        else
+                        {
+                            <strong>@perfil.Correo</strong>
+                        }
+                    </div>
+
+                    <div class="ep-info-row">
+                        <div class="ep-info-label">
+                            <i class="bi bi-activity"></i>
+                            <span>Estado</span>
+                        </div>
+                        <strong class="@ClaseTextoEstado">@perfil.Estado</strong>
+                    </div>
+
+                </div>
+
+                @if (editando)
+                {
+                    <div class="ep-actions">
+                        <button type="button"
+                                class="ep-main-btn"
+                                @onclick="GuardarPerfil"
+                                disabled="@guardando">
+                            <i class="bi @(guardando ? "bi-hourglass-split" : "bi-check-circle")"></i>
+                            @(guardando ? "Guardando..." : "Guardar Cambios")
+                        </button>
+
+                        <button type="button"
+                                class="ep-secondary-btn"
+                                @onclick="ToggleEditar"
+                                disabled="@guardando">
+                            <i class="bi bi-x-circle"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <aside class="ep-side">
+
+                <div class="ep-card ep-work-card">
+                    <div class="ep-card-title compact">
+                        <div class="ep-card-icon gold">
+                            <i class="bi bi-person-workspace"></i>
+                        </div>
+
+                        <div>
+                            <h3>Información Profesional</h3>
+                            <p>Datos laborales del entrenador</p>
+                        </div>
+                    </div>
+
+                    <div class="ep-work-summary">
+                        <span>Especialidad</span>
+
+                        @if (editando)
+                        {
+                            <input class="ep-input"
+                                   type="text"
+                                   @bind="editEspecialidad"
+                                   placeholder="Especialidad" />
+                        }
+                        else
+                        {
+                            <strong>@perfil.Especialidad</strong>
+                        }
+                    </div>
+
+                    <div class="ep-work-summary">
+                        <span>Sueldo mensual</span>
+                        <strong>S/@perfil.Sueldo.ToString("0.00")</strong>
+                    </div>
+
+                    <div class="ep-work-summary">
+                        <span>Tiempo de trabajo</span>
+                        <strong>@perfil.TiempoTrabajo</strong>
+                    </div>
+                </div>
+
+                <div class="ep-card ep-security-card">
+                    <div class="ep-card-title compact">
+                        <div class="ep-card-icon blue">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+
+                        <div>
+                            <h3>Acceso y Seguridad</h3>
+                            <p>Credenciales de tu cuenta</p>
+                        </div>
+                    </div>
+
+                    <div class="ep-security-item">
+                        <i class="bi bi-lock"></i>
+                        <div>
+                            <strong>Contraseña protegida</strong>
+                            <span>Actualiza tu contraseña cuando lo necesites.</span>
+                        </div>
+                    </div>
+
+                    <div class="ep-security-item">
+                        <i class="bi bi-person-check"></i>
+                        <div>
+                            <strong>Cuenta de entrenador</strong>
+                            <span>Acceso a sesiones asignadas, horario y pagos.</span>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+
+        @if (cambiandoContrasenia)
         {
-            <div style="display: flex; gap: 12px; margin-top: 16px;">
-                <button class="btn-perfil-edit" @onclick="GuardarPerfil" style="background: #22c55e; border-color: #22c55e;">
-                    💾 Guardar Cambios
-                </button>
-                <button class="btn-perfil-password" @onclick="ToggleEditar">
-                    ✕ Cancelar
-                </button>
+            <div class="ep-card ep-password-card">
+                <div class="ep-card-title">
+                    <div class="ep-card-icon blue">
+                        <i class="bi bi-lock"></i>
+                    </div>
+
+                    <div>
+                        <h3>Cambiar Contraseña</h3>
+                        <p>Actualiza tus credenciales de acceso</p>
+                    </div>
+                </div>
+
+                <div class="ep-password-grid">
+                    <div class="ep-form-group">
+                        <label>Nueva contraseña</label>
+                        <input class="ep-input"
+                               type="password"
+                               @bind="nuevaContrasenia"
+                               placeholder="Nueva contraseña" />
+                    </div>
+
+                    <div class="ep-form-group">
+                        <label>Confirmar contraseña</label>
+                        <input class="ep-input"
+                               type="password"
+                               @bind="confirmarContrasenia"
+                               placeholder="Confirmar contraseña" />
+                    </div>
+                </div>
+
+                <div class="ep-actions">
+                    <button type="button"
+                            class="ep-main-btn"
+                            @onclick="GuardarContrasenia"
+                            disabled="@guardando">
+                        <i class="bi @(guardando ? "bi-hourglass-split" : "bi-check-circle")"></i>
+                        @(guardando ? "Guardando..." : "Guardar Contraseña")
+                    </button>
+
+                    <button type="button"
+                            class="ep-secondary-btn"
+                            @onclick="ToggleCambiarContrasenia"
+                            disabled="@guardando">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </button>
+                </div>
             </div>
         }
-    </div>
-
-    @if (cambiandoContrasenia)
-    {
-        <div class="perfil-info-card" style="margin-top: 16px;">
-            <h3>Cambiar Contraseña</h3>
-            <div class="perfil-info-list">
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon"><span>🔒</span></div>
-                    <div style="flex:1;">
-                        <span class="perfil-info-label">Nueva Contraseña</span>
-                        <input type="password" @bind="nuevaContrasenia" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Nueva contraseña" />
-                    </div>
-                </div>
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon"><span>🔒</span></div>
-                    <div style="flex:1;">
-                        <span class="perfil-info-label">Confirmar Contraseña</span>
-                        <input type="password" @bind="confirmarContrasenia" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Confirmar contraseña" />
-                    </div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 12px; margin-top: 16px;">
-                <button class="btn-perfil-edit" @onclick="GuardarContrasenia" style="background: #22c55e; border-color: #22c55e;">
-                    💾 Guardar Contraseña
-                </button>
-                <button class="btn-perfil-password" @onclick="ToggleCambiarContrasenia">
-                    ✕ Cancelar
-                </button>
-            </div>
-        </div>
     }
+
 </section>
+
+<style>
+    .ep-page {
+        padding: 48px 64px;
+        color: #f5f5f5;
+    }
+
+    .ep-header {
+        margin-bottom: 28px;
+    }
+
+        .ep-header h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: 950;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        .ep-header p {
+            margin: 8px 0 0;
+            color: #bdbdbd;
+            font-size: 16px;
+        }
+
+    .ep-message {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 18px;
+        font-weight: 750;
+        border: 1px solid transparent;
+    }
+
+        .ep-message.success {
+            background: rgba(34, 197, 94, 0.13);
+            border-color: rgba(34, 197, 94, 0.35);
+            color: #68e084;
+        }
+
+        .ep-message.error {
+            background: rgba(239, 49, 49, 0.13);
+            border-color: rgba(239, 49, 49, 0.35);
+            color: #ff6868;
+        }
+
+    .ep-profile-card,
+    .ep-card {
+        background: #151515;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        box-shadow: 0 18px 55px rgba(0,0,0,0.24);
+    }
+
+    .ep-profile-card {
+        padding: 28px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 28px;
+        margin-bottom: 24px;
+    }
+
+    .ep-profile-left {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .ep-avatar {
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ef3131, #631313);
+        border: 2px solid rgba(255,255,255,0.08);
+        box-shadow: 0 0 24px rgba(239, 49, 49, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 30px;
+        font-weight: 950;
+        letter-spacing: 0.02em;
+        flex: none;
+    }
+
+    .ep-profile-info h2 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 26px;
+        font-weight: 950;
+    }
+
+    .ep-profile-info p {
+        margin: 5px 0 14px;
+        color: #bdbdbd;
+    }
+
+    .ep-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ep-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 850;
+    }
+
+        .ep-badge i {
+            font-size: 9px;
+        }
+
+        .ep-badge.active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #68e084;
+            border: 1px solid rgba(34, 197, 94, 0.35);
+        }
+
+        .ep-badge.inactive {
+            background: rgba(239, 49, 49, 0.14);
+            color: #ff6868;
+            border: 1px solid rgba(239, 49, 49, 0.35);
+        }
+
+        .ep-badge.specialty {
+            background: rgba(239, 49, 49, 0.13);
+            color: #ff6868;
+            border: 1px solid rgba(239, 49, 49, 0.35);
+        }
+
+            .ep-badge.specialty i {
+                font-size: 14px;
+            }
+
+    .ep-profile-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .ep-outline-btn,
+    .ep-secondary-btn,
+    .ep-main-btn {
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 11px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        cursor: pointer;
+        transition: 0.18s;
+        text-decoration: none;
+    }
+
+    .ep-outline-btn {
+        background: transparent;
+        color: #ffffff;
+        border: 1px solid rgba(239, 49, 49, 0.65);
+    }
+
+        .ep-outline-btn:hover {
+            background: rgba(239, 49, 49, 0.12);
+        }
+
+    .ep-main-btn {
+        background: #ef3131;
+        color: #ffffff;
+        border: 1px solid #ef3131;
+    }
+
+        .ep-main-btn:hover {
+            background: #ff3b3b;
+        }
+
+    .ep-secondary-btn {
+        background: #202020;
+        color: #ffffff;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+        .ep-secondary-btn:hover {
+            background: #2a2a2a;
+        }
+
+    .ep-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .ep-card {
+        padding: 28px;
+    }
+
+    .ep-loading {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        min-height: 130px;
+    }
+
+        .ep-loading h2 {
+            margin: 0 0 6px;
+            color: #ffffff;
+        }
+
+        .ep-loading p {
+            margin: 0;
+            color: #aaa;
+        }
+
+    .ep-card-title {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+        margin-bottom: 24px;
+    }
+
+        .ep-card-title.compact {
+            margin-bottom: 20px;
+        }
+
+        .ep-card-title h3 {
+            margin: 0;
+            font-size: 21px;
+            color: #ffffff;
+            font-weight: 950;
+        }
+
+        .ep-card-title p {
+            margin: 5px 0 0;
+            color: #888;
+            font-size: 14px;
+        }
+
+    .ep-card-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        font-size: 24px;
+    }
+
+        .ep-card-icon.red {
+            background: rgba(239, 49, 49, 0.12);
+            border: 1px solid rgba(239, 49, 49, 0.42);
+            color: #ff5656;
+        }
+
+        .ep-card-icon.blue {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.42);
+            color: #7ab2ff;
+        }
+
+        .ep-card-icon.gold {
+            background: rgba(234, 179, 8, 0.12);
+            border: 1px solid rgba(234, 179, 8, 0.42);
+            color: #facc15;
+        }
+
+    .ep-info-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ep-info-row {
+        min-height: 66px;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: grid;
+        grid-template-columns: minmax(210px, 0.7fr) minmax(0, 1fr);
+        gap: 18px;
+        align-items: center;
+    }
+
+        .ep-info-row:last-child {
+            border-bottom: none;
+        }
+
+    .ep-info-label {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        color: #9b9b9b;
+        font-size: 14px;
+    }
+
+        .ep-info-label i {
+            width: 22px;
+            text-align: center;
+            color: #c8c8c8;
+            font-size: 18px;
+        }
+
+    .ep-info-row strong {
+        color: #ffffff;
+        font-weight: 900;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .ep-input {
+        width: 100%;
+        background: #101010;
+        color: #ffffff;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px;
+        min-height: 44px;
+        padding: 0 14px;
+        outline: none;
+        font-weight: 700;
+    }
+
+        .ep-input:focus {
+            border-color: rgba(239, 49, 49, 0.75);
+            box-shadow: 0 0 0 3px rgba(239, 49, 49, 0.12);
+        }
+
+    .ep-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .ep-side {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .ep-work-summary {
+        background: #1c1c1c;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+        .ep-work-summary span {
+            display: block;
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 850;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .ep-work-summary strong {
+            color: #ffffff;
+            font-size: 17px;
+        }
+
+    .ep-security-item {
+        display: flex;
+        gap: 15px;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+        .ep-security-item:last-child {
+            border-bottom: none;
+        }
+
+        .ep-security-item i {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #202020;
+            color: #d8d8d8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: none;
+            font-size: 20px;
+        }
+
+        .ep-security-item strong {
+            display: block;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .ep-security-item span {
+            color: #9c9c9c;
+            line-height: 1.4;
+        }
+
+    .ep-password-card {
+        margin-top: 24px;
+    }
+
+    .ep-password-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .ep-form-group label {
+        display: block;
+        color: #ffffff;
+        font-size: 13px;
+        text-transform: uppercase;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        margin-bottom: 9px;
+    }
+
+    .ep-text-green {
+        color: #68e084 !important;
+    }
+
+    .ep-text-red {
+        color: #ff6868 !important;
+    }
+
+    @@media (max-width: 1150px) {
+        .ep-page {
+            padding: 34px 24px;
+        }
+
+        .ep-profile-card,
+        .ep-profile-left {
+            align-items: flex-start;
+        }
+
+        .ep-profile-card {
+            flex-direction: column;
+        }
+
+        .ep-profile-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .ep-grid,
+        .ep-password-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .ep-info-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+            .ep-info-row strong {
+                text-align: left;
+            }
+
+        .ep-profile-left {
+            flex-direction: column;
+        }
+    }
+</style>
 
 @code {
     private PerfilEntrenador perfil = new();
     private EntrenadorDTO? entrenadorActual;
 
+    private bool cargando = true;
+    private bool guardando = false;
+
     private bool editando = false;
     private bool cambiandoContrasenia = false;
 
     private string editNombres = "";
+    private string editApellidoPaterno = "";
+    private string editApellidoMaterno = "";
     private string editTelefono = "";
     private string editEmail = "";
     private string editEspecialidad = "";
@@ -214,42 +870,95 @@
 
     private string mensaje = "";
     private string claseMensaje = "";
+    private string iconoMensaje = "";
+
+    private string InicialesPerfil
+    {
+        get
+        {
+            string nombres = entrenadorActual?.Nombres ?? "";
+            string apellido = entrenadorActual?.ApellidoPaterno ?? "";
+
+            string inicial1 = !string.IsNullOrWhiteSpace(nombres)
+                ? nombres.Trim()[0].ToString().ToUpper()
+                : "E";
+
+            string inicial2 = !string.IsNullOrWhiteSpace(apellido)
+                ? apellido.Trim()[0].ToString().ToUpper()
+                : "";
+
+            return inicial1 + inicial2;
+        }
+    }
+
+    private string ClaseBadgeEstado =>
+        perfil.Estado == "Activo"
+            ? "ep-badge active"
+            : "ep-badge inactive";
+
+    private string ClaseTextoEstado =>
+        perfil.Estado == "Activo"
+            ? "ep-text-green"
+            : "ep-text-red";
 
     protected override async Task OnInitializedAsync()
     {
-        if (Session.EstaAutenticado)
+        cargando = true;
+
+        try
         {
+            if (!Session.EstaAutenticado)
+                return;
+
             entrenadorActual = await EntrenadorService.ObtenerPorIdAsync(Session.IdUsuario);
+
             if (entrenadorActual != null)
             {
-                perfil = new PerfilEntrenador
-                {
-                    DNI = entrenadorActual.Dni.ToString(),
-                    NombreCompleto = $"{entrenadorActual.Nombres} {entrenadorActual.ApellidoPaterno} {entrenadorActual.ApellidoMaterno}",
-                    Telefono = entrenadorActual.Telefono.ToString(),
-                    Correo = entrenadorActual.Email,
-                    Especialidad = entrenadorActual.Especialidad,
-                    FechaIngreso = DateTime.Today,
-                    Estado = entrenadorActual.Activo ? "Activo" : "Inactivo"
-                };
-
-                editNombres = entrenadorActual.Nombres;
-                editTelefono = entrenadorActual.Telefono.ToString();
-                editEmail = entrenadorActual.Email;
-                editEspecialidad = entrenadorActual.Especialidad;
+                CargarPerfilDesdeEntrenador();
             }
         }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void CargarPerfilDesdeEntrenador()
+    {
+        if (entrenadorActual == null)
+            return;
+
+        perfil = new PerfilEntrenador
+        {
+            DNI = entrenadorActual.Dni.ToString(),
+            NombreCompleto = $"{entrenadorActual.Nombres} {entrenadorActual.ApellidoPaterno} {entrenadorActual.ApellidoMaterno}".Trim(),
+            Telefono = entrenadorActual.Telefono.ToString(),
+            Correo = entrenadorActual.Email,
+            Especialidad = string.IsNullOrWhiteSpace(entrenadorActual.Especialidad) ? "Sin especialidad" : entrenadorActual.Especialidad,
+            Sueldo = entrenadorActual.Sueldo,
+            TiempoTrabajo = NormalizarTiempoTrabajo(entrenadorActual.TiempoTrabajado),
+            Estado = entrenadorActual.Activo ? "Activo" : "Inactivo"
+        };
+
+        editNombres = entrenadorActual.Nombres;
+        editApellidoPaterno = entrenadorActual.ApellidoPaterno;
+        editApellidoMaterno = entrenadorActual.ApellidoMaterno;
+        editTelefono = entrenadorActual.Telefono.ToString();
+        editEmail = entrenadorActual.Email;
+        editEspecialidad = entrenadorActual.Especialidad;
     }
 
     private void ToggleEditar()
     {
         editando = !editando;
         cambiandoContrasenia = false;
-        mensaje = "";
+        LimpiarMensaje();
 
         if (editando && entrenadorActual != null)
         {
             editNombres = entrenadorActual.Nombres;
+            editApellidoPaterno = entrenadorActual.ApellidoPaterno;
+            editApellidoMaterno = entrenadorActual.ApellidoMaterno;
             editTelefono = entrenadorActual.Telefono.ToString();
             editEmail = entrenadorActual.Email;
             editEspecialidad = entrenadorActual.Especialidad;
@@ -260,74 +969,184 @@
     {
         cambiandoContrasenia = !cambiandoContrasenia;
         editando = false;
-        mensaje = "";
+        LimpiarMensaje();
+
         nuevaContrasenia = "";
         confirmarContrasenia = "";
     }
 
     private async Task GuardarPerfil()
     {
-        if (entrenadorActual == null) return;
+        if (entrenadorActual == null)
+            return;
 
-        entrenadorActual.Nombres = editNombres;
-        entrenadorActual.Email = editEmail;
-        entrenadorActual.Especialidad = editEspecialidad;
-        if (int.TryParse(editTelefono, out int tel))
-            entrenadorActual.Telefono = tel;
+        LimpiarMensaje();
 
-        var resultado = await EntrenadorService.ActualizarAsync(entrenadorActual.IdUsuario, entrenadorActual);
-
-        if (!resultado.ToLower().Contains("error"))
+        if (string.IsNullOrWhiteSpace(editNombres))
         {
-            perfil.NombreCompleto = $"{entrenadorActual.Nombres} {entrenadorActual.ApellidoPaterno} {entrenadorActual.ApellidoMaterno}";
-            perfil.Correo = entrenadorActual.Email;
-            perfil.Telefono = entrenadorActual.Telefono.ToString();
-            perfil.Especialidad = entrenadorActual.Especialidad;
-            editando = false;
-            mensaje = "✓ Perfil actualizado correctamente.";
-            claseMensaje = "renew-message success";
+            MostrarError("Los nombres son obligatorios.");
+            return;
         }
-        else
+
+        if (string.IsNullOrWhiteSpace(editApellidoPaterno))
         {
-            mensaje = "✗ Error al actualizar: " + resultado;
-            claseMensaje = "renew-message error";
+            MostrarError("El apellido paterno es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(editApellidoMaterno))
+        {
+            MostrarError("El apellido materno es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(editTelefono) ||
+            editTelefono.Length != 9 ||
+            !int.TryParse(editTelefono, out int telefonoConvertido))
+        {
+            MostrarError("El teléfono debe tener 9 dígitos numéricos.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(editEmail) ||
+            !editEmail.Contains("@") ||
+            !editEmail.Contains("."))
+        {
+            MostrarError("Ingrese un correo electrónico válido.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(editEspecialidad))
+        {
+            MostrarError("La especialidad es obligatoria.");
+            return;
+        }
+
+        try
+        {
+            guardando = true;
+
+            entrenadorActual.Nombres = editNombres.Trim();
+            entrenadorActual.ApellidoPaterno = editApellidoPaterno.Trim();
+            entrenadorActual.ApellidoMaterno = editApellidoMaterno.Trim();
+            entrenadorActual.Telefono = telefonoConvertido;
+            entrenadorActual.Email = editEmail.Trim();
+            entrenadorActual.Especialidad = editEspecialidad.Trim();
+
+            if (string.IsNullOrWhiteSpace(entrenadorActual.Rol))
+                entrenadorActual.Rol = "Entrenador";
+
+            var resultado = await EntrenadorService.ActualizarAsync(entrenadorActual.IdUsuario, entrenadorActual);
+
+            if (!resultado.ToLower().Contains("error"))
+            {
+                CargarPerfilDesdeEntrenador();
+
+                editando = false;
+                MostrarExito("Perfil actualizado correctamente.");
+            }
+            else
+            {
+                MostrarError("Error al actualizar: " + resultado);
+            }
+        }
+        finally
+        {
+            guardando = false;
         }
     }
 
     private async Task GuardarContrasenia()
     {
-        if (entrenadorActual == null) return;
+        if (entrenadorActual == null)
+            return;
+
+        LimpiarMensaje();
 
         if (string.IsNullOrWhiteSpace(nuevaContrasenia))
         {
-            mensaje = "✗ Debes ingresar una contraseña.";
-            claseMensaje = "renew-message error";
+            MostrarError("Debes ingresar una contraseña.");
+            return;
+        }
+
+        if (nuevaContrasenia.Length < 6)
+        {
+            MostrarError("La contraseña debe tener mínimo 6 caracteres.");
             return;
         }
 
         if (nuevaContrasenia != confirmarContrasenia)
         {
-            mensaje = "✗ Las contraseñas no coinciden.";
-            claseMensaje = "renew-message error";
+            MostrarError("Las contraseñas no coinciden.");
             return;
         }
 
-        entrenadorActual.Contrasenia = nuevaContrasenia;
-        var resultado = await EntrenadorService.ActualizarAsync(entrenadorActual.IdUsuario, entrenadorActual);
+        try
+        {
+            guardando = true;
 
-        if (!resultado.ToLower().Contains("error"))
-        {
-            cambiandoContrasenia = false;
-            nuevaContrasenia = "";
-            confirmarContrasenia = "";
-            mensaje = "✓ Contraseña actualizada correctamente.";
-            claseMensaje = "renew-message success";
+            entrenadorActual.Contrasenia = nuevaContrasenia;
+
+            if (string.IsNullOrWhiteSpace(entrenadorActual.Rol))
+                entrenadorActual.Rol = "Entrenador";
+
+            var resultado = await EntrenadorService.ActualizarAsync(entrenadorActual.IdUsuario, entrenadorActual);
+
+            if (!resultado.ToLower().Contains("error"))
+            {
+                cambiandoContrasenia = false;
+                nuevaContrasenia = "";
+                confirmarContrasenia = "";
+
+                MostrarExito("Contraseña actualizada correctamente.");
+            }
+            else
+            {
+                MostrarError("Error al actualizar contraseña: " + resultado);
+            }
         }
-        else
+        finally
         {
-            mensaje = "✗ Error al actualizar contraseña: " + resultado;
-            claseMensaje = "renew-message error";
+            guardando = false;
         }
+    }
+
+    private string NormalizarTiempoTrabajo(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+            return "—";
+
+        return valor.Trim() switch
+        {
+            "08:00:00" => "Tiempo completo - 8 horas",
+            "8:00:00" => "Tiempo completo - 8 horas",
+            "04:00:00" => "Medio tiempo - 4 horas",
+            "4:00:00" => "Medio tiempo - 4 horas",
+            "02:00:00" => "Por horas - 2 horas",
+            "2:00:00" => "Por horas - 2 horas",
+            _ => valor
+        };
+    }
+
+    private void MostrarExito(string texto)
+    {
+        mensaje = texto;
+        claseMensaje = "ep-message success";
+        iconoMensaje = "bi bi-check-circle";
+    }
+
+    private void MostrarError(string texto)
+    {
+        mensaje = texto;
+        claseMensaje = "ep-message error";
+        iconoMensaje = "bi bi-exclamation-triangle";
+    }
+
+    private void LimpiarMensaje()
+    {
+        mensaje = "";
+        claseMensaje = "";
+        iconoMensaje = "";
     }
 
     private class PerfilEntrenador
@@ -337,7 +1156,8 @@
         public string Telefono { get; set; } = "—";
         public string Correo { get; set; } = "—";
         public string Especialidad { get; set; } = "—";
-        public DateTime FechaIngreso { get; set; } = DateTime.Today;
+        public double Sueldo { get; set; }
+        public string TiempoTrabajo { get; set; } = "—";
         public string Estado { get; set; } = "—";
     }
 }

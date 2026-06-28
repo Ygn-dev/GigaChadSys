@@ -29,131 +29,204 @@
         </div>
     }
 
-    <div class="pay-process-layout">
-
-        <div class="pay-process-main">
-
-            <div class="pay-detail-card">
-                <h2>Detalle del Pago</h2>
-
-                <div class="pay-detail-row">
-                    <span>Concepto</span>
-                    <strong>@Concepto</strong>
-                </div>
-
-                <div class="pay-detail-row">
-                    <span>Tipo</span>
-                    <strong>▭ @TipoPago</strong>
-                </div>
-
-                <div class="pay-detail-row">
-                    <span>Socio</span>
-                    <strong>@NombreUsuario</strong>
-                </div>
-
-                <div class="pay-detail-row">
-                    <span>Fecha</span>
-                    <strong>@FechaPago</strong>
-                </div>
-
-                <div class="pay-detail-row">
-                    <span>Estado</span>
-                    <strong class="@ClaseEstado">@EstadoTexto</strong>
-                </div>
-
-                <div class="pay-detail-row total">
-                    <span>Monto a pagar</span>
-                    <strong>S/@MontoPago.ToString("0.00")</strong>
-                </div>
-            </div>
-
-            <div class="pay-method-card">
-                <h2>Método de Pago</h2>
-
-                <div class="pay-method-options">
-                    <button type="button"
-                            class="@ClaseDebito"
-                            @onclick="SeleccionarDebito">
-                        <span class="pay-card-icon">▭</span>
-                        <strong>Tarjeta Débito</strong>
-                    </button>
-
-                    <button type="button"
-                            class="@ClaseCredito"
-                            @onclick="SeleccionarCredito">
-                        <span class="pay-card-icon">▭</span>
-                        <strong>Tarjeta Crédito</strong>
-                    </button>
-                </div>
-
-                <p class="pay-note">
-                    ⓘ Los datos del pago fueron cargados automáticamente según tu cuota pendiente.
-                </p>
-            </div>
-
-            <div class="pay-process-actions">
-                <button type="button"
-                        class="confirm-pay-button"
-                        @onclick="ConfirmarPago">
-                    ▭ Confirmar Pago
-                </button>
-
-                <a class="cancel-pay-button" href="/socio/pagos">
-                    × Cancelar
-                </a>
-
-                <a class="back-pay-link" href="/socio/pagos">
-                    ← Volver a Mis Pagos
-                </a>
-            </div>
-
+    @if (Cargando)
+    {
+        <div class="pay-detail-card">
+            <h2>
+                <i class="bi bi-hourglass-split"></i>
+                Cargando pago...
+            </h2>
+            <p style="color: rgba(255,255,255,0.65); margin: 0;">
+                Estamos obteniendo los datos del pago pendiente.
+            </p>
         </div>
+    }
+    else
+    {
+        <div class="pay-process-layout">
 
-        <aside class="pay-summary-side">
-            <div class="pay-summary-card">
-                <h2>Resumen</h2>
+            <div class="pay-process-main">
 
-                <div class="summary-pay-row">
-                    <span>Concepto</span>
-                    <strong>@Concepto</strong>
+                <div class="pay-detail-card">
+                    <h2>Detalle del Pago</h2>
+
+                    <div class="pay-detail-row">
+                        <span>Concepto</span>
+                        <strong>@Concepto</strong>
+                    </div>
+
+                    <div class="pay-detail-row">
+                        <span>Tipo</span>
+                        <strong>
+                            <i class="bi bi-receipt"></i>
+                            @TipoPago
+                        </strong>
+                    </div>
+
+                    <div class="pay-detail-row">
+                        <span>Socio</span>
+                        <strong>@NombreUsuario</strong>
+                    </div>
+
+                    <div class="pay-detail-row">
+                        <span>Fecha</span>
+                        <strong>@FechaPago</strong>
+                    </div>
+
+                    <div class="pay-detail-row">
+                        <span>Estado</span>
+                        <strong class="@ClaseEstado">@EstadoTexto</strong>
+                    </div>
+
+                    <div class="pay-detail-row total">
+                        <span>Monto a pagar</span>
+                        <strong>S/@MontoPago.ToString("0.00")</strong>
+                    </div>
                 </div>
 
-                <div class="summary-pay-row">
-                    <span>Fecha</span>
-                    <strong>@FechaPago</strong>
-                </div>
+                <div class="pay-method-card pago-method-card">
+                    <h2>Método de Pago</h2>
 
-                <div class="summary-pay-row">
-                    <span>Monto</span>
-                    <strong>S/@MontoPago.ToString("0.00")</strong>
-                </div>
+                    <div class="pago-method-grid">
+                        <button type="button"
+                                class="@ClaseDebito"
+                                @onclick="SeleccionarDebito"
+                                disabled="@Guardando">
+                            <div class="pago-method-icon debit">
+                                <svg viewBox="0 0 24 24"
+                                     fill="none"
+                                     stroke="currentColor"
+                                     stroke-width="1.9"
+                                     stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                                    <path d="M3 10h18"></path>
+                                    <path d="M7 15h3"></path>
+                                    <path d="M12 15h2"></path>
+                                </svg>
+                            </div>
 
-                <div class="summary-pay-row">
-                    <span>Estado actual</span>
-                    <strong class="@ClaseEstado">@EstadoTexto</strong>
-                </div>
+                            <div class="pago-method-info">
+                                <span class="pago-method-title">Tarjeta Débito</span>
+                                <span class="pago-method-subtitle">Pago directo desde tu cuenta</span>
+                            </div>
+                        </button>
 
-                <div class="summary-pay-total">
-                    <span>Total a pagar</span>
-                    <strong>S/@MontoPago.ToString("0.00")</strong>
-                </div>
-            </div>
+                        <button type="button"
+                                class="@ClaseCredito"
+                                @onclick="SeleccionarCredito"
+                                disabled="@Guardando">
+                            <div class="pago-method-icon credit">
+                                <svg viewBox="0 0 24 24"
+                                     fill="none"
+                                     stroke="currentColor"
+                                     stroke-width="1.9"
+                                     stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                                    <path d="M3 10h18"></path>
+                                    <path d="M15 15h2"></path>
+                                    <path d="M7 15h4"></path>
+                                    <path d="M18 3v4"></path>
+                                    <path d="M16 5h4"></path>
+                                </svg>
+                            </div>
 
-            <div class="pending-alert-card">
-                <div class="pending-alert-icon">◷</div>
+                            <div class="pago-method-info">
+                                <span class="pago-method-title">Tarjeta Crédito</span>
+                                <span class="pago-method-subtitle">Paga tu cuota con línea de crédito</span>
+                            </div>
+                        </button>
+                    </div>
 
-                <div>
-                    <h3>@TituloAlerta</h3>
-                    <p>
-                        Tu cuota por @Concepto se encuentra @EstadoTexto.ToLower().
-                        Realiza el pago para mantener tu acceso y seguir disfrutando
-                        de todos los beneficios.
+                    <p class="pago-method-help">
+                        <span class="pago-method-help-icon">i</span>
+                        Los datos del pago fueron cargados automáticamente según tu cuota pendiente.
                     </p>
                 </div>
-            </div>
-        </aside>
 
-    </div>
+                <div class="pay-process-actions">
+                    <button type="button"
+                            class="confirm-pay-button"
+                            @onclick="ConfirmarPago"
+                            disabled="@Guardando">
+                        @if (Guardando)
+                        {
+                            <span>
+                                <i class="bi bi-hourglass-split"></i>
+                                Confirmando pago...
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                <i class="bi bi-check-circle"></i>
+                                Confirmar Pago
+                            </span>
+                        }
+                    </button>
+
+                    <a class="cancel-pay-button" href="/socio/pagos">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </a>
+
+                    <a class="back-pay-link" href="/socio/pagos">
+                        <i class="bi bi-arrow-left"></i>
+                        Volver a Mis Pagos
+                    </a>
+                </div>
+
+            </div>
+
+            <aside class="pay-summary-side">
+                <div class="pay-summary-card">
+                    <h2>Resumen</h2>
+
+                    <div class="summary-pay-row">
+                        <span>Concepto</span>
+                        <strong>@Concepto</strong>
+                    </div>
+
+                    <div class="summary-pay-row">
+                        <span>Fecha</span>
+                        <strong>@FechaPago</strong>
+                    </div>
+
+                    <div class="summary-pay-row">
+                        <span>Monto</span>
+                        <strong>S/@MontoPago.ToString("0.00")</strong>
+                    </div>
+
+                    <div class="summary-pay-row">
+                        <span>Estado actual</span>
+                        <strong class="@ClaseEstado">@EstadoTexto</strong>
+                    </div>
+
+                    <div class="summary-pay-total">
+                        <span>Total a pagar</span>
+                        <strong>S/@MontoPago.ToString("0.00")</strong>
+                    </div>
+                </div>
+
+                <div class="pending-alert-card">
+                    <div class="pending-alert-icon">
+                        <i class="bi @(Activo ? "bi-check-circle" : "bi-clock-history")"></i>
+                    </div>
+
+                    <div>
+                        <h3>@TituloAlerta</h3>
+                        <p>
+                            Tu cuota por @Concepto se encuentra @EstadoTexto.ToLower().
+                            Realiza el pago para mantener tu acceso y seguir disfrutando
+                            de todos los beneficios.
+                        </p>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    }
 
 </section>
 
@@ -165,7 +238,11 @@
     private string Mensaje { get; set; } = "";
     private string ClaseMensaje { get; set; } = "";
 
+    private bool Cargando { get; set; } = true;
+    private bool Guardando { get; set; } = false;
+
     private PagoDTO? pagoActual;
+
     private string Concepto => pagoActual?.Tipo ?? "-";
     private string TipoPago => pagoActual?.Tipo ?? "-";
     private string FechaPago => pagoActual?.FechaPagoTexto ?? "-";
@@ -175,25 +252,47 @@
     private string EstadoTexto => Activo ? "Pagado" : "Pendiente";
     private string TituloAlerta => Activo ? "Pago al día" : "Pago pendiente detectado";
     private string ClaseEstado => Activo ? "pay-status paid" : "pay-status pending";
-    
-    private string NombreUsuario => Session.EstaAutenticado ? Session.Nombres : "Socio Invitado"; // Session.Nombres (no NombreUsuario)
+
+    private string NombreUsuario =>
+        Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
+            ? Session.Nombres
+            : "Socio Invitado";
 
     private string ClaseDebito =>
-        MetodoSeleccionado == "Debito" ? "pay-method-option selected" : "pay-method-option";
+        MetodoSeleccionado == "Debito"
+            ? "pay-method-option pago-method-option selected"
+            : "pay-method-option pago-method-option";
 
     private string ClaseCredito =>
-        MetodoSeleccionado == "Credito" ? "pay-method-option selected" : "pay-method-option";
+        MetodoSeleccionado == "Credito"
+            ? "pay-method-option pago-method-option selected"
+            : "pay-method-option pago-method-option";
 
     protected override async Task OnInitializedAsync()
     {
-        if (int.TryParse(CodigoPago, out int idPago))
+        Cargando = true;
+
+        try
         {
-            pagoActual = await PagoService.ObtenerPorIdAsync(idPago);
-            if (pagoActual == null)
+            if (int.TryParse(CodigoPago, out int idPago))
             {
-                Mensaje = "No se encontró el pago especificado.";
+                pagoActual = await PagoService.ObtenerPorIdAsync(idPago);
+
+                if (pagoActual == null)
+                {
+                    Mensaje = "No se encontró el pago especificado.";
+                    ClaseMensaje = "pay-process-message error";
+                }
+            }
+            else
+            {
+                Mensaje = "El código del pago no es válido.";
                 ClaseMensaje = "pay-process-message error";
             }
+        }
+        finally
+        {
+            Cargando = false;
         }
     }
 
@@ -209,7 +308,13 @@
 
     private async Task ConfirmarPago()
     {
-        if (pagoActual == null) return;
+        if (pagoActual == null)
+        {
+            Mensaje = "No se encontró el pago a confirmar.";
+            ClaseMensaje = "pay-process-message error";
+            return;
+        }
+
         if (Activo)
         {
             Mensaje = "Este pago ya fue realizado.";
@@ -217,43 +322,61 @@
             return;
         }
 
-        // Metodo: 1 Efectivo, 2 Debito, 3 Credito
-        pagoActual.MetodoPago = MetodoSeleccionado == "Debito" ? 2 : 3;
-        pagoActual.Activo = true;
-
-        var resultado = await PagoService.ActualizarAsync(pagoActual.IdPago, pagoActual);
-
-        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        try
         {
-            // Activar la suscripción correspondiente
-            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
-            var sub = suscripciones.FirstOrDefault(s => s.IdPago == pagoActual.IdPago);
-            if (sub != null)
-            {
-                sub.EstadoMembresia = "activa";
-                await SuscripcionService.ActualizarAsync(sub.IdSuscripcion, sub);
-            }
+            Guardando = true;
+            Mensaje = "";
+            ClaseMensaje = "";
 
-            // Actualizar estadoMembresia del Socio
-            if (Session.EstaAutenticado)
+            pagoActual.MetodoPago = MetodoSeleccionado == "Debito" ? 2 : 3;
+            pagoActual.Activo = true;
+
+            var resultado = await PagoService.ActualizarAsync(pagoActual.IdPago, pagoActual);
+
+            if (!resultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase) &&
+                !resultado.ToLower().Contains("error"))
             {
-                var socioActual = await SocioService.ObtenerPorIdAsync(Session.IdUsuario);
-                if (socioActual != null)
+                var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+                var sub = suscripciones.FirstOrDefault(s => s.IdPago == pagoActual.IdPago);
+
+                if (sub != null)
                 {
-                    socioActual.EstadoMembresia = true;
-                    await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+                    sub.EstadoMembresia = "activa";
+                    await SuscripcionService.ActualizarAsync(sub.IdSuscripcion, sub);
                 }
-            }
 
-            Mensaje = $"¡Pago confirmado correctamente con tarjeta {MetodoSeleccionado}!";
-            ClaseMensaje = "pay-process-message success";
-            await Task.Delay(1500);
-            Navigation.NavigateTo("/socio/pagos");
+                if (Session.EstaAutenticado)
+                {
+                    var socioActual = await SocioService.ObtenerPorIdAsync(Session.IdUsuario);
+
+                    if (socioActual != null)
+                    {
+                        socioActual.EstadoMembresia = true;
+                        await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+                    }
+                }
+
+                Mensaje = $"Pago confirmado correctamente con tarjeta {MetodoSeleccionado}.";
+                ClaseMensaje = "pay-process-message success";
+
+                await Task.Delay(1200);
+
+                Navigation.NavigateTo("/socio/pagos");
+            }
+            else
+            {
+                Mensaje = resultado;
+                ClaseMensaje = "pay-process-message error";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Mensaje = resultado;
+            Mensaje = "Error al confirmar el pago: " + ex.Message;
             ClaseMensaje = "pay-process-message error";
+        }
+        finally
+        {
+            Guardando = false;
         }
     }
 }

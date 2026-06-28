@@ -8,188 +8,873 @@
 @inject SocioServicio SocioService
 @inject SuscripcionServicio SuscripcionService
 
-<section class="perfil-page">
-    <div class="perfil-header">
+<section class="sp-page">
+
+    <div class="sp-header">
         <h1>Mi Perfil</h1>
-        <p class="perfil-subtitle">Tu información personal y membresía</p>
+        <p>Tu información personal y membresía</p>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(mensaje))
     {
-        <div class="@claseMensaje" style="padding: 12px 18px; border-radius: 8px; margin-bottom: 16px; font-size: 0.95rem;">
-            @mensaje
+        <div class="@claseMensaje">
+            <i class="@iconoMensaje"></i>
+            <span>@mensaje</span>
         </div>
     }
 
-    <!-- Profile Card -->
-    <div class="perfil-card">
-        <div class="perfil-card-left">
-            <div class="perfil-avatar-large">
-                <span>👤</span>
+    @if (cargando)
+    {
+        <div class="sp-card sp-loading">
+            <div class="sp-card-icon blue">
+                <i class="bi bi-hourglass-split"></i>
             </div>
-            <div class="perfil-card-info">
-                <h2>@perfil.NombreCompleto</h2>
-                <p class="perfil-email">@perfil.Correo</p>
-                <div class="perfil-badges">
-                    <span class="perfil-badge badge-activo">
-                        <span class="estado-dot"></span> @perfil.Estado
-                    </span>
-                    <span class="perfil-badge badge-membresia">
-                        ♛ Membresía @perfil.TipoMembresia
-                    </span>
-                </div>
+
+            <div>
+                <h2>Cargando perfil...</h2>
+                <p>Obteniendo tu información desde el servidor.</p>
             </div>
         </div>
-        <div class="perfil-card-actions">
-            <button class="btn-perfil-edit" @onclick="ToggleEditar">
-                @(editando ? "✕ Cancelar" : "✏️ Editar Perfil")
-            </button>
-            <button class="btn-perfil-password" @onclick="ToggleCambiarContrasenia">
-                @(cambiandoContrasenia ? "✕ Cancelar" : "⚙ Cambiar Contraseña")
-            </button>
-        </div>
-    </div>
-
-    <!-- Información Personal -->
-    <div class="perfil-info-card">
-        <h3>Información Personal</h3>
-
-        <div class="perfil-info-list">
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>🪪</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">DNI</span>
-                    <strong>@perfil.DNI</strong>
-                </div>
+    }
+    else if (socioActual == null)
+    {
+        <div class="sp-card sp-loading">
+            <div class="sp-card-icon red">
+                <i class="bi bi-exclamation-triangle"></i>
             </div>
 
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>👤</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Nombre Completo</span>
-                    @if (editando)
-                    {
-                        <input type="text" @bind="editNombres" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Nombres" />
-                    }
-                    else
-                    {
-                        <strong>@perfil.NombreCompleto</strong>
-                    }
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>📞</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Teléfono</span>
-                    @if (editando)
-                    {
-                        <input type="text" @bind="editTelefono" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Teléfono" />
-                    }
-                    else
-                    {
-                        <strong>@perfil.Telefono</strong>
-                    }
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>✉️</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Correo Electrónico</span>
-                    @if (editando)
-                    {
-                        <input type="email" @bind="editEmail" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Email" />
-                    }
-                    else
-                    {
-                        <strong>@perfil.Correo</strong>
-                    }
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>📅</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Fecha de Registro</span>
-                    <strong>@perfil.FechaRegistro.ToString("yyyy-MM-dd")</strong>
-                </div>
-            </div>
-
-            <div class="perfil-info-row">
-                <div class="perfil-info-icon">
-                    <span>🏋️</span>
-                </div>
-                <div>
-                    <span class="perfil-info-label">Estado de Membresía</span>
-                    <strong class="estado-al-dia">@perfil.EstadoMembresia</strong>
-                </div>
+            <div>
+                <h2>No se encontró información del socio</h2>
+                <p>Vuelve a iniciar sesión o contacta al administrador.</p>
             </div>
         </div>
+    }
+    else
+    {
+        <div class="sp-profile-card">
 
-        @if (editando)
+            <div class="sp-profile-left">
+                <div class="sp-avatar">
+                    @InicialesPerfil
+                </div>
+
+                <div class="sp-profile-info">
+                    <h2>@perfil.NombreCompleto</h2>
+                    <p>@perfil.Correo</p>
+
+                    <div class="sp-badges">
+                        <span class="@ClaseBadgeEstado">
+                            <i class="bi bi-circle-fill"></i>
+                            @perfil.Estado
+                        </span>
+
+                        <span class="sp-badge membership">
+                            <i class="bi bi-gem"></i>
+                            Membresía @perfil.TipoMembresia
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sp-profile-actions">
+                <button type="button"
+                        class="sp-outline-btn"
+                        @onclick="ToggleEditar">
+                    <i class="bi @(editando ? "bi-x-circle" : "bi-pencil")"></i>
+                    @(editando ? "Cancelar edición" : "Editar Perfil")
+                </button>
+
+                <button type="button"
+                        class="sp-outline-btn"
+                        @onclick="ToggleCambiarContrasenia">
+                    <i class="bi @(cambiandoContrasenia ? "bi-x-circle" : "bi-lock")"></i>
+                    @(cambiandoContrasenia ? "Cancelar cambio" : "Cambiar Contraseña")
+                </button>
+            </div>
+
+        </div>
+
+        <div class="sp-grid">
+
+            <div class="sp-card">
+                <div class="sp-card-title">
+                    <div class="sp-card-icon red">
+                        <i class="bi bi-person-vcard"></i>
+                    </div>
+
+                    <div>
+                        <h3>Información Personal</h3>
+                        <p>Datos principales de tu cuenta</p>
+                    </div>
+                </div>
+
+                <div class="sp-info-list">
+
+                    <div class="sp-info-row">
+                        <div class="sp-info-label">
+                            <i class="bi bi-credit-card-2-front"></i>
+                            <span>DNI</span>
+                        </div>
+                        <strong>@perfil.DNI</strong>
+                    </div>
+
+                    <div class="sp-info-row">
+                        <div class="sp-info-label">
+                            <i class="bi bi-person"></i>
+                            <span>Nombres</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="sp-input"
+                                   type="text"
+                                   @bind="editNombres"
+                                   placeholder="Nombres" />
+                        }
+                        else
+                        {
+                            <strong>@socioActual.Nombres</strong>
+                        }
+                    </div>
+
+                    <div class="sp-info-row">
+                        <div class="sp-info-label">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>Apellido paterno</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="sp-input"
+                                   type="text"
+                                   @bind="editApellidoPaterno"
+                                   placeholder="Apellido paterno" />
+                        }
+                        else
+                        {
+                            <strong>@socioActual.ApellidoPaterno</strong>
+                        }
+                    </div>
+
+                    <div class="sp-info-row">
+                        <div class="sp-info-label">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>Apellido materno</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="sp-input"
+                                   type="text"
+                                   @bind="editApellidoMaterno"
+                                   placeholder="Apellido materno" />
+                        }
+                        else
+                        {
+                            <strong>@socioActual.ApellidoMaterno</strong>
+                        }
+                    </div>
+
+                    <div class="sp-info-row">
+                        <div class="sp-info-label">
+                            <i class="bi bi-telephone"></i>
+                            <span>Teléfono</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="sp-input"
+                                   type="text"
+                                   maxlength="9"
+                                   @bind="editTelefono"
+                                   placeholder="Teléfono" />
+                        }
+                        else
+                        {
+                            <strong>@perfil.Telefono</strong>
+                        }
+                    </div>
+
+                    <div class="sp-info-row">
+                        <div class="sp-info-label">
+                            <i class="bi bi-envelope"></i>
+                            <span>Correo electrónico</span>
+                        </div>
+
+                        @if (editando)
+                        {
+                            <input class="sp-input"
+                                   type="email"
+                                   @bind="editEmail"
+                                   placeholder="Correo electrónico" />
+                        }
+                        else
+                        {
+                            <strong>@perfil.Correo</strong>
+                        }
+                    </div>
+
+                    <div class="sp-info-row">
+                        <div class="sp-info-label">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>Fecha de registro</span>
+                        </div>
+                        <strong>@perfil.FechaRegistro.ToString("yyyy-MM-dd")</strong>
+                    </div>
+
+                    <div class="sp-info-row">
+                        <div class="sp-info-label">
+                            <i class="bi bi-activity"></i>
+                            <span>Estado de membresía</span>
+                        </div>
+                        <strong class="@ClaseTextoMembresia">@perfil.EstadoMembresia</strong>
+                    </div>
+
+                </div>
+
+                @if (editando)
+                {
+                    <div class="sp-actions">
+                        <button type="button"
+                                class="sp-main-btn"
+                                @onclick="GuardarPerfil"
+                                disabled="@guardando">
+                            <i class="bi @(guardando ? "bi-hourglass-split" : "bi-check-circle")"></i>
+                            @(guardando ? "Guardando..." : "Guardar Cambios")
+                        </button>
+
+                        <button type="button"
+                                class="sp-secondary-btn"
+                                @onclick="ToggleEditar"
+                                disabled="@guardando">
+                            <i class="bi bi-x-circle"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <aside class="sp-side">
+
+                <div class="sp-card sp-membership-card">
+                    <div class="sp-card-title compact">
+                        <div class="sp-card-icon gold">
+                            <i class="bi bi-gem"></i>
+                        </div>
+
+                        <div>
+                            <h3>Membresía</h3>
+                            <p>Estado actual del plan</p>
+                        </div>
+                    </div>
+
+                    <div class="sp-membership-summary">
+                        <span>Plan actual</span>
+                        <strong>Membresía @perfil.TipoMembresia</strong>
+                    </div>
+
+                    <div class="sp-membership-summary">
+                        <span>Estado</span>
+                        <strong class="@ClaseTextoMembresia">@perfil.EstadoMembresia</strong>
+                    </div>
+
+                    <a href="/socio/membresia" class="sp-side-link">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Ver detalles de membresía
+                    </a>
+                </div>
+
+                <div class="sp-card sp-security-card">
+                    <div class="sp-card-title compact">
+                        <div class="sp-card-icon blue">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+
+                        <div>
+                            <h3>Acceso y Seguridad</h3>
+                            <p>Credenciales de tu cuenta</p>
+                        </div>
+                    </div>
+
+                    <div class="sp-security-item">
+                        <i class="bi bi-lock"></i>
+                        <div>
+                            <strong>Contraseña protegida</strong>
+                            <span>Actualiza tu contraseña cuando lo necesites.</span>
+                        </div>
+                    </div>
+
+                    <div class="sp-security-item">
+                        <i class="bi bi-person-check"></i>
+                        <div>
+                            <strong>Cuenta de socio</strong>
+                            <span>Acceso a reservas, pagos y membresía.</span>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+
+        @if (cambiandoContrasenia)
         {
-            <div style="display: flex; gap: 12px; margin-top: 16px;">
-                <button class="btn-perfil-edit" @onclick="GuardarPerfil" style="background: #22c55e; border-color: #22c55e;">
-                    💾 Guardar Cambios
-                </button>
-                <button class="btn-perfil-password" @onclick="ToggleEditar">
-                    ✕ Cancelar
-                </button>
+            <div class="sp-card sp-password-card">
+                <div class="sp-card-title">
+                    <div class="sp-card-icon blue">
+                        <i class="bi bi-lock"></i>
+                    </div>
+
+                    <div>
+                        <h3>Cambiar Contraseña</h3>
+                        <p>Actualiza tus credenciales de acceso</p>
+                    </div>
+                </div>
+
+                <div class="sp-password-grid">
+                    <div class="sp-form-group">
+                        <label>Nueva contraseña</label>
+                        <input class="sp-input"
+                               type="password"
+                               @bind="nuevaContrasenia"
+                               placeholder="Nueva contraseña" />
+                    </div>
+
+                    <div class="sp-form-group">
+                        <label>Confirmar contraseña</label>
+                        <input class="sp-input"
+                               type="password"
+                               @bind="confirmarContrasenia"
+                               placeholder="Confirmar contraseña" />
+                    </div>
+                </div>
+
+                <div class="sp-actions">
+                    <button type="button"
+                            class="sp-main-btn"
+                            @onclick="GuardarContrasenia"
+                            disabled="@guardando">
+                        <i class="bi @(guardando ? "bi-hourglass-split" : "bi-check-circle")"></i>
+                        @(guardando ? "Guardando..." : "Guardar Contraseña")
+                    </button>
+
+                    <button type="button"
+                            class="sp-secondary-btn"
+                            @onclick="ToggleCambiarContrasenia"
+                            disabled="@guardando">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </button>
+                </div>
             </div>
         }
-    </div>
-
-    @if (cambiandoContrasenia)
-    {
-        <div class="perfil-info-card" style="margin-top: 16px;">
-            <h3>Cambiar Contraseña</h3>
-            <div class="perfil-info-list">
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon"><span>🔒</span></div>
-                    <div style="flex:1;">
-                        <span class="perfil-info-label">Nueva Contraseña</span>
-                        <input type="password" @bind="nuevaContrasenia" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Nueva contraseña" />
-                    </div>
-                </div>
-                <div class="perfil-info-row">
-                    <div class="perfil-info-icon"><span>🔒</span></div>
-                    <div style="flex:1;">
-                        <span class="perfil-info-label">Confirmar Contraseña</span>
-                        <input type="password" @bind="confirmarContrasenia" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; width: 200px;" placeholder="Confirmar contraseña" />
-                    </div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 12px; margin-top: 16px;">
-                <button class="btn-perfil-edit" @onclick="GuardarContrasenia" style="background: #22c55e; border-color: #22c55e;">
-                    💾 Guardar Contraseña
-                </button>
-                <button class="btn-perfil-password" @onclick="ToggleCambiarContrasenia">
-                    ✕ Cancelar
-                </button>
-            </div>
-        </div>
     }
+
 </section>
+
+<style>
+    .sp-page {
+        padding: 48px 64px;
+        color: #f5f5f5;
+    }
+
+    .sp-header {
+        margin-bottom: 28px;
+    }
+
+        .sp-header h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: 950;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        .sp-header p {
+            margin: 8px 0 0;
+            color: #bdbdbd;
+            font-size: 16px;
+        }
+
+    .sp-message {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 18px;
+        font-weight: 750;
+        border: 1px solid transparent;
+    }
+
+        .sp-message.success {
+            background: rgba(34, 197, 94, 0.13);
+            border-color: rgba(34, 197, 94, 0.35);
+            color: #68e084;
+        }
+
+        .sp-message.error {
+            background: rgba(239, 49, 49, 0.13);
+            border-color: rgba(239, 49, 49, 0.35);
+            color: #ff6868;
+        }
+
+    .sp-profile-card,
+    .sp-card {
+        background: #151515;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        box-shadow: 0 18px 55px rgba(0,0,0,0.24);
+    }
+
+    .sp-profile-card {
+        padding: 28px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 28px;
+        margin-bottom: 24px;
+    }
+
+    .sp-profile-left {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .sp-avatar {
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ef3131, #631313);
+        border: 2px solid rgba(255,255,255,0.08);
+        box-shadow: 0 0 24px rgba(239, 49, 49, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 30px;
+        font-weight: 950;
+        letter-spacing: 0.02em;
+        flex: none;
+    }
+
+    .sp-profile-info h2 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 26px;
+        font-weight: 950;
+    }
+
+    .sp-profile-info p {
+        margin: 5px 0 14px;
+        color: #bdbdbd;
+    }
+
+    .sp-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .sp-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 850;
+    }
+
+        .sp-badge i {
+            font-size: 9px;
+        }
+
+        .sp-badge.active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #68e084;
+            border: 1px solid rgba(34, 197, 94, 0.35);
+        }
+
+        .sp-badge.inactive {
+            background: rgba(239, 49, 49, 0.14);
+            color: #ff6868;
+            border: 1px solid rgba(239, 49, 49, 0.35);
+        }
+
+        .sp-badge.membership {
+            background: rgba(239, 49, 49, 0.13);
+            color: #ff6868;
+            border: 1px solid rgba(239, 49, 49, 0.35);
+        }
+
+    .sp-profile-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .sp-outline-btn,
+    .sp-secondary-btn,
+    .sp-main-btn {
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 11px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        cursor: pointer;
+        transition: 0.18s;
+        text-decoration: none;
+    }
+
+    .sp-outline-btn {
+        background: transparent;
+        color: #ffffff;
+        border: 1px solid rgba(239, 49, 49, 0.65);
+    }
+
+        .sp-outline-btn:hover {
+            background: rgba(239, 49, 49, 0.12);
+        }
+
+    .sp-main-btn {
+        background: #ef3131;
+        color: #ffffff;
+        border: 1px solid #ef3131;
+    }
+
+        .sp-main-btn:hover {
+            background: #ff3b3b;
+        }
+
+    .sp-secondary-btn {
+        background: #202020;
+        color: #ffffff;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+        .sp-secondary-btn:hover {
+            background: #2a2a2a;
+        }
+
+    .sp-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .sp-card {
+        padding: 28px;
+    }
+
+    .sp-loading {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        min-height: 130px;
+    }
+
+        .sp-loading h2 {
+            margin: 0 0 6px;
+            color: #ffffff;
+        }
+
+        .sp-loading p {
+            margin: 0;
+            color: #aaa;
+        }
+
+    .sp-card-title {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+        margin-bottom: 24px;
+    }
+
+        .sp-card-title.compact {
+            margin-bottom: 20px;
+        }
+
+        .sp-card-title h3 {
+            margin: 0;
+            font-size: 21px;
+            color: #ffffff;
+            font-weight: 950;
+        }
+
+        .sp-card-title p {
+            margin: 5px 0 0;
+            color: #888;
+            font-size: 14px;
+        }
+
+    .sp-card-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        font-size: 24px;
+    }
+
+        .sp-card-icon.red {
+            background: rgba(239, 49, 49, 0.12);
+            border: 1px solid rgba(239, 49, 49, 0.42);
+            color: #ff5656;
+        }
+
+        .sp-card-icon.blue {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.42);
+            color: #7ab2ff;
+        }
+
+        .sp-card-icon.gold {
+            background: rgba(234, 179, 8, 0.12);
+            border: 1px solid rgba(234, 179, 8, 0.42);
+            color: #facc15;
+        }
+
+    .sp-info-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sp-info-row {
+        min-height: 66px;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: grid;
+        grid-template-columns: minmax(210px, 0.7fr) minmax(0, 1fr);
+        gap: 18px;
+        align-items: center;
+    }
+
+        .sp-info-row:last-child {
+            border-bottom: none;
+        }
+
+    .sp-info-label {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        color: #9b9b9b;
+        font-size: 14px;
+    }
+
+        .sp-info-label i {
+            width: 22px;
+            text-align: center;
+            color: #c8c8c8;
+            font-size: 18px;
+        }
+
+    .sp-info-row strong {
+        color: #ffffff;
+        font-weight: 900;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .sp-input {
+        width: 100%;
+        background: #101010;
+        color: #ffffff;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px;
+        min-height: 44px;
+        padding: 0 14px;
+        outline: none;
+        font-weight: 700;
+    }
+
+        .sp-input:focus {
+            border-color: rgba(239, 49, 49, 0.75);
+            box-shadow: 0 0 0 3px rgba(239, 49, 49, 0.12);
+        }
+
+    .sp-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .sp-side {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .sp-membership-summary {
+        background: #1c1c1c;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+        .sp-membership-summary span {
+            display: block;
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 850;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .sp-membership-summary strong {
+            color: #ffffff;
+            font-size: 17px;
+        }
+
+    .sp-side-link {
+        margin-top: 8px;
+        min-height: 46px;
+        width: 100%;
+        border-radius: 11px;
+        background: rgba(239, 49, 49, 0.12);
+        border: 1px solid rgba(239, 49, 49, 0.36);
+        color: #ff6868;
+        text-decoration: none;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+    }
+
+        .sp-side-link:hover {
+            color: #ffffff;
+            background: rgba(239, 49, 49, 0.22);
+        }
+
+    .sp-security-item {
+        display: flex;
+        gap: 15px;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+        .sp-security-item:last-child {
+            border-bottom: none;
+        }
+
+        .sp-security-item i {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #202020;
+            color: #d8d8d8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: none;
+            font-size: 20px;
+        }
+
+        .sp-security-item strong {
+            display: block;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .sp-security-item span {
+            color: #9c9c9c;
+            line-height: 1.4;
+        }
+
+    .sp-password-card {
+        margin-top: 24px;
+    }
+
+    .sp-password-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .sp-form-group label {
+        display: block;
+        color: #ffffff;
+        font-size: 13px;
+        text-transform: uppercase;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        margin-bottom: 9px;
+    }
+
+    .sp-text-green {
+        color: #68e084 !important;
+    }
+
+    .sp-text-red {
+        color: #ff6868 !important;
+    }
+
+    @@media (max-width: 1150px) {
+        .sp-page {
+            padding: 34px 24px;
+        }
+
+        .sp-profile-card,
+        .sp-profile-left {
+            align-items: flex-start;
+        }
+
+        .sp-profile-card {
+            flex-direction: column;
+        }
+
+        .sp-profile-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .sp-grid,
+        .sp-password-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 720px) {
+        .sp-info-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+            .sp-info-row strong {
+                text-align: left;
+            }
+
+        .sp-profile-left {
+            flex-direction: column;
+        }
+    }
+</style>
 
 @code {
     private PerfilSocio perfil = new();
     private SocioDTO? socioActual;
 
+    private bool cargando = true;
+    private bool guardando = false;
+
     private bool editando = false;
     private bool cambiandoContrasenia = false;
 
     private string editNombres = "";
+    private string editApellidoPaterno = "";
+    private string editApellidoMaterno = "";
     private string editTelefono = "";
     private string editEmail = "";
 
@@ -198,55 +883,111 @@
 
     private string mensaje = "";
     private string claseMensaje = "";
+    private string iconoMensaje = "";
+
+    private string InicialesPerfil
+    {
+        get
+        {
+            string nombres = socioActual?.Nombres ?? "";
+            string apellido = socioActual?.ApellidoPaterno ?? "";
+
+            string inicial1 = !string.IsNullOrWhiteSpace(nombres)
+                ? nombres.Trim()[0].ToString().ToUpper()
+                : "S";
+
+            string inicial2 = !string.IsNullOrWhiteSpace(apellido)
+                ? apellido.Trim()[0].ToString().ToUpper()
+                : "";
+
+            return inicial1 + inicial2;
+        }
+    }
+
+    private string ClaseBadgeEstado =>
+        perfil.Estado == "Activo"
+            ? "sp-badge active"
+            : "sp-badge inactive";
+
+    private string ClaseTextoMembresia =>
+        perfil.EstadoMembresia == "Activa"
+            ? "sp-text-green"
+            : "sp-text-red";
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Session.EstaAutenticado) return;
+        cargando = true;
 
-        socioActual = await SocioService.ObtenerPorIdAsync(Session.IdUsuario);
-
-        if (socioActual != null)
+        try
         {
-            // Cargar membresía
-            string tipoMembresia = "Sin membresía";
-            string estadoMembresia = "Inactiva";
+            if (!Session.EstaAutenticado)
+                return;
 
-            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
-            var suscripcion = suscripciones.FirstOrDefault(s => s.IdUsuario == Session.IdUsuario && s.Activo);
-            if (suscripcion != null)
+            socioActual = await SocioService.ObtenerPorIdAsync(Session.IdUsuario);
+
+            if (socioActual != null)
             {
-                tipoMembresia = suscripcion.TipoPlan;
-                estadoMembresia = "Activa";
+                await CargarPerfilDesdeSocio();
             }
-
-            perfil = new PerfilSocio
-            {
-                DNI = socioActual.Dni.ToString(),
-                NombreCompleto = socioActual.NombreCompleto,
-                Telefono = socioActual.Telefono.ToString(),
-                Correo = socioActual.Email,
-                FechaRegistro = DateTime.Today, // El DTO no tiene fecha de registro
-                Estado = socioActual.Activo ? "Activo" : "Inactivo",
-                TipoMembresia = tipoMembresia,
-                EstadoMembresia = estadoMembresia
-            };
-
-            // Inicializar campos de edición
-            editNombres = socioActual.Nombres;
-            editTelefono = socioActual.Telefono.ToString();
-            editEmail = socioActual.Email;
         }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CargarPerfilDesdeSocio()
+    {
+        if (socioActual == null)
+            return;
+
+        string tipoMembresia = "Sin membresía";
+        string estadoMembresia = "Inactiva";
+
+        var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+
+        var suscripcion = suscripciones
+            .Where(s => s.IdUsuario == Session.IdUsuario && s.Activo && s.EsActiva)
+            .OrderByDescending(s => s.FechaFinMembresia ?? DateTime.MinValue)
+            .ThenByDescending(s => s.IdSuscripcion)
+            .FirstOrDefault();
+
+        if (suscripcion != null)
+        {
+            tipoMembresia = suscripcion.TipoPlan;
+            estadoMembresia = "Activa";
+        }
+
+        perfil = new PerfilSocio
+        {
+            DNI = socioActual.Dni.ToString(),
+            NombreCompleto = socioActual.NombreCompleto,
+            Telefono = socioActual.Telefono.ToString(),
+            Correo = socioActual.Email,
+            FechaRegistro = DateTime.Today,
+            Estado = socioActual.Activo ? "Activo" : "Inactivo",
+            TipoMembresia = tipoMembresia,
+            EstadoMembresia = estadoMembresia
+        };
+
+        editNombres = socioActual.Nombres;
+        editApellidoPaterno = socioActual.ApellidoPaterno;
+        editApellidoMaterno = socioActual.ApellidoMaterno;
+        editTelefono = socioActual.Telefono.ToString();
+        editEmail = socioActual.Email;
     }
 
     private void ToggleEditar()
     {
         editando = !editando;
         cambiandoContrasenia = false;
-        mensaje = "";
+        LimpiarMensaje();
 
         if (editando && socioActual != null)
         {
             editNombres = socioActual.Nombres;
+            editApellidoPaterno = socioActual.ApellidoPaterno;
+            editApellidoMaterno = socioActual.ApellidoMaterno;
             editTelefono = socioActual.Telefono.ToString();
             editEmail = socioActual.Email;
         }
@@ -256,72 +997,160 @@
     {
         cambiandoContrasenia = !cambiandoContrasenia;
         editando = false;
-        mensaje = "";
+        LimpiarMensaje();
+
         nuevaContrasenia = "";
         confirmarContrasenia = "";
     }
 
     private async Task GuardarPerfil()
     {
-        if (socioActual == null) return;
+        if (socioActual == null)
+            return;
 
-        socioActual.Nombres = editNombres;
-        socioActual.Email = editEmail;
-        if (int.TryParse(editTelefono, out int tel))
-            socioActual.Telefono = tel;
+        LimpiarMensaje();
 
-        var resultado = await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
-
-        if (!resultado.ToLower().Contains("error"))
+        if (string.IsNullOrWhiteSpace(editNombres))
         {
-            perfil.NombreCompleto = socioActual.NombreCompleto;
-            perfil.Correo = socioActual.Email;
-            perfil.Telefono = socioActual.Telefono.ToString();
-            editando = false;
-            mensaje = "✓ Perfil actualizado correctamente.";
-            claseMensaje = "renew-message success";
+            MostrarError("Los nombres son obligatorios.");
+            return;
         }
-        else
+
+        if (string.IsNullOrWhiteSpace(editApellidoPaterno))
         {
-            mensaje = "✗ Error al actualizar: " + resultado;
-            claseMensaje = "renew-message error";
+            MostrarError("El apellido paterno es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(editApellidoMaterno))
+        {
+            MostrarError("El apellido materno es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(editTelefono) ||
+            editTelefono.Length != 9 ||
+            !int.TryParse(editTelefono, out int telefonoConvertido))
+        {
+            MostrarError("El teléfono debe tener 9 dígitos numéricos.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(editEmail) ||
+            !editEmail.Contains("@") ||
+            !editEmail.Contains("."))
+        {
+            MostrarError("Ingrese un correo electrónico válido.");
+            return;
+        }
+
+        try
+        {
+            guardando = true;
+
+            socioActual.Nombres = editNombres.Trim();
+            socioActual.ApellidoPaterno = editApellidoPaterno.Trim();
+            socioActual.ApellidoMaterno = editApellidoMaterno.Trim();
+            socioActual.Email = editEmail.Trim();
+            socioActual.Telefono = telefonoConvertido;
+
+            if (string.IsNullOrWhiteSpace(socioActual.Rol))
+                socioActual.Rol = "Socio";
+
+            var resultado = await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+
+            if (!resultado.ToLower().Contains("error"))
+            {
+                await CargarPerfilDesdeSocio();
+
+                editando = false;
+                MostrarExito("Perfil actualizado correctamente.");
+            }
+            else
+            {
+                MostrarError("Error al actualizar: " + resultado);
+            }
+        }
+        finally
+        {
+            guardando = false;
         }
     }
 
     private async Task GuardarContrasenia()
     {
-        if (socioActual == null) return;
+        if (socioActual == null)
+            return;
+
+        LimpiarMensaje();
 
         if (string.IsNullOrWhiteSpace(nuevaContrasenia))
         {
-            mensaje = "✗ Debes ingresar una contraseña.";
-            claseMensaje = "renew-message error";
+            MostrarError("Debes ingresar una contraseña.");
+            return;
+        }
+
+        if (nuevaContrasenia.Length < 6)
+        {
+            MostrarError("La contraseña debe tener mínimo 6 caracteres.");
             return;
         }
 
         if (nuevaContrasenia != confirmarContrasenia)
         {
-            mensaje = "✗ Las contraseñas no coinciden.";
-            claseMensaje = "renew-message error";
+            MostrarError("Las contraseñas no coinciden.");
             return;
         }
 
-        socioActual.Contrasenia = nuevaContrasenia;
-        var resultado = await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+        try
+        {
+            guardando = true;
 
-        if (!resultado.ToLower().Contains("error"))
-        {
-            cambiandoContrasenia = false;
-            nuevaContrasenia = "";
-            confirmarContrasenia = "";
-            mensaje = "✓ Contraseña actualizada correctamente.";
-            claseMensaje = "renew-message success";
+            socioActual.Contrasenia = nuevaContrasenia;
+
+            if (string.IsNullOrWhiteSpace(socioActual.Rol))
+                socioActual.Rol = "Socio";
+
+            var resultado = await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
+
+            if (!resultado.ToLower().Contains("error"))
+            {
+                cambiandoContrasenia = false;
+                nuevaContrasenia = "";
+                confirmarContrasenia = "";
+
+                MostrarExito("Contraseña actualizada correctamente.");
+            }
+            else
+            {
+                MostrarError("Error al actualizar contraseña: " + resultado);
+            }
         }
-        else
+        finally
         {
-            mensaje = "✗ Error al actualizar contraseña: " + resultado;
-            claseMensaje = "renew-message error";
+            guardando = false;
         }
+    }
+
+    private void MostrarExito(string texto)
+    {
+        mensaje = texto;
+        claseMensaje = "sp-message success";
+        iconoMensaje = "bi bi-check-circle";
+    }
+
+    private void MostrarError(string texto)
+    {
+        mensaje = texto;
+        claseMensaje = "sp-message error";
+        iconoMensaje = "bi bi-exclamation-triangle";
+    }
+
+    private void LimpiarMensaje()
+    {
+        mensaje = "";
+        claseMensaje = "";
+        iconoMensaje = "";
     }
 
     private class PerfilSocio

@@ -1,23 +1,51 @@
 package pe.edu.pucp.gigachadsys.model.personas;
 
-public class Socio extends  Usuario{
-    //Atributos
+public class Socio extends Usuario {
+
     private boolean estadoMembresia;
 
-    //Constructores
     public Socio() {
         super();
     }
 
-    public Socio(int idUsuario, String nombres, String apellidoMaterno, String apellidoPaterno,
-                 int edad, int dni, String email, int telefono, String contrasenia, String rol,
-                 boolean estadoMembresia) {
+    /*
+     * Constructor con orden normal:
+     * apellidoPaterno primero, apellidoMaterno después.
+     *
+     * OJO:
+     * Si Usuario tiene el constructor antiguo con orden:
+     * (apellidoMaterno, apellidoPaterno),
+     * aquí lo acomodamos al llamar al super.
+     */
+    public Socio(
+            int idUsuario,
+            String nombres,
+            String apellidoPaterno,
+            String apellidoMaterno,
+            int edad,
+            int dni,
+            String email,
+            int telefono,
+            String contrasenia,
+            String rol,
+            boolean estadoMembresia
+    ) {
+        super(
+                idUsuario,
+                nombres,
+                apellidoMaterno,
+                apellidoPaterno,
+                edad,
+                dni,
+                email,
+                telefono,
+                contrasenia,
+                rol
+        );
 
-        super(idUsuario, nombres, apellidoMaterno, apellidoPaterno, edad, dni, email, telefono, contrasenia, rol);
         this.estadoMembresia = estadoMembresia;
     }
 
-    //Setters y Getters
     public boolean getEstadoMembresia() {
         return estadoMembresia;
     }
@@ -25,17 +53,12 @@ public class Socio extends  Usuario{
     public void setEstadoMembresia(boolean estadoMembresia) {
         this.estadoMembresia = estadoMembresia;
     }
-	
 
-    //Metodos
     @Override
     public void mostrarDatos() {
-		
     }
-	
-	public boolean verificarEstadoActivo(){
-		return true;
-	}
-	
-	
+
+    public boolean verificarEstadoActivo() {
+        return true;
+    }
 }

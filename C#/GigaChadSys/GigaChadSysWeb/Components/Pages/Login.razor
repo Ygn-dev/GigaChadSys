@@ -20,9 +20,11 @@
             <div class="auth-logo-icon">
                 <img src="/img/logo-gigachad.png" alt="GigaChad Logo" class="auth-logo-img" />
             </div>
+
             <h1 class="auth-brand">
                 <span class="brand-giga">GYGA</span><span class="brand-chad">CHAD</span>
             </h1>
+
             <p class="auth-tagline">ENTRENA · SUPÉRATE · VIVE</p>
         </div>
 
@@ -34,7 +36,10 @@
         @if (!string.IsNullOrEmpty(mensajeError))
         {
             <div class="auth-error-msg">
-                <span>⚠️</span> @mensajeError
+                <span>
+                    <i class="bi bi-exclamation-triangle"></i>
+                </span>
+                @mensajeError
             </div>
         }
 
@@ -42,31 +47,57 @@
         <div class="auth-card">
             <div class="auth-form-group">
                 <label>CORREO ELECTRÓNICO</label>
+
                 <div class="auth-input-wrapper">
-                    <span class="auth-input-icon">✉️</span>
-                    <input type="email" @bind="correo" placeholder="Ej: juan@email.com" disabled="@cargando" />
+                    <span class="auth-input-icon">
+                        <i class="bi bi-envelope"></i>
+                    </span>
+
+                    <input type="email"
+                           @bind="correo"
+                           placeholder="Ej: juan@email.com"
+                           disabled="@cargando" />
                 </div>
             </div>
 
             <div class="auth-form-group">
                 <label>CONTRASEÑA</label>
+
                 <div class="auth-input-wrapper">
-                    <span class="auth-input-icon">🔒</span>
-                    <input type="@(mostrarPass ? "text" : "password")" @bind="password" placeholder="Ingresa tu contraseña" disabled="@cargando" />
-                    <button class="auth-eye-btn" @onclick="() => mostrarPass = !mostrarPass" type="button">
-                        @(mostrarPass ? "🙈" : "👁️")
+                    <span class="auth-input-icon">
+                        <i class="bi bi-lock"></i>
+                    </span>
+
+                    <input type="@(mostrarPass ? "text" : "password")"
+                           @bind="password"
+                           placeholder="Ingresa tu contraseña"
+                           disabled="@cargando" />
+
+                    <button class="auth-eye-btn"
+                            @onclick="() => mostrarPass = !mostrarPass"
+                            type="button"
+                            disabled="@cargando">
+                        <i class="bi @(mostrarPass ? "bi-eye-slash" : "bi-eye")"></i>
                     </button>
                 </div>
             </div>
 
-            <button class="auth-submit-btn" @onclick="IniciarSesion" disabled="@cargando">
+            <button class="auth-submit-btn"
+                    @onclick="IniciarSesion"
+                    disabled="@cargando">
                 @if (cargando)
                 {
-                    <span>Iniciando sesión...</span>
+                    <span>
+                        <i class="bi bi-hourglass-split"></i>
+                        Iniciando sesión...
+                    </span>
                 }
                 else
                 {
-                    <span>Iniciar Sesión</span>
+                    <span>
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Iniciar Sesión
+                    </span>
                 }
             </button>
         </div>
@@ -75,7 +106,12 @@
         <p class="auth-link-text">
             ¿No tienes cuenta?
         </p>
-        <a class="auth-link" href="/registro">Crear cuenta aquí  ›</a>
+
+        <a class="auth-link" href="/registro">
+            <i class="bi bi-person-plus"></i>
+            Crear cuenta aquí
+            <i class="bi bi-chevron-right"></i>
+        </a>
     </div>
 </div>
 
@@ -89,32 +125,46 @@
     private async Task IniciarSesion()
     {
         mensajeError = "";
+
+        if (string.IsNullOrWhiteSpace(correo))
+        {
+            mensajeError = "Ingrese su correo electrónico.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            mensajeError = "Ingrese su contraseña.";
+            return;
+        }
+
         cargando = true;
         StateHasChanged();
 
         try
         {
-            var resultado = await AuthService.LoginAsync(correo, password);
+            var resultado = await AuthService.LoginAsync(correo.Trim(), password);
 
             if (resultado.Exito)
             {
-                // Guardar el usuario en la sesión para que lo usen todas las páginas
                 Session.IniciarSesion(resultado);
 
-                // Navegar según el rol del usuario
                 switch (resultado.Rol)
                 {
                     case "Administrador":
                         Nav.NavigateTo("/admin/inicio");
                         break;
+
                     case "Entrenador":
                         Nav.NavigateTo("/entrenador/inicio");
                         break;
+
                     case "Socio":
                         Nav.NavigateTo("/socio/inicio");
                         break;
+
                     default:
-                        Nav.NavigateTo("/");
+                        mensajeError = "Rol no reconocido. Contacte al administrador.";
                         break;
                 }
             }

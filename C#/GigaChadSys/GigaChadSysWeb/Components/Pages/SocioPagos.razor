@@ -17,7 +17,9 @@
 
     <div class="socio-payments-stats">
         <div class="socio-payment-stat-card">
-            <div class="socio-payment-icon success">✓</div>
+            <div class="socio-payment-icon success">
+                <i class="bi bi-check-circle"></i>
+            </div>
 
             <div>
                 <span>Total pagado</span>
@@ -27,7 +29,9 @@
         </div>
 
         <div class="socio-payment-stat-card">
-            <div class="socio-payment-icon warning">◷</div>
+            <div class="socio-payment-icon warning">
+                <i class="bi bi-clock-history"></i>
+            </div>
 
             <div>
                 <span>Pendiente</span>
@@ -37,7 +41,9 @@
         </div>
 
         <div class="socio-payment-stat-card">
-            <div class="socio-payment-icon danger">!</div>
+            <div class="socio-payment-icon danger">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
 
             <div>
                 <span>Vencido</span>
@@ -47,7 +53,9 @@
         </div>
 
         <div class="socio-payment-stat-card">
-            <div class="socio-payment-icon red">S/</div>
+            <div class="socio-payment-icon red">
+                <i class="bi bi-wallet2"></i>
+            </div>
 
             <div>
                 <span>Monto promedio</span>
@@ -60,119 +68,190 @@
     <div class="socio-payments-table-card">
         <h2>Historial de Pagos</h2>
 
-        <div class="socio-payments-table-wrapper">
-            <table class="socio-payments-table">
-                <thead>
-                    <tr>
-                        <th>Concepto</th>
-                        <th>Tipo</th>
-                        <th>Método</th>
-                        <th>Monto</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var pago in Pagos)
-                    {
+        @if (Cargando)
+        {
+            <div class="payment-muted" style="padding: 24px;">
+                <i class="bi bi-hourglass-split"></i>
+                Cargando pagos...
+            </div>
+        }
+        else
+        {
+            <div class="socio-payments-table-wrapper">
+                <table class="socio-payments-table">
+                    <thead>
                         <tr>
-                            <td>
-                                <strong>@pago.Concepto</strong>
-                            </td>
-
-                            <td>
-                                <span class="payment-muted">▣ @pago.Tipo</span>
-                            </td>
-
-                            <td>
-                                @if (string.IsNullOrWhiteSpace(pago.Metodo))
-                                {
-                                    <span class="payment-muted">-</span>
-                                }
-                                else
-                                {
-                                    <span class="payment-muted">▭ @pago.Metodo</span>
-                                }
-                            </td>
-
-                            <td>
-                                <strong>S/@pago.Monto</strong>
-                            </td>
-
-                            <td>
-                                <span class="payment-muted">@pago.Fecha</span>
-                            </td>
-
-                            <td>
-                                <span class="@ObtenerClaseEstado(pago.Estado)">
-                                    @pago.Estado
-                                </span>
-                            </td>
-
-                            <td>
-                                @if (pago.Estado == "pendiente" || pago.Estado == "vencido")
-                                {
-                                    <a class="socio-pay-button"
-                                       href="@($"/socio/pagos/realizar/{pago.Codigo}")">
-                                        Realizar Pago
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="payment-muted">—</span>
-                                }
-                            </td>
+                            <th>Concepto</th>
+                            <th>Tipo</th>
+                            <th>Método</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+
+                    <tbody>
+                        @if (Pagos.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7">
+                                    <span class="payment-muted">
+                                        <i class="bi bi-info-circle"></i>
+                                        No tienes pagos registrados.
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var pago in Pagos)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@pago.Concepto</strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="payment-inline-badge">
+                                            <i class="@ObtenerIconoTipo(pago.Tipo)"></i>
+                                            @ObtenerTextoTipo(pago.Tipo)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @if (string.IsNullOrWhiteSpace(pago.Metodo))
+                                        {
+                                            <span class="payment-muted">—</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="payment-inline-badge">
+                                                <i class="@ObtenerIconoMetodo(pago.MetodoPagoId, pago.Metodo)"></i>
+                                                @ObtenerTextoMetodo(pago.MetodoPagoId, pago.Metodo)
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <strong>S/@pago.Monto</strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="payment-muted">@pago.Fecha</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="@ObtenerClaseEstado(pago.Estado)">
+                                            @pago.Estado
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @if (pago.Estado == "pendiente" || pago.Estado == "vencido")
+                                        {
+                                            <a class="socio-pay-button"
+                                               href="@($"/socio/pagos/realizar/{pago.Codigo}")">
+                                                <i class="bi bi-credit-card"></i>
+                                                Realizar Pago
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="payment-muted">—</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 
 </section>
 
 @code {
     private List<PagoSocioVista> Pagos { get; set; } = new();
+    private bool Cargando { get; set; } = true;
 
-    private decimal TotalPagado => Pagos.Where(p => p.Estado == "pagado").Sum(p => decimal.TryParse(p.Monto, out decimal m) ? m : 0);
-    private int TotalPagosRealizados => Pagos.Count(p => p.Estado == "pagado");
-    
-    private decimal TotalPendiente => Pagos.Where(p => p.Estado == "pendiente").Sum(p => decimal.TryParse(p.Monto, out decimal m) ? m : 0);
-    private int CantidadPendientes => Pagos.Count(p => p.Estado == "pendiente");
+    private decimal TotalPagado =>
+        Pagos.Where(p => p.Estado == "pagado")
+             .Sum(p => decimal.TryParse(p.Monto, out decimal m) ? m : 0);
 
-    private decimal PromedioPago => TotalPagosRealizados > 0 ? TotalPagado / TotalPagosRealizados : 0;
+    private int TotalPagosRealizados =>
+        Pagos.Count(p => p.Estado == "pagado");
+
+    private decimal TotalPendiente =>
+        Pagos.Where(p => p.Estado == "pendiente")
+             .Sum(p => decimal.TryParse(p.Monto, out decimal m) ? m : 0);
+
+    private int CantidadPendientes =>
+        Pagos.Count(p => p.Estado == "pendiente");
+
+    private decimal PromedioPago =>
+        TotalPagosRealizados > 0 ? TotalPagado / TotalPagosRealizados : 0;
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Session.EstaAutenticado) return;
+        Cargando = true;
 
-        var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
-        var misSuscripciones = suscripciones.Where(s => s.IdUsuario == Session.IdUsuario).ToList();
-        var misIdsPagos = misSuscripciones.Select(s => s.IdPago).ToList();
-
-        var todosPagos = await PagoService.ListarPagosAsync();
-        var metodos = await MetodoPagoService.ListarMetodosDePagoAsync();
-        var dictMetodos = metodos.ToDictionary(m => m.IdMetodoPago, m => m.Tipo);
-
-        Pagos.Clear();
-
-        foreach (var pago in todosPagos.Where(p => misIdsPagos.Contains(p.IdPago)))
+        try
         {
-            var nombreMetodo = dictMetodos.ContainsKey(pago.MetodoPago) ? dictMetodos[pago.MetodoPago] : "Desconocido";
-            var sub = misSuscripciones.FirstOrDefault(s => s.IdPago == pago.IdPago);
-            
-            Pagos.Add(new PagoSocioVista
+            if (!Session.EstaAutenticado)
             {
-                Codigo = pago.IdPago.ToString(),
-                Concepto = pago.Tipo ?? "-",
-                Tipo = sub != null ? sub.TipoPlan : "Membresía",
-                Metodo = nombreMetodo,
-                Monto = pago.Monto.ToString("0.00"),
-                Fecha = pago.FechaPagoTexto,
-                Estado = pago.Activo ? "pagado" : "pendiente"
-            });
+                return;
+            }
+
+            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+
+            var misSuscripciones = suscripciones
+                .Where(s => s.IdUsuario == Session.IdUsuario)
+                .ToList();
+
+            var misIdsPagos = misSuscripciones
+                .Select(s => s.IdPago)
+                .ToList();
+
+            var todosPagos = await PagoService.ListarPagosAsync();
+            var metodos = await MetodoPagoService.ListarMetodosDePagoAsync();
+
+            var dictMetodos = metodos
+                .GroupBy(m => m.IdMetodoPago)
+                .ToDictionary(g => g.Key, g => g.First().Tipo);
+
+            Pagos.Clear();
+
+            foreach (var pago in todosPagos.Where(p => misIdsPagos.Contains(p.IdPago)))
+            {
+                var nombreMetodo = dictMetodos.ContainsKey(pago.MetodoPago)
+                    ? dictMetodos[pago.MetodoPago]
+                    : "Desconocido";
+
+                var sub = misSuscripciones.FirstOrDefault(s => s.IdPago == pago.IdPago);
+
+                Pagos.Add(new PagoSocioVista
+                {
+                    Codigo = pago.IdPago.ToString(),
+                    Concepto = pago.Tipo ?? "-",
+                    Tipo = sub != null ? sub.TipoPlan : "Membresía",
+                    MetodoPagoId = pago.MetodoPago,
+                    Metodo = nombreMetodo,
+                    Monto = pago.Monto.ToString("0.00"),
+                    Fecha = pago.FechaPagoTexto,
+                    Estado = pago.Activo ? "pagado" : "pendiente"
+                });
+            }
+
+            Pagos = Pagos
+                .OrderByDescending(p => p.Fecha)
+                .ThenByDescending(p => int.TryParse(p.Codigo, out int id) ? id : 0)
+                .ToList();
+        }
+        finally
+        {
+            Cargando = false;
         }
     }
 
@@ -191,11 +270,150 @@
         return "socio-payment-status expired";
     }
 
+    private string ObtenerTextoTipo(string? tipo)
+    {
+        if (string.IsNullOrWhiteSpace(tipo))
+        {
+            return "Membresía";
+        }
+
+        var valor = tipo.Trim().ToLower();
+
+        if (valor.Contains("black"))
+        {
+            return "Black";
+        }
+
+        if (valor.Contains("basic"))
+        {
+            return "Basic";
+        }
+
+        return tipo.Trim();
+    }
+
+    private string ObtenerIconoTipo(string? tipo)
+    {
+        if (string.IsNullOrWhiteSpace(tipo))
+        {
+            return "bi bi-bookmark-star";
+        }
+
+        var valor = tipo.Trim().ToLower();
+
+        if (valor.Contains("black"))
+        {
+            return "bi bi-gem";
+        }
+
+        if (valor.Contains("basic"))
+        {
+            return "bi bi-award";
+        }
+
+        return "bi bi-bookmark-star";
+    }
+
+    private string ObtenerTextoMetodo(int metodoPagoId, string? metodo)
+    {
+        if (metodoPagoId == 1)
+        {
+            return "Efectivo";
+        }
+
+        if (metodoPagoId == 2)
+        {
+            return "Tarjeta Débito";
+        }
+
+        if (metodoPagoId == 3)
+        {
+            return "Tarjeta Crédito";
+        }
+
+        if (string.IsNullOrWhiteSpace(metodo))
+        {
+            return "No definido";
+        }
+
+        var valor = metodo.Trim().ToLower();
+
+        if (valor.Contains("efectivo"))
+        {
+            return "Efectivo";
+        }
+
+        if (valor.Contains("debito") || valor.Contains("débito"))
+        {
+            return "Tarjeta Débito";
+        }
+
+        if (valor.Contains("credito") || valor.Contains("crédito"))
+        {
+            return "Tarjeta Crédito";
+        }
+
+        if (valor.Contains("tarjeta"))
+        {
+            return "Tarjeta";
+        }
+
+        return metodo.Trim();
+    }
+
+    private string ObtenerIconoMetodo(int metodoPagoId, string? metodo)
+    {
+        if (metodoPagoId == 1)
+        {
+            return "bi bi-cash-stack";
+        }
+
+        if (metodoPagoId == 2)
+        {
+            return "bi bi-credit-card-2-front";
+        }
+
+        if (metodoPagoId == 3)
+        {
+            return "bi bi-credit-card";
+        }
+
+        if (string.IsNullOrWhiteSpace(metodo))
+        {
+            return "bi bi-wallet2";
+        }
+
+        var valor = metodo.Trim().ToLower();
+
+        if (valor.Contains("efectivo"))
+        {
+            return "bi bi-cash-stack";
+        }
+
+        if (valor.Contains("debito") || valor.Contains("débito"))
+        {
+            return "bi bi-credit-card-2-front";
+        }
+
+        if (valor.Contains("credito") || valor.Contains("crédito"))
+        {
+            return "bi bi-credit-card";
+        }
+
+        if (valor.Contains("tarjeta"))
+        {
+            return "bi bi-credit-card-2-front";
+        }
+
+        return "bi bi-wallet2";
+    }
+
     private class PagoSocioVista
     {
         public string Codigo { get; set; } = "";
         public string Concepto { get; set; } = "";
         public string Tipo { get; set; } = "";
+        public int MetodoPagoId { get; set; }
         public string Metodo { get; set; } = "";
         public string Monto { get; set; } = "";
         public string Fecha { get; set; } = "";
