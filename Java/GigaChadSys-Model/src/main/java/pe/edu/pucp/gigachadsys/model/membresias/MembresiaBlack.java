@@ -1,22 +1,25 @@
 package pe.edu.pucp.gigachadsys.model.membresias;
 
 public class MembresiaBlack extends Membresia {
-    //Atributos
+
     private int cantidadInvitadosPorMes;
     private double costoMantenimientoAnual;
 
-     //Constructores
     public MembresiaBlack() {
         super();
     }
 
-    public MembresiaBlack(int idMembresia, String nombre, double costoMantenimientoAnual,int cantidadInvitadosPorMes) {
+    public MembresiaBlack(
+            int idMembresia,
+            String nombre,
+            double costoMantenimientoAnual,
+            int cantidadInvitadosPorMes
+    ) {
         super(idMembresia, nombre);
         this.cantidadInvitadosPorMes = cantidadInvitadosPorMes;
         this.costoMantenimientoAnual = costoMantenimientoAnual;
     }
-    
-    //Setters y Getters
+
     public int getCantidadInvitadosPorMes() {
         return cantidadInvitadosPorMes;
     }
@@ -33,10 +36,35 @@ public class MembresiaBlack extends Membresia {
         this.costoMantenimientoAnual = costoMantenimientoAnual;
     }
 
+    // Alias clave:
+    // Si el frontend manda precio mensual para Black,
+    // Java lo convierte a anual porque la BD guarda costoMantenimientoAnual.
+    public double getCostoMantenimientoMensual() {
+        return costoMantenimientoAnual / 12.0;
+    }
 
-    //Metodos
+    public void setCostoMantenimientoMensual(double costoMantenimientoMensual) {
+        this.costoMantenimientoAnual = costoMantenimientoMensual * 12.0;
+    }
+
+    public double getPrecioMensual() {
+        return costoMantenimientoAnual / 12.0;
+    }
+
+    public void setPrecioMensual(double precioMensual) {
+        this.costoMantenimientoAnual = precioMensual * 12.0;
+    }
+
+    public double getCostoMensual() {
+        return costoMantenimientoAnual / 12.0;
+    }
+
+    public void setCostoMensual(double costoMensual) {
+        this.costoMantenimientoAnual = costoMensual * 12.0;
+    }
+
     @Override
     public double calcularCostoTotal() {
-        return 0;
+        return costoMantenimientoAnual;
     }
 }

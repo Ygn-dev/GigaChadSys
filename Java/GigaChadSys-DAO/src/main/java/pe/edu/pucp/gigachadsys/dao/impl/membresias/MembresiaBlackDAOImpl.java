@@ -1,14 +1,16 @@
 package pe.edu.pucp.gigachadsys.dao.impl.membresias;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.*;
 
 import pe.edu.pucp.gigachadsys.dao.inter.membresias.MembresiaBlackDAO;
-import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBasic;
-import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBlack;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
+import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBlack;
 
 public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
 
@@ -16,10 +18,11 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
     public List<MembresiaBlack> listAll() {
         List<MembresiaBlack> list = new ArrayList<>();
 
-        String sql = "SELECT membresia_ID, nombrePlan, costoMantenimientoAnual, " +
-                "cantidadInvitadosPorMes, activo " +
-                "FROM MembresiaBlack " +
-                "WHERE activo = 1";
+        // NO filtrar por activo.
+        // Si filtras WHERE activo = 1, nunca podrás volver a activar una membresía inactiva desde admin.
+        String sql =
+                "SELECT membresia_ID, nombrePlan, costoMantenimientoAnual, cantidadInvitadosPorMes, activo " +
+                        "FROM MembresiaBlack";
 
         try (
                 Connection connection = DBManager.getInstance().getConnection();
@@ -27,34 +30,23 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
                 ResultSet rs = pstm.executeQuery()
         ) {
             while (rs.next()) {
-                MembresiaBlack membresia = new MembresiaBlack();
-
-                membresia.setIdMembresia(rs.getInt("membresia_ID"));
-                membresia.setNombre(rs.getString("nombrePlan"));
-                membresia.setCostoMantenimientoAnual(
-                        rs.getDouble("costoMantenimientoAnual")
-                );
-                membresia.setCantidadInvitadosPorMes(
-                        rs.getInt("cantidadInvitadosPorMes")
-                );
-                membresia.setActiva(rs.getBoolean("activo"));
-
+                MembresiaBlack membresia = mapearMembresiaBlack(rs);
                 list.add(membresia);
             }
+
+            return list;
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al listar membresías Black", e);
         }
-
-        return list;
     }
 
     @Override
     public MembresiaBlack load(Integer id) {
-        String sql = "SELECT membresia_ID, nombrePlan, costoMantenimientoAnual, " +
-                "cantidadInvitadosPorMes, activo " +
-                "FROM MembresiaBlack " +
-                "WHERE membresia_ID = ?";
+        String sql =
+                "SELECT membresia_ID, nombrePlan, costoMantenimientoAnual, cantidadInvitadosPorMes, activo " +
+                        "FROM MembresiaBlack " +
+                        "WHERE membresia_ID = ?";
 
         try (
                 Connection connection = DBManager.getInstance().getConnection();
@@ -64,19 +56,7 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
 
             try (ResultSet rs = pstm.executeQuery()) {
                 if (rs.next()) {
-                    MembresiaBlack membresia = new MembresiaBlack();
-
-                    membresia.setIdMembresia(rs.getInt("membresia_ID"));
-                    membresia.setNombre(rs.getString("nombrePlan"));
-                    membresia.setCostoMantenimientoAnual(
-                            rs.getDouble("costoMantenimientoAnual")
-                    );
-                    membresia.setCantidadInvitadosPorMes(
-                            rs.getInt("cantidadInvitadosPorMes")
-                    );
-                    membresia.setActiva(rs.getBoolean("activo"));
-
-                    return membresia;
+                    return mapearMembresiaBlack(rs);
                 }
             }
 
@@ -89,73 +69,110 @@ public class MembresiaBlackDAOImpl implements MembresiaBlackDAO {
 
     @Override
     public MembresiaBlack save(MembresiaBlack membresia) {
+        String sql =
+                "INSERT INTO MembresiaBlack " +
+                        "(nombrePlan, costoMantenimientoAnual, cantidadInvitadosPorMes, activo) " +
+                        "VALUES (?, ?, ?, ?)";
 
-        String sql = "INSERT INTO MembresiaBlack (nombrePlan, costoMantenimientoAnual, cantidadInvitadosPorMes, activo) " +
-                "VALUES (?, ?, ?, ?)";
-
-        try(Connection connection = DBManager.getInstance().getConnection()){
-            PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
-
-            pstm.setString(1, membresia.getNombre());
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+        ) {
+            pstm.setString(1, normalizarNombre(membresia.getNombre(), "Membresía Black"));
             pstm.setDouble(2, membresia.getCostoMantenimientoAnual());
             pstm.setInt(3, membresia.getCantidadInvitadosPorMes());
             pstm.setBoolean(4, membresia.isActiva());
+
             pstm.executeUpdate();
-            int nuevoId;
-            try(ResultSet rs = pstm.getGeneratedKeys()){
-                if(rs.next()){
-                    nuevoId= pstm.getGeneratedKeys().getInt(1);
-                    membresia.setIdMembresia(nuevoId);
+
+            try (ResultSet rs = pstm.getGeneratedKeys()) {
+                if (rs.next()) {
+                    membresia.setIdMembresia(rs.getInt(1));
                 }
             }
+
             return membresia;
-        }catch (SQLException e){
-            throw new RuntimeException(e);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al registrar membresía Black", e);
         }
     }
 
     @Override
     public MembresiaBlack update(MembresiaBlack membresia) {
         String sql =
-                "UPDATE MembresiaBlack " +
-                        "SET nombrePlan = ?, " +
+                "UPDATE MembresiaBlack SET " +
+                        "nombrePlan = ?, " +
                         "costoMantenimientoAnual = ?, " +
                         "cantidadInvitadosPorMes = ?, " +
                         "activo = ? " +
                         "WHERE membresia_ID = ?";
-        Connection connection = DBManager.getInstance().getConnection();
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
 
-            pstmt.setString(1, membresia.getNombre());
-            pstmt.setDouble(2, membresia.getCostoMantenimientoAnual());
-            pstmt.setInt(3, membresia.getCantidadInvitadosPorMes());
-            pstmt.setBoolean(4, membresia.isActiva());
-            pstmt.setInt(5,membresia.getIdMembresia());
-            pstmt.executeUpdate();
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql)
+        ) {
+            pstm.setString(1, normalizarNombre(membresia.getNombre(), "Membresía Black"));
+            pstm.setDouble(2, membresia.getCostoMantenimientoAnual());
+
+            int invitados = membresia.getCantidadInvitadosPorMes();
+            if (invitados < 0) {
+                invitados = 0;
+            }
+
+            pstm.setInt(3, invitados);
+            pstm.setBoolean(4, membresia.isActiva());
+            pstm.setInt(5, membresia.getIdMembresia());
+
+            int filas = pstm.executeUpdate();
+
+            if (filas == 0) {
+                throw new RuntimeException("No se encontró la membresía Black con ID " + membresia.getIdMembresia());
+            }
 
             return membresia;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al actualizar membresía Black", e);
         }
     }
 
     @Override
     public void remove(MembresiaBlack membresia) {
+        String sql =
+                "UPDATE MembresiaBlack SET " +
+                        "activo = 0 " +
+                        "WHERE membresia_ID = ?";
 
-        String sql = "UPDATE MembresiaBlack SET activo = ? WHERE membresia_ID = ?";
-
-        try (Connection connection = DBManager.getInstance().getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-
-            pstmt.setBoolean(1, membresia.isActiva());
-            pstmt.setInt(2, membresia.getIdMembresia());
-
-            pstmt.executeUpdate();
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql)
+        ) {
+            pstm.setInt(1, membresia.getIdMembresia());
+            pstm.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al desactivar membresía Black", e);
         }
+    }
+
+    private MembresiaBlack mapearMembresiaBlack(ResultSet rs) throws SQLException {
+        MembresiaBlack membresia = new MembresiaBlack();
+
+        membresia.setIdMembresia(rs.getInt("membresia_ID"));
+        membresia.setNombre(rs.getString("nombrePlan"));
+        membresia.setCostoMantenimientoAnual(rs.getDouble("costoMantenimientoAnual"));
+        membresia.setCantidadInvitadosPorMes(rs.getInt("cantidadInvitadosPorMes"));
+        membresia.setActiva(rs.getBoolean("activo"));
+
+        return membresia;
+    }
+
+    private String normalizarNombre(String nombre, String valorPorDefecto) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return valorPorDefecto;
+        }
+
+        return nombre.trim();
     }
 }

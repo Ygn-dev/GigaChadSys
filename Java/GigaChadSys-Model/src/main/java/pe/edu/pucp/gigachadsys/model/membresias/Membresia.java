@@ -1,13 +1,13 @@
 package pe.edu.pucp.gigachadsys.model.membresias;
 
-public  abstract class Membresia {
-    //Atributos
+public abstract class Membresia {
+
     private int idMembresia;
     private String nombre;
-    private boolean activa;
+    private boolean activa = true;
 
-    //Constructores
     public Membresia() {
+        this.activa = true;
     }
 
     public Membresia(int idMembresia, String nombre) {
@@ -15,14 +15,22 @@ public  abstract class Membresia {
         this.nombre = nombre;
         this.activa = true;
     }
-    
-    //Setters y Getters
+
     public int getIdMembresia() {
         return idMembresia;
     }
 
     public void setIdMembresia(int idMembresia) {
         this.idMembresia = idMembresia;
+    }
+
+    // Alias por si algún JSON usa membresia_ID
+    public int getMembresia_ID() {
+        return idMembresia;
+    }
+
+    public void setMembresia_ID(int membresia_ID) {
+        this.idMembresia = membresia_ID;
     }
 
     public String getNombre() {
@@ -33,6 +41,16 @@ public  abstract class Membresia {
         this.nombre = nombre;
     }
 
+    // Alias IMPORTANTÍSIMO para frontend / BD:
+    // C# probablemente manda nombrePlan.
+    public String getNombrePlan() {
+        return nombre;
+    }
+
+    public void setNombrePlan(String nombrePlan) {
+        this.nombre = nombrePlan;
+    }
+
     public boolean isActiva() {
         return activa;
     }
@@ -41,6 +59,15 @@ public  abstract class Membresia {
         this.activa = activa;
     }
 
-    //Metodos
+    // Alias IMPORTANTÍSIMO:
+    // C# probablemente manda activo.
+    public boolean getActivo() {
+        return activa;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activa = activo;
+    }
+
     public abstract double calcularCostoTotal();
 }

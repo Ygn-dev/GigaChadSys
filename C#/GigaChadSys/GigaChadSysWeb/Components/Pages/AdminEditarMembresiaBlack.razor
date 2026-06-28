@@ -1,425 +1,898 @@
 @page "/admin/membresias/black/editar"
-@using GigaChadSys.Servicios
-@using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
-@inject MembresiaBlackServicio MembresiaBlackService
+
+@using System.Globalization
+@using System.Net.Http.Json
+@using System.Text.Json
+@inject HttpClient Http
 @inject NavigationManager Nav
 
-<section class="plan-edit-page">
+<section class="membership-edit-page">
 
-    <div class="plan-breadcrumb">
+    <div class="membership-breadcrumb">
         <a href="/admin/inicio">Inicio</a>
         <span>›</span>
         <a href="/admin/membresias">Membresías</a>
         <span>›</span>
-        <span>Membresía Black</span>
+        <strong>Membresía Black</strong>
         <span>›</span>
         <strong>Editar Plan</strong>
     </div>
 
-    <div class="plan-edit-title">
+    <div class="membership-title">
         <h1>Editar Membresía Black</h1>
-        <p>Actualiza la información del plan Black.</p>
+        <p>Actualiza la información administrativa del plan Black.</p>
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
     {
-        <div class="@ClaseMensajeFormulario">
-            @MensajeFormulario
+        <div class="@ClaseMensaje">
+            @Mensaje
         </div>
     }
 
-    <div class="plan-edit-layout">
-
-        <div class="plan-edit-main">
-
-            <div class="plan-section">
-                <h2>Información del Plan</h2>
-
-                <div class="plan-grid">
-                    <div class="plan-field">
-                        <label>Nombre del plan</label>
-                        <input type="text"
-                               value="@NombrePlanValor"
-                               @oninput="CambiarNombrePlan" />
-                    </div>
-
-                    <div class="plan-field">
-                        <label>Precio mensual (S/)</label>
-                        <input type="text"
-                               value="@PrecioMensualValor"
-                               @oninput="CambiarPrecioMensual" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="plan-section">
-                <h2>Beneficios</h2>
-
-                <div class="plan-add-row">
-                    <input type="text"
-                           placeholder="Agregar un beneficio..."
-                           value="@NuevoBeneficioValor"
-                           @oninput="CambiarNuevoBeneficio" />
-
-                    <button type="button" @onclick="AgregarBeneficio">
-                        + Agregar
-                    </button>
-                </div>
-
-                <div class="plan-tags">
-                    @foreach (var beneficio in Beneficios)
-                    {
-                        <span>
-                            ✓ @beneficio
-                            <button type="button" @onclick="() => QuitarBeneficio(beneficio)">×</button>
-                        </span>
-                    }
-                </div>
-            </div>
-
-            <div class="plan-section">
-                <h2>Características</h2>
-
-                <div class="plan-add-row">
-                    <input type="text"
-                           placeholder="Agregar una característica..."
-                           value="@NuevaCaracteristicaValor"
-                           @oninput="CambiarNuevaCaracteristica" />
-
-                    <button type="button" @onclick="AgregarCaracteristica">
-                        + Agregar
-                    </button>
-                </div>
-
-                <div class="plan-tags secondary">
-                    @foreach (var caracteristica in Caracteristicas)
-                    {
-                        <span>
-                            ◎ @caracteristica
-                            <button type="button" @onclick="() => QuitarCaracteristica(caracteristica)">×</button>
-                        </span>
-                    }
-                </div>
-            </div>
-
-            <div class="plan-section">
-                <h2>Estado del Plan</h2>
-
-                <div class="plan-status-options">
-                    <label class="@ClaseOpcionActiva">
-                        <input type="radio"
-                               name="estadoPlanBlack"
-                               checked="@PlanActivo"
-                               @onclick="ActivarPlan" />
-
-                        <div>
-                            <strong>Activa</strong>
-                            <p>El plan está disponible para nuevas suscripciones.</p>
-                        </div>
-                    </label>
-
-                    <label class="@ClaseOpcionInactiva">
-                        <input type="radio"
-                               name="estadoPlanBlack"
-                               checked="@(!PlanActivo)"
-                               @onclick="DesactivarPlan" />
-
-                        <div>
-                            <strong>Inactiva</strong>
-                            <p>El plan no estará disponible para nuevas suscripciones.</p>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <div class="plan-actions">
-                <button type="button" class="plan-save-button" @onclick="GuardarCambios">
-                    Guardar Cambios
-                </button>
-
-                <a class="plan-cancel-button" href="/admin/membresias">
-                    Cancelar
-                </a>
-
-                <a class="plan-return-link" href="/admin/membresias">
-                    ← Volver a Membresías
-                </a>
-            </div>
-
+    @if (Cargando)
+    {
+        <div class="membership-message success">
+            Cargando datos de la membresía...
         </div>
+    }
+    else
+    {
+        <div class="membership-layout">
 
-        <aside class="plan-preview">
+            <div class="membership-main">
 
-            <div class="plan-preview-section-title">
-                <h2>Vista Previa</h2>
+                <div class="membership-section">
+                    <h2>Información del Plan</h2>
+
+                    <div class="membership-grid">
+                        <div class="membership-field">
+                            <label>Nombre del plan <span>*</span></label>
+                            <input type="text"
+                                   value="@NombrePlan"
+                                   @oninput="CambiarNombrePlan" />
+                        </div>
+
+                        <div class="membership-field">
+                            <label>Precio mensual (S/) <span>*</span></label>
+                            <input type="number"
+                                   min="0"
+                                   step="0.01"
+                                   value="@PrecioMensualTexto"
+                                   @oninput="CambiarPrecioMensual" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="membership-section">
+                    <h2>Beneficios</h2>
+
+                    <p class="membership-static-note">
+                        Los beneficios de este plan son definidos por el sistema y no se editan desde esta pantalla.
+                    </p>
+
+                    <div class="membership-chip-list">
+                        <span class="membership-chip">✓ Todo lo de Basic</span>
+                        <span class="membership-chip">✓ Clases grupales ilimitadas</span>
+                        <span class="membership-chip">✓ Acceso 24/7</span>
+                        <span class="membership-chip">✓ Zona de spa</span>
+                        <span class="membership-chip">✓ Entrenador personal 2x/mes</span>
+                    </div>
+                </div>
+
+                <div class="membership-section">
+                    <h2>Características</h2>
+
+                    <p class="membership-static-note">
+                        Las características comerciales del plan son fijas para evitar inconsistencias con la base de datos.
+                    </p>
+
+                    <div class="membership-chip-list">
+                        <span class="membership-chip muted">⊙ Acceso total a horarios</span>
+                        <span class="membership-chip muted">⊙ Reserva de clases preferencial</span>
+                        <span class="membership-chip muted">⊙ Invitados gratuitos 2/mes</span>
+                    </div>
+                </div>
+
+                <div class="membership-section">
+                    <h2>Estado del Plan</h2>
+
+                    <div class="membership-state-grid">
+                        <label class="membership-state-card @(Activo ? "selected" : "")">
+                            <input type="radio"
+                                   name="estadoBlack"
+                                   checked="@Activo"
+                                   @onclick="ActivarPlan" />
+                            <div>
+                                <strong>Activa</strong>
+                                <p>El plan está disponible para nuevas suscripciones.</p>
+                            </div>
+                        </label>
+
+                        <label class="membership-state-card @(!Activo ? "selected" : "")">
+                            <input type="radio"
+                                   name="estadoBlack"
+                                   checked="@(!Activo)"
+                                   @onclick="DesactivarPlan" />
+                            <div>
+                                <strong>Inactiva</strong>
+                                <p>El plan no estará disponible para nuevas suscripciones.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="membership-actions">
+                    <button type="button"
+                            class="membership-save"
+                            @onclick="GuardarCambios">
+                        💾 Guardar Cambios
+                    </button>
+
+                    <a class="membership-cancel" href="/admin/membresias">
+                        Cancelar
+                    </a>
+
+                    <a class="membership-back" href="/admin/membresias">
+                        ← Volver a Membresías
+                    </a>
+                </div>
+
             </div>
 
-            <div class="plan-preview-card">
-                <div class="plan-preview-top">
-                    <div class="plan-preview-name">
-                        <div class="plan-preview-icon">♛</div>
+            <aside class="membership-preview-panel">
+                <h2>Vista Previa</h2>
+
+                <div class="membership-preview-card">
+                    <div class="preview-header">
+                        <div class="preview-icon black">♛</div>
 
                         <div>
-                            <h3>@NombrePlanValor</h3>
+                            <h3>@NombrePlan</h3>
 
-                            @if (PlanActivo)
+                            @if (Activo)
                             {
-                                <span class="plan-preview-status">Activa</span>
+                                <span class="preview-status active">Activa</span>
                             }
                             else
                             {
-                                <span class="plan-preview-status inactive">Inactiva</span>
+                                <span class="preview-status inactive">Inactiva</span>
                             }
+                        </div>
+
+                        <div class="preview-price">
+                            <strong>S/ @PrecioMensual.ToString("0.00")</strong>
+                            <span>/mes</span>
                         </div>
                     </div>
 
-                    <div class="plan-preview-price">
-                        <strong>S/ @PrecioMensualValor</strong>
-                        <span>/mes</span>
+                    <div class="preview-section">
+                        <span>BENEFICIOS</span>
+                        <p>✓ Todo lo de Basic</p>
+                        <p>✓ Clases grupales ilimitadas</p>
+                        <p>✓ Acceso 24/7</p>
+                        <p>✓ Zona de spa</p>
+                        <p>✓ Entrenador personal 2x/mes</p>
+                    </div>
+
+                    <div class="preview-section">
+                        <span>CARACTERÍSTICAS</span>
+
+                        <div class="preview-tags">
+                            <strong>Acceso total a horarios</strong>
+                            <strong>Reserva de clases preferencial</strong>
+                            <strong>Invitados gratuitos 2/mes</strong>
+                        </div>
                     </div>
                 </div>
 
-                <div class="plan-preview-block">
-                    <h4>Beneficios</h4>
-
-                    @foreach (var beneficio in Beneficios)
-                    {
-                        <p>✓ @beneficio</p>
-                    }
+                <div class="membership-side-card">
+                    <span>Socios activos con este plan</span>
+                    <strong>18</strong>
+                    <p>suscripciones activas</p>
                 </div>
 
-                <div class="plan-preview-block">
-                    <h4>Características</h4>
-
-                    <div class="plan-preview-tags">
-                        @foreach (var caracteristica in Caracteristicas)
-                        {
-                            <span>@caracteristica</span>
-                        }
-                    </div>
+                <div class="membership-side-card">
+                    <span>Ingreso mensual estimado</span>
+                    <strong>S/ @((PrecioMensual * 18).ToString("0"))</strong>
+                    <p>basado en suscripciones activas</p>
                 </div>
-            </div>
+            </aside>
 
-            <div class="plan-summary-box">
-                <span>Socios activos con este plan</span>
-                <strong>@SociosActivos</strong>
-                <p>suscripciones activas</p>
-            </div>
+        </div>
+    }
 
-            <div class="plan-summary-box">
-                <span>Ingreso mensual estimado</span>
-                <strong>S/ @IngresoMensualEstimado</strong>
-                <p>basado en suscripciones activas</p>
-            </div>
-
-        </aside>
-
-    </div>
 </section>
 
+<style>
+    .membership-edit-page {
+        padding: 40px 52px;
+        color: #fff;
+    }
+
+    .membership-breadcrumb {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        color: #b7b7b7;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+        .membership-breadcrumb a {
+            color: #b7b7b7;
+            text-decoration: none;
+        }
+
+        .membership-breadcrumb strong {
+            color: #fff;
+        }
+
+    .membership-title h1 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 900;
+    }
+
+    .membership-title p {
+        margin-top: 8px;
+        color: #c7c7c7;
+    }
+
+    .membership-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 32px;
+        margin-top: 32px;
+    }
+
+    .membership-main {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .membership-section {
+        background: #151515;
+        border: 1px solid #2a2a2a;
+        border-radius: 18px;
+        padding: 30px;
+    }
+
+        .membership-section h2 {
+            margin: 0 0 24px 0;
+            font-size: 22px;
+            font-weight: 900;
+        }
+
+    .membership-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .membership-field {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .membership-field label {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 12px;
+            font-weight: 900;
+            color: #d8d8d8;
+        }
+
+            .membership-field label span {
+                color: #ef3333;
+            }
+
+        .membership-field input {
+            background: #080808;
+            border: 1px solid #303030;
+            border-radius: 10px;
+            padding: 15px 16px;
+            color: #fff;
+            outline: none;
+            font-size: 15px;
+        }
+
+            .membership-field input:focus {
+                border-color: #ef3333;
+            }
+
+    .membership-static-note {
+        color: #8f8f8f;
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .membership-chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .membership-chip {
+        background: #202020;
+        border: 1px solid #2f2f2f;
+        border-radius: 10px;
+        color: #f4f4f4;
+        font-weight: 800;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+        .membership-chip.muted {
+            color: #d0d0d0;
+        }
+
+    .membership-state-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .membership-state-card {
+        background: #202020;
+        border: 1px solid #303030;
+        border-radius: 14px;
+        padding: 20px;
+        display: flex;
+        gap: 14px;
+        cursor: pointer;
+    }
+
+        .membership-state-card.selected {
+            border-color: #20a54a;
+            background: rgba(32, 165, 74, 0.08);
+        }
+
+        .membership-state-card strong {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        .membership-state-card p {
+            margin: 0;
+            color: #b7b7b7;
+            font-size: 14px;
+        }
+
+    .membership-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 40px;
+    }
+
+    .membership-save {
+        background: #ef3333;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 15px 28px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .membership-cancel {
+        background: #202020;
+        color: #fff;
+        border: 1px solid #303030;
+        border-radius: 10px;
+        padding: 15px 28px;
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+    .membership-back {
+        color: #9f9f9f;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .membership-preview-panel {
+        background: #151515;
+        border: 1px solid #2a2a2a;
+        border-radius: 18px;
+        padding: 26px;
+        align-self: start;
+        position: sticky;
+        top: 24px;
+    }
+
+        .membership-preview-panel h2 {
+            margin: 0 0 22px 0;
+            font-size: 22px;
+        }
+
+    .membership-preview-card {
+        background: #202020;
+        border: 1px solid #2f2f2f;
+        border-radius: 16px;
+        padding: 22px;
+    }
+
+    .preview-header {
+        display: grid;
+        grid-template-columns: 48px 1fr auto;
+        gap: 14px;
+        align-items: start;
+    }
+
+    .preview-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #2a2a2a;
+        font-weight: 900;
+    }
+
+        .preview-icon.black {
+            background: rgba(239, 51, 51, 0.18);
+            color: #ef3333;
+        }
+
+    .preview-header h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+    .preview-price {
+        text-align: right;
+    }
+
+        .preview-price strong {
+            display: block;
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .preview-price span {
+            color: #b7b7b7;
+        }
+
+    .preview-status {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+        .preview-status.active {
+            background: rgba(32, 165, 74, 0.18);
+            color: #3cff72;
+        }
+
+        .preview-status.inactive {
+            background: rgba(239, 51, 51, 0.18);
+            color: #ff5b5b;
+        }
+
+    .preview-section {
+        margin-top: 24px;
+    }
+
+        .preview-section span {
+            display: block;
+            color: #bdbdbd;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .preview-section p {
+            margin: 0 0 12px 0;
+            color: #fff;
+            font-weight: 700;
+        }
+
+    .preview-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .preview-tags strong {
+            background: #171717;
+            border: 1px solid #292929;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #d8d8d8;
+            font-size: 13px;
+        }
+
+    .membership-side-card {
+        margin-top: 20px;
+        background: #202020;
+        border: 1px solid #2f2f2f;
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+        .membership-side-card span {
+            color: #b7b7b7;
+        }
+
+        .membership-side-card strong {
+            display: block;
+            font-size: 30px;
+            margin-top: 8px;
+        }
+
+        .membership-side-card p {
+            margin: 4px 0 0 0;
+            color: #b7b7b7;
+        }
+
+    .membership-message {
+        margin-top: 18px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+    }
+
+        .membership-message.success {
+            background: rgba(32, 165, 74, 0.15);
+            border: 1px solid rgba(32, 165, 74, 0.4);
+            color: #3cff72;
+        }
+
+        .membership-message.error {
+            background: rgba(239, 51, 51, 0.15);
+            border: 1px solid rgba(239, 51, 51, 0.4);
+            color: #ff5b5b;
+        }
+</style>
+
 @code {
-    private MembresiaBlackDTO? membresiaActual;
-    private int idMembresia = 1; // Suponemos 1 por defecto
+    private const string Endpoint = "MembresiaBlackRS";
+    private const int IdPorDefecto = 1;
 
-    private string NombrePlanValor { get; set; } = "Membresía Black";
-    private string PrecioMensualValor { get; set; } = "0";
+    private int IdMembresia = IdPorDefecto;
+    private string NombrePlan = "Membresía Black";
+    private decimal PrecioMensual = 119;
+    private decimal PrecioAnual = 1428;
+    private bool Activo = true;
 
-    private string NuevoBeneficioValor { get; set; } = "";
-    private string NuevaCaracteristicaValor { get; set; } = "";
+    private bool Cargando = true;
+    private string Mensaje = "";
+    private string ClaseMensaje = "";
 
-    private bool PlanActivo { get; set; } = true;
+    private string PrecioMensualTexto => PrecioMensual.ToString("0.00", CultureInfo.InvariantCulture);
 
     protected override async Task OnInitializedAsync()
     {
-        var lista = await MembresiaBlackService.ListarMembresiasBlackAsync();
-        membresiaActual = lista.FirstOrDefault();
+        await CargarMembresia();
+    }
 
-        if (membresiaActual != null)
+    private async Task CargarMembresia()
+    {
+        Cargando = true;
+        Mensaje = "";
+
+        try
         {
-            idMembresia = membresiaActual.IdMembresiaBlack;
-            NombrePlanValor = membresiaActual.Tipo ?? "Membresía Black";
-            // El backend guarda el costo anual, lo dividimos entre 12 para mostrarlo mensual
-            PrecioMensualValor = (membresiaActual.CostoMantenimientoAnual / 12.0).ToString("0.00");
-            PlanActivo = membresiaActual.Activo;
+            bool cargado = await IntentarCargarPorId();
+
+            if (!cargado)
+            {
+                await IntentarCargarPorLista();
+            }
+        }
+        catch (Exception ex)
+        {
+            MostrarError("Error al cargar la membresía: " + ex.Message);
+        }
+        finally
+        {
+            Cargando = false;
         }
     }
 
-    private string MensajeFormulario { get; set; } = "";
-    private string ClaseMensajeFormulario { get; set; } = "";
-
-    private int SociosActivos { get; set; } = 18;
-
-    private string ClaseOpcionActiva =>
-        PlanActivo ? "plan-status-option active-option" : "plan-status-option";
-
-    private string ClaseOpcionInactiva =>
-        !PlanActivo ? "plan-status-option active-option" : "plan-status-option";
-
-    private List<string> Beneficios { get; set; } = new()
+    private async Task<bool> IntentarCargarPorId()
     {
-        "Todo lo de Basic",
-        "Clases grupales ilimitadas",
-        "Acceso 24/7",
-        "Zona de spa",
-        "Entrenador personal 2x/mes"
-    };
+        var response = await Http.GetAsync($"{Endpoint}/{IdPorDefecto}");
 
-    private List<string> Caracteristicas { get; set; } = new()
-    {
-        "Acceso total a horarios",
-        "Reserva de clases preferencial",
-        "Invitados gratuitos (2/mes)"
-    };
+        if (!response.IsSuccessStatusCode)
+            return false;
 
-    private string IngresoMensualEstimado
+        var json = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(json) || json.TrimStart().StartsWith("<"))
+            return false;
+
+        using var doc = JsonDocument.Parse(json);
+        CargarDesdeJson(doc.RootElement);
+        return true;
+    }
+
+    private async Task<bool> IntentarCargarPorLista()
     {
-        get
+        var response = await Http.GetAsync(Endpoint);
+
+        if (!response.IsSuccessStatusCode)
+            return false;
+
+        var json = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(json) || json.TrimStart().StartsWith("<"))
+            return false;
+
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 0)
         {
-            if (decimal.TryParse(PrecioMensualValor, out decimal precio))
-            {
-                return (precio * SociosActivos).ToString("0");
-            }
-
-            return "0";
+            CargarDesdeJson(root[0]);
+            return true;
         }
+
+        if (root.ValueKind == JsonValueKind.Object)
+        {
+            CargarDesdeJson(root);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void CargarDesdeJson(JsonElement item)
+    {
+        IdMembresia = LeerEntero(item, IdPorDefecto,
+            "membresia_ID",
+            "membresiaId",
+            "idMembresia",
+            "idMembresiaBlack",
+            "id");
+
+        NombrePlan = LeerTexto(item, "Membresía Black",
+            "nombrePlan",
+            "nombre",
+            "plan");
+
+        PrecioMensual = LeerDecimal(item, 119,
+            "costoMantenimientoMensual",
+            "monto",
+            "precio",
+            "precioMensual");
+
+        PrecioAnual = LeerDecimal(item, PrecioMensual * 12,
+            "costoMantenimientoAnual",
+            "precioAnual",
+            "montoAnual");
+
+        Activo = LeerBooleano(item, true,
+            "activo",
+            "active");
     }
 
     private void CambiarNombrePlan(ChangeEventArgs e)
     {
-        NombrePlanValor = e.Value?.ToString() ?? "";
+        NombrePlan = e.Value?.ToString() ?? "";
     }
 
     private void CambiarPrecioMensual(ChangeEventArgs e)
     {
-        PrecioMensualValor = e.Value?.ToString() ?? "";
-    }
+        string valor = e.Value?.ToString() ?? "";
 
-    private void CambiarNuevoBeneficio(ChangeEventArgs e)
-    {
-        NuevoBeneficioValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarNuevaCaracteristica(ChangeEventArgs e)
-    {
-        NuevaCaracteristicaValor = e.Value?.ToString() ?? "";
-    }
-
-    private void AgregarBeneficio()
-    {
-        if (string.IsNullOrWhiteSpace(NuevoBeneficioValor))
+        if (decimal.TryParse(valor, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal precio))
         {
-            MostrarError("Escribe un beneficio antes de agregarlo.");
-            return;
+            PrecioMensual = precio;
+            PrecioAnual = precio * 12;
         }
-
-        Beneficios.Add(NuevoBeneficioValor.Trim());
-        NuevoBeneficioValor = "";
-        LimpiarMensaje();
-    }
-
-    private void QuitarBeneficio(string beneficio)
-    {
-        Beneficios.Remove(beneficio);
-    }
-
-    private void AgregarCaracteristica()
-    {
-        if (string.IsNullOrWhiteSpace(NuevaCaracteristicaValor))
+        else if (decimal.TryParse(valor, NumberStyles.Any, CultureInfo.CurrentCulture, out decimal precioLocal))
         {
-            MostrarError("Escribe una característica antes de agregarla.");
-            return;
+            PrecioMensual = precioLocal;
+            PrecioAnual = precioLocal * 12;
         }
-
-        Caracteristicas.Add(NuevaCaracteristicaValor.Trim());
-        NuevaCaracteristicaValor = "";
-        LimpiarMensaje();
-    }
-
-    private void QuitarCaracteristica(string caracteristica)
-    {
-        Caracteristicas.Remove(caracteristica);
     }
 
     private void ActivarPlan()
     {
-        PlanActivo = true;
+        Activo = true;
     }
 
     private void DesactivarPlan()
     {
-        PlanActivo = false;
+        Activo = false;
     }
 
     private async Task GuardarCambios()
     {
-        if (string.IsNullOrWhiteSpace(NombrePlanValor))
+        Mensaje = "";
+
+        if (string.IsNullOrWhiteSpace(NombrePlan))
         {
             MostrarError("El nombre del plan es obligatorio.");
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(PrecioMensualValor))
-        {
-            MostrarError("El precio mensual es obligatorio.");
-            return;
-        }
-
-        if (!decimal.TryParse(PrecioMensualValor, out decimal precio))
-        {
-            MostrarError("El precio mensual debe ser un número válido.");
-            return;
-        }
-
-        if (precio <= 0)
+        if (PrecioMensual <= 0)
         {
             MostrarError("El precio mensual debe ser mayor a cero.");
             return;
         }
 
-        if (Beneficios.Count == 0)
+        try
         {
-            MostrarError("El plan debe tener al menos un beneficio.");
-            return;
+            var payload = new Dictionary<string, object?>
+            {
+                ["membresia_ID"] = IdMembresia,
+                ["idMembresia"] = IdMembresia,
+                ["idMembresiaBlack"] = IdMembresia,
+                ["nombrePlan"] = NombrePlan.Trim(),
+                ["costoMantenimientoMensual"] = PrecioMensual,
+                ["costoMantenimientoAnual"] = PrecioAnual,
+                ["activo"] = Activo,
+                ["active"] = Activo
+            };
+
+            var response = await Http.PutAsJsonAsync($"{Endpoint}/{IdMembresia}", payload);
+            string respuesta = await LeerRespuesta(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                MostrarExito(string.IsNullOrWhiteSpace(respuesta)
+                    ? "Membresía Black actualizada correctamente."
+                    : respuesta);
+
+                await Task.Delay(700);
+                Nav.NavigateTo("/admin/membresias");
+            }
+            else
+            {
+                MostrarError(string.IsNullOrWhiteSpace(respuesta)
+                    ? "Error al actualizar Membresía Black."
+                    : respuesta);
+            }
         }
-
-        if (membresiaActual == null) membresiaActual = new MembresiaBlackDTO();
-        
-        membresiaActual.Nombre = NombrePlanValor; // Campo real en MembresiaBlackDTO
-        // El precio ingresado es mensual, lo multiplicamos por 12 para el costo anual
-        membresiaActual.CostoMantenimientoAnual = (double)(precio * 12);
-        membresiaActual.Activa = PlanActivo; // Campo real (Activa, no Activo)
-
-        var resultado = await MembresiaBlackService.ActualizarAsync(idMembresia, membresiaActual);
-
-        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        catch (Exception ex)
         {
-            MostrarExito("Cambios guardados correctamente.");
-            await Task.Delay(1500);
-            Nav.NavigateTo("/admin/membresias");
+            MostrarError("Error al guardar cambios: " + ex.Message);
         }
-        else
+    }
+
+    private static async Task<string> LeerRespuesta(HttpResponseMessage response)
+    {
+        string contenido = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(contenido))
+            return "";
+
+        if (contenido.TrimStart().StartsWith("<"))
+            return contenido;
+
+        try
         {
-            MostrarError(resultado);
+            using var doc = JsonDocument.Parse(contenido);
+
+            if (doc.RootElement.TryGetProperty("mensaje", out var mensaje))
+                return mensaje.GetString() ?? "";
+
+            return contenido;
+        }
+        catch
+        {
+            return contenido;
         }
     }
 
     private void MostrarError(string mensaje)
     {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "plan-message error";
+        Mensaje = mensaje;
+        ClaseMensaje = "membership-message error";
     }
 
     private void MostrarExito(string mensaje)
     {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "plan-message success";
+        Mensaje = mensaje;
+        ClaseMensaje = "membership-message success";
     }
 
-    private void LimpiarMensaje()
+    private static string LeerTexto(JsonElement root, string defecto, params string[] nombres)
     {
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
+        if (TryGetAny(root, out JsonElement value, nombres))
+        {
+            if (value.ValueKind == JsonValueKind.String)
+                return value.GetString() ?? defecto;
+
+            return value.ToString();
+        }
+
+        return defecto;
+    }
+
+    private static int LeerEntero(JsonElement root, int defecto, params string[] nombres)
+    {
+        if (TryGetAny(root, out JsonElement value, nombres))
+        {
+            if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int numero))
+                return numero;
+
+            if (int.TryParse(value.ToString(), out int convertido))
+                return convertido;
+        }
+
+        return defecto;
+    }
+
+    private static decimal LeerDecimal(JsonElement root, decimal defecto, params string[] nombres)
+    {
+        if (TryGetAny(root, out JsonElement value, nombres))
+        {
+            if (value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out decimal numero))
+                return numero;
+
+            if (decimal.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal convertido))
+                return convertido;
+
+            if (decimal.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.CurrentCulture, out decimal convertidoLocal))
+                return convertidoLocal;
+        }
+
+        return defecto;
+    }
+
+    private static bool LeerBooleano(JsonElement root, bool defecto, params string[] nombres)
+    {
+        if (TryGetAny(root, out JsonElement value, nombres))
+        {
+            if (value.ValueKind == JsonValueKind.True)
+                return true;
+
+            if (value.ValueKind == JsonValueKind.False)
+                return false;
+
+            string texto = value.ToString();
+
+            if (bool.TryParse(texto, out bool b))
+                return b;
+
+            if (texto == "1")
+                return true;
+
+            if (texto == "0")
+                return false;
+        }
+
+        return defecto;
+    }
+
+    private static bool TryGetAny(JsonElement root, out JsonElement value, params string[] nombres)
+    {
+        foreach (string nombre in nombres)
+        {
+            if (root.TryGetProperty(nombre, out value))
+                return true;
+        }
+
+        foreach (var prop in root.EnumerateObject())
+        {
+            foreach (string nombre in nombres)
+            {
+                if (string.Equals(prop.Name, nombre, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = prop.Value;
+                    return true;
+                }
+            }
+        }
+
+        value = default;
+        return false;
     }
 }

@@ -1,10 +1,9 @@
 package pe.edu.pucp.gigachadsys.model.membresias;
 
 public class MembresiaBasic extends Membresia {
-    //Atributos
+
     private double costoMantenimientoMensual;
 
-     //Constructores
     public MembresiaBasic() {
         super();
     }
@@ -13,8 +12,7 @@ public class MembresiaBasic extends Membresia {
         super(idMembresia, nombre);
         this.costoMantenimientoMensual = costoMantenimientoMensual;
     }
-    
-    //Setters y Getters
+
     public double getCostoMantenimientoMensual() {
         return costoMantenimientoMensual;
     }
@@ -23,9 +21,25 @@ public class MembresiaBasic extends Membresia {
         this.costoMantenimientoMensual = costoMantenimientoMensual;
     }
 
-    //Metodos
+    // Alias por si el frontend usa otro nombre
+    public double getPrecioMensual() {
+        return costoMantenimientoMensual;
+    }
+
+    public void setPrecioMensual(double precioMensual) {
+        this.costoMantenimientoMensual = precioMensual;
+    }
+
+    public double getCostoMensual() {
+        return costoMantenimientoMensual;
+    }
+
+    public void setCostoMensual(double costoMensual) {
+        this.costoMantenimientoMensual = costoMensual;
+    }
+
     @Override
     public double calcularCostoTotal() {
-        return 0;
+        return costoMantenimientoMensual;
     }
 }

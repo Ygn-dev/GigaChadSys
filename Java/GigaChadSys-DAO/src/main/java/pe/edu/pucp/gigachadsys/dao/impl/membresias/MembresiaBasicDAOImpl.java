@@ -1,13 +1,16 @@
 package pe.edu.pucp.gigachadsys.dao.impl.membresias;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import pe.edu.pucp.gigachadsys.dao.inter.membresias.MembresiaBasicDAO;
-import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBasic;
 import pe.edu.pucp.gigachadsys.dao.manager.DBManager;
-import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBlack;
+import pe.edu.pucp.gigachadsys.model.membresias.MembresiaBasic;
 
 public class MembresiaBasicDAOImpl implements MembresiaBasicDAO {
 
@@ -15,129 +18,151 @@ public class MembresiaBasicDAOImpl implements MembresiaBasicDAO {
     public List<MembresiaBasic> listAll() {
         List<MembresiaBasic> list = new ArrayList<>();
 
-        String sql = "SELECT membresia_ID, nombrePlan, costoMantenimientoMensual FROM MembresiaBasic WHERE activo = 1";
+        // NO filtrar por activo.
+        // Si filtras WHERE activo = 1, nunca podrás volver a activar una membresía inactiva desde admin.
+        String sql =
+                "SELECT membresia_ID, nombrePlan, costoMantenimientoMensual, activo " +
+                        "FROM MembresiaBasic";
 
-        try (Connection connection = DBManager.getInstance().getConnection();
-             Statement stm = connection.createStatement();
-             ResultSet rs = stm.executeQuery(sql)) {
-
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql);
+                ResultSet rs = pstm.executeQuery()
+        ) {
             while (rs.next()) {
-                MembresiaBasic membresia = new MembresiaBasic(
-                        rs.getInt("membresia_ID"),
-                        rs.getString("nombrePlan"),
-                        rs.getDouble("costoMantenimientoMensual")
-                );
+                MembresiaBasic membresia = mapearMembresiaBasic(rs);
                 list.add(membresia);
             }
 
             return list;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al listar membresías Basic", e);
         }
     }
 
     @Override
     public MembresiaBasic load(Integer id) {
+        String sql =
+                "SELECT membresia_ID, nombrePlan, costoMantenimientoMensual, activo " +
+                        "FROM MembresiaBasic " +
+                        "WHERE membresia_ID = ?";
 
-        String sql= "select membresia_ID, nombrePlan, costoMantenimientoMensual "
-                + "FROM MembresiaBlack where = membresia_ID = ?";
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql)
+        ) {
+            pstm.setInt(1, id);
 
-        Connection connection = DBManager.getInstance().getConnection();
-
-        try(PreparedStatement pstm = connection.prepareStatement(sql)){
-            pstm.setInt(1,id);
-            try(ResultSet rs =pstm.executeQuery()){
-                if(rs.next()){
-                    MembresiaBasic membresia = new MembresiaBasic();
-                    membresia.setIdMembresia(rs.getInt(1));
-                    membresia.setNombre(rs.getString(2));
-                    membresia.setCostoMantenimientoMensual(rs.getDouble(3));
-                    membresia.setActiva(rs.getBoolean(4));
-                    return membresia;
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return mapearMembresiaBasic(rs);
                 }
             }
-        }catch (SQLException e){
-            throw new RuntimeException(e);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al obtener membresía Basic por ID", e);
         }
+
         return null;
     }
 
     @Override
     public MembresiaBasic save(MembresiaBasic membresia) {
+        String sql =
+                "INSERT INTO MembresiaBasic " +
+                        "(nombrePlan, costoMantenimientoMensual, activo) " +
+                        "VALUES (?, ?, ?)";
 
-        String sql = "INSERT INTO MembresiaBasic (nombrePlan, costoMantenimientoMensual, activo) " +
-                "VALUES (?, ?, ?)";
-
-        try(Connection connection = DBManager.getInstance().getConnection()){
-            PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
-
-            pstm.setString(1, membresia.getNombre());
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+        ) {
+            pstm.setString(1, normalizarNombre(membresia.getNombre(), "Membresía Basic"));
             pstm.setDouble(2, membresia.getCostoMantenimientoMensual());
             pstm.setBoolean(3, membresia.isActiva());
+
             pstm.executeUpdate();
-            int nuevoId;
-            try(ResultSet rs = pstm.getGeneratedKeys()){
-                if(rs.next()){
-                    nuevoId= pstm.getGeneratedKeys().getInt(1);
-                    membresia.setIdMembresia(nuevoId);
+
+            try (ResultSet rs = pstm.getGeneratedKeys()) {
+                if (rs.next()) {
+                    membresia.setIdMembresia(rs.getInt(1));
                 }
             }
-            return membresia;
-        }catch (SQLException e){
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    @Override
-    public MembresiaBasic update(MembresiaBasic membresia) {
-
-        System.out.println("=== Actualizando MembresiaBasic ===");
-        System.out.println("ID: " + membresia.getIdMembresia());
-        System.out.println("Nombre: " + membresia.getNombre());
-        System.out.println("Costo mantenimiento mensual: " + membresia.getCostoMantenimientoMensual());
-        System.out.println("Activa: " + membresia.isActiva());
-        System.out.println("==============================");
-
-
-        String sql = "UPDATE MembresiaBasic SET " +
-                "nombrePlan = ?, " +
-                "costoMantenimientoMensual = ?, " +
-                "activo = ? "+
-                "WHERE membresia_ID = ?";
-        Connection connection = DBManager.getInstance().getConnection();
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-
-            pstmt.setString(1, membresia.getNombre());
-            pstmt.setDouble(2, membresia.getCostoMantenimientoMensual());
-            pstmt.setBoolean(3, membresia.isActiva());
-            pstmt.setInt(4,membresia.getIdMembresia());
-            pstmt.executeUpdate();
 
             return membresia;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al registrar membresía Basic", e);
+        }
+    }
+
+    @Override
+    public MembresiaBasic update(MembresiaBasic membresia) {
+        String sql =
+                "UPDATE MembresiaBasic SET " +
+                        "nombrePlan = ?, " +
+                        "costoMantenimientoMensual = ?, " +
+                        "activo = ? " +
+                        "WHERE membresia_ID = ?";
+
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql)
+        ) {
+            pstm.setString(1, normalizarNombre(membresia.getNombre(), "Membresía Basic"));
+            pstm.setDouble(2, membresia.getCostoMantenimientoMensual());
+            pstm.setBoolean(3, membresia.isActiva());
+            pstm.setInt(4, membresia.getIdMembresia());
+
+            int filas = pstm.executeUpdate();
+
+            if (filas == 0) {
+                throw new RuntimeException("No se encontró la membresía Basic con ID " + membresia.getIdMembresia());
+            }
+
+            return membresia;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar membresía Basic", e);
         }
     }
 
     @Override
     public void remove(MembresiaBasic membresia) {
+        String sql =
+                "UPDATE MembresiaBasic SET " +
+                        "activo = 0 " +
+                        "WHERE membresia_ID = ?";
 
-        String sql = "UPDATE MembresiaBasic SET activo = ? WHERE membresia_ID = ?";
-
-        try (Connection connection = DBManager.getInstance().getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-
-            pstmt.setBoolean(1, membresia.isActiva());
-            pstmt.setInt(2, membresia.getIdMembresia());
-
-            pstmt.executeUpdate();
+        try (
+                Connection connection = DBManager.getInstance().getConnection();
+                PreparedStatement pstm = connection.prepareStatement(sql)
+        ) {
+            pstm.setInt(1, membresia.getIdMembresia());
+            pstm.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al desactivar membresía Basic", e);
         }
+    }
+
+    private MembresiaBasic mapearMembresiaBasic(ResultSet rs) throws SQLException {
+        MembresiaBasic membresia = new MembresiaBasic();
+
+        membresia.setIdMembresia(rs.getInt("membresia_ID"));
+        membresia.setNombre(rs.getString("nombrePlan"));
+        membresia.setCostoMantenimientoMensual(rs.getDouble("costoMantenimientoMensual"));
+        membresia.setActiva(rs.getBoolean("activo"));
+
+        return membresia;
+    }
+
+    private String normalizarNombre(String nombre, String valorPorDefecto) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return valorPorDefecto;
+        }
+
+        return nombre.trim();
     }
 }

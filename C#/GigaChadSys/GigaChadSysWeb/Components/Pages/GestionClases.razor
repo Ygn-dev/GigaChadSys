@@ -13,14 +13,19 @@
             <h1>Clases Grupales</h1>
             <p>Gestiona las clases disponibles en el gimnasio</p>
         </div>
+
         <a class="new-button" href="/admin/clases/nueva">
-            + Nueva Clase
+            <i class="bi bi-plus-lg"></i>
+            Nueva Clase
         </a>
     </div>
 
     <div class="admin-list-toolbar" style="margin-bottom:28px;">
         <div class="gc-search-wrapper">
-            <span class="gc-search-icon">🔍</span>
+            <span class="gc-search-icon">
+                <i class="bi bi-search"></i>
+            </span>
+
             <input class="admin-search"
                    style="border:none;background:transparent;padding-left:0;"
                    type="text"
@@ -37,7 +42,10 @@
                     <option value="@d">@d</option>
                 }
             </select>
-            <span class="gc-select-arrow">▾</span>
+
+            <span class="gc-select-arrow">
+                <i class="bi bi-chevron-down"></i>
+            </span>
         </div>
     </div>
 
@@ -48,14 +56,18 @@
     @if (Cargando)
     {
         <div class="gc-empty">
-            <span>⏳</span>
+            <span>
+                <i class="bi bi-hourglass-split"></i>
+            </span>
             <p>Cargando clases desde el servidor...</p>
         </div>
     }
     else if (clasesFiltradas.Count == 0)
     {
         <div class="gc-empty">
-            <span>🏋️</span>
+            <span>
+                <i class="bi bi-calendar-x"></i>
+            </span>
             <p>No se encontraron clases con los filtros actuales.</p>
         </div>
     }
@@ -82,27 +94,37 @@
                     <p class="gc-card-desc">@MostrarTexto(c.Descripcion)</p>
 
                     <div class="gc-card-duracion">
-                        <span class="gc-clock-icon">🕐</span>
+                        <span class="gc-clock-icon">
+                            <i class="bi bi-clock"></i>
+                        </span>
                         <span>@c.DuracionMinutos min</span>
                     </div>
 
                     <div class="gc-card-duracion">
-                        <span class="gc-clock-icon">📅</span>
+                        <span class="gc-clock-icon">
+                            <i class="bi bi-calendar-event"></i>
+                        </span>
                         <span>@ObtenerFechaProximaTexto(proximaSesion)</span>
                     </div>
 
                     <div class="gc-card-duracion">
-                        <span class="gc-clock-icon">📍</span>
+                        <span class="gc-clock-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </span>
                         <span>@ObtenerLugarProximoTexto(proximaSesion)</span>
                     </div>
 
                     <div class="gc-card-actions">
-                        <button class="gc-btn-ver" style="border:none; cursor:pointer;" @onclick="() => ShowModal(c)">
-                            👁 Ver
+                        <button class="gc-btn-ver"
+                                style="border:none; cursor:pointer;"
+                                @onclick="() => ShowModal(c)">
+                            <i class="bi bi-eye"></i>
+                            Ver
                         </button>
 
                         <a class="gc-btn-editar" href="/admin/clases/editar/@c.IdClase">
-                            ✏ Editar
+                            <i class="bi bi-pencil"></i>
+                            Editar
                         </a>
                     </div>
                 </div>
@@ -118,7 +140,10 @@
             <div class="dark-theme-modal" @onclick:stopPropagation="true">
                 <div class="modal-header">
                     <h2>Detalles de la Clase</h2>
-                    <button class="close-btn" @onclick="CloseModal">✖</button>
+
+                    <button class="close-btn" @onclick="CloseModal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 </div>
 
                 <div class="modal-body">
@@ -170,6 +195,7 @@
 
                     <div class="detail-section">
                         <h3>Descripción</h3>
+
                         <p style="color:#eee; font-size:14px; margin:0; line-height:1.5;">
                             @MostrarTexto(SelectedClase.Descripcion)
                         </p>
@@ -177,7 +203,9 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn-cerrar" @onclick="CloseModal">Cerrar</button>
+                    <button class="btn-cerrar" @onclick="CloseModal">
+                        Cerrar
+                    </button>
                 </div>
             </div>
         </div>
@@ -244,7 +272,7 @@
         background: none;
         border: none;
         color: #888;
-        font-size: 20px;
+        font-size: 18px;
         cursor: pointer;
         transition: 0.2s;
     }
