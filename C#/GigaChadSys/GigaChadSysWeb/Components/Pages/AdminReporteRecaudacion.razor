@@ -1660,19 +1660,26 @@
             DescargandoReporte = true;
             MensajeDescarga = "";
 
-            var bytes = await ReporteService.DescargarReportePagosAdministradorAsync();
+            var bytes = await ReporteService.DescargarReporteRecaudacionAsync(
+                FechaInicioPeriodo,
+                FechaFinPeriodo
+            );
+
             var base64 = Convert.ToBase64String(bytes);
+
+            string nombreArchivo =
+                $"reporte_recaudacion_{FechaInicioPeriodo:yyyyMMdd}_{FechaFinPeriodo:yyyyMMdd}.pdf";
 
             await JS.InvokeVoidAsync(
                 "downloadFileFromBytes",
-                "reporte_recaudacion.pdf",
+                nombreArchivo,
                 "application/pdf",
                 base64
             );
         }
-        catch
+        catch (Exception ex)
         {
-            MensajeDescarga = "La pantalla está lista. Por ahora usa el PDF financiero existente; luego podemos crear el endpoint específico de recaudación con rango de fechas.";
+            MensajeDescarga = $"No se pudo descargar el reporte de recaudación: {ex.Message}";
         }
         finally
         {
