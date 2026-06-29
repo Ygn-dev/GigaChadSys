@@ -1,4 +1,4 @@
-@page "/admin/salones/nuevo"
+﻿@page "/admin/salones/nuevo"
 @layout AdminLayout
 @rendermode InteractiveServer
 
@@ -6,7 +6,7 @@
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject SalonServicio SalonService
-<section class="salon-form-page">
+<section class="container-fluid py-4">
 
     <nav class="salon-form-breadcrumb">
         <NavLink href="/admin/inicio">Inicio</NavLink>
@@ -24,7 +24,7 @@
         </p>
     </header>
 
-    <div class="salon-form-layout">
+    <div class="row g-4">
 
         <section class="salon-form-card">
             <div class="salon-card-title">

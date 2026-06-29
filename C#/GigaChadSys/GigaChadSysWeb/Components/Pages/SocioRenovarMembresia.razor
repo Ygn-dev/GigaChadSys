@@ -1,4 +1,4 @@
-@page "/socio/membresia/renovar"
+﻿@page "/socio/membresia/renovar"
 @using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
@@ -12,7 +12,7 @@
 @inject SocioServicio SocioService
 @inject NavigationManager Navigation
 
-<section class="renew-membership-page">
+<section class="container-fluid py-4">
 
     <div class="renew-header">
         <h1>Renovar Membresía</h1>
@@ -54,7 +54,7 @@
 
     <h2 class="renew-step-title">1. Selecciona tu nuevo plan</h2>
 
-    <div class="renew-plan-layout">
+    <div class="row g-4">
 
         <div class="renew-plans-grid">
 

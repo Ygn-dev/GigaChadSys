@@ -1,4 +1,4 @@
-@page "/admin/suscripciones/nuevo/{PlanTipo}/{IdPlanParam:int}"
+﻿@page "/admin/suscripciones/nuevo/{PlanTipo}/{IdPlanParam:int}"
 @using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
@@ -10,7 +10,7 @@
 @inject MembresiaBlackServicio MembresiaBlackService
 @inject NavigationManager Nav
 
-<section class="subscribe-page">
+<section class="container-fluid py-4">
 
     <div class="subscribe-breadcrumb">
         <a href="/admin/inicio">Inicio</a>
@@ -32,7 +32,7 @@
         </div>
     }
 
-    <div class="subscribe-layout">
+    <div class="row g-4">
 
         <div class="subscribe-main">
 

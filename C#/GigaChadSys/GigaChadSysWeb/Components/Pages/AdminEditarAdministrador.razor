@@ -1,4 +1,4 @@
-@page "/admin/administradores/editar/{IdUsuarioParametro:int}"
+﻿@page "/admin/administradores/editar/{IdUsuarioParametro:int}"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using System.Globalization
@@ -7,9 +7,9 @@
 @inject AdministradorServicio AdministradorService
 @inject NavigationManager Nav
 
-<section class="trainer-edit-page">
+<section class="container-fluid py-4">
 
-    <div class="trainer-breadcrumb">
+    <div class="mb-4 text-muted small">
         <a href="/admin/inicio">Inicio</a>
         <span>/</span>
         <a href="/admin/administradores">Administradores</a>
@@ -17,7 +17,7 @@
         <strong>Editar</strong>
     </div>
 
-    <div class="trainer-form-title">
+    <div class="mb-4">
         <h1>Editar Administrador</h1>
         <p>Actualiza los datos personales y profesionales del administrador.</p>
     </div>
@@ -31,21 +31,21 @@
 
     @if (Cargando)
     {
-        <div class="trainer-message">
+        <div class="alert alert-info">
             Cargando datos del administrador...
         </div>
     }
     else
     {
-        <div class="trainer-edit-layout">
+        <div class="row g-4">
 
-            <div class="trainer-edit-main">
+            <div class="col-lg-8">
 
-                <div class="trainer-section">
+                <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
                     <h2>Información Personal</h2>
 
-                    <div class="trainer-grid">
-                        <div class="trainer-field">
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
                             <label>DNI <span>*</span></label>
                             <input type="text"
                                    maxlength="8"
@@ -54,7 +54,7 @@
                                    @oninput="CambiarDni" />
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Edad <span>*</span></label>
                             <input type="number"
                                    min="1"
@@ -64,7 +64,7 @@
                                    @oninput="CambiarEdad" />
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Nombres <span>*</span></label>
                             <input type="text"
                                    autocomplete="off"
@@ -72,7 +72,7 @@
                                    @oninput="CambiarNombres" />
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Apellido paterno <span>*</span></label>
                             <input type="text"
                                    autocomplete="off"
@@ -80,7 +80,7 @@
                                    @oninput="CambiarApellidoPaterno" />
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Apellido materno <span>*</span></label>
                             <input type="text"
                                    autocomplete="off"
@@ -88,7 +88,7 @@
                                    @oninput="CambiarApellidoMaterno" />
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Teléfono <span>*</span></label>
                             <input type="text"
                                    maxlength="9"
@@ -97,7 +97,7 @@
                                    @oninput="CambiarTelefono" />
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Correo electrónico <span>*</span></label>
                             <input type="email"
                                    autocomplete="off"
@@ -107,11 +107,11 @@
                     </div>
                 </div>
 
-                <div class="trainer-section">
+                <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
                     <h2>Información Profesional</h2>
 
-                    <div class="trainer-grid">
-                        <div class="trainer-field">
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
                             <label>Sede <span>*</span></label>
                             <select value="@SedeValor" @onchange="CambiarSede">
                                 <option value="">Seleccione una sede</option>
@@ -121,7 +121,7 @@
                             </select>
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Cargo <span>*</span></label>
                             <select value="@CargoValor" @onchange="CambiarCargo">
                                 <option value="">Seleccione un cargo</option>
@@ -132,7 +132,7 @@
                             </select>
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Sueldo mensual <span>*</span></label>
                             <input type="number"
                                    min="0"
@@ -144,11 +144,11 @@
                     </div>
                 </div>
 
-                <div class="trainer-section">
+                <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
                     <h2>Cuenta de Acceso</h2>
 
-                    <div class="trainer-grid">
-                        <div class="trainer-field">
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
                             <label>Correo de acceso <span>*</span></label>
                             <input type="email"
                                    autocomplete="off"
@@ -156,7 +156,7 @@
                                    @oninput="CambiarCorreo" />
                         </div>
 
-                        <div class="trainer-field">
+                        <div class="col-md-6 mb-3">
                             <label>Nueva contraseña</label>
                             <input type="password"
                                    autocomplete="new-password"
@@ -167,10 +167,10 @@
                     </div>
                 </div>
 
-                <div class="trainer-section">
+                <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
                     <h2>Estado</h2>
 
-                    <div class="trainer-radio-row">
+                    <div class="d-flex gap-4 mt-2">
                         <label>
                             <input type="radio"
                                    name="estadoAdminEditar"
@@ -189,64 +189,64 @@
                     </div>
                 </div>
 
-                <div class="trainer-actions">
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
                     <button type="button"
-                            class="trainer-save-button"
+                            class="btn btn-danger fw-bold text-uppercase px-4"
                             @onclick="GuardarCambios">
                         ✓ Guardar cambios
                     </button>
 
-                    <a class="trainer-cancel-button" href="/admin/administradores">
+                    <a class="btn btn-secondary fw-bold text-uppercase px-4" href="/admin/administradores">
                         Cancelar
                     </a>
 
-                    <a class="trainer-return-link" href="/admin/administradores">
+                    <a class="text-muted text-decoration-none ms-auto" href="/admin/administradores">
                         ← Volver al listado
                     </a>
                 </div>
             </div>
 
-            <aside class="trainer-summary-card">
+            <aside class="col-lg-4 card bg-black border-secondary p-4 shadow-sm text-white h-100">
                 <h2>Resumen</h2>
 
-                <div class="summary-row">
+                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
                     <span>Administrador:</span>
                     <strong>@NombresValor @ApellidoPaternoValor @ApellidoMaternoValor</strong>
                 </div>
 
-                <div class="summary-row">
+                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
                     <span>DNI:</span>
                     <strong>@DniValor</strong>
                 </div>
 
-                <div class="summary-row">
+                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
                     <span>Edad:</span>
                     <strong>@EdadValor</strong>
                 </div>
 
-                <div class="summary-row">
+                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
                     <span>Sede:</span>
                     <strong>@MostrarTexto(SedeValor)</strong>
                 </div>
 
-                <div class="summary-row">
+                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
                     <span>Cargo:</span>
                     <strong>@MostrarTexto(CargoValor)</strong>
                 </div>
 
-                <div class="summary-row">
+                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
                     <span>Estado nuevo:</span>
                     @if (AdminActivo)
                     {
-                        <strong class="summary-status active">Activo</strong>
+                        <strong class="text-success fw-bold">Activo</strong>
                     }
                     else
                     {
-                        <strong class="summary-status inactive">Inactivo</strong>
+                        <strong class="text-danger fw-bold">Inactivo</strong>
                     }
                 </div>
 
-                <div class="summary-warning">
+                <div class="alert alert-warning mt-4 small text-dark">
                     Desde aquí puedes modificar los datos del administrador.
                 </div>
             </aside>
@@ -403,13 +403,13 @@
     private void MostrarError(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
+        ClaseMensajeFormulario = "alert alert-danger";
     }
 
     private void MostrarExito(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message success";
+        ClaseMensajeFormulario = "alert alert-success";
     }
 
     private static string MostrarTexto(string? texto)

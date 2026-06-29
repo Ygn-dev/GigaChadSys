@@ -1,4 +1,4 @@
-@page "/admin/membresias/nueva"
+﻿@page "/admin/membresias/nueva"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using GigaChadSys.Servicios
@@ -7,9 +7,9 @@
 @inject MembresiaBlackServicio BlackService
 @inject NavigationManager Nav
 
-<section class="trainer-form-page">
+<section class="container-fluid py-4">
 
-    <div class="trainer-breadcrumb">
+    <div class="mb-4 text-muted small">
         <a href="/admin/inicio">Inicio</a>
         <span>/</span>
         <a href="/admin/membresias">Membresías</a>
@@ -17,7 +17,7 @@
         <strong>Nueva Membresía</strong>
     </div>
 
-    <div class="trainer-form-title">
+    <div class="mb-4">
         <h1>Registrar Nuevo Plan de Membresía</h1>
         <p>Crea un nuevo plan Basic o Black para el gimnasio.</p>
     </div>
@@ -29,11 +29,11 @@
         </div>
     }
 
-    <div class="trainer-section">
+    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
         <h2>Tipo de Membresía</h2>
 
-        <div class="trainer-grid">
-            <div class="trainer-field">
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
                 <label>Selecciona el tipo de plan <span>*</span></label>
                 <select value="@TipoPlanValor" @onchange="CambiarTipoPlan">
                     <option value="Basic">Membresía Basic</option>
@@ -43,11 +43,11 @@
         </div>
     </div>
 
-    <div class="trainer-section">
+    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
         <h2>Datos Generales</h2>
 
-        <div class="trainer-grid">
-            <div class="trainer-field">
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
                 <label>Nombre del plan <span>*</span></label>
                 <input type="text"
                        autocomplete="off"
@@ -58,13 +58,13 @@
         </div>
     </div>
 
-    <div class="trainer-section">
+    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
         <h2>Configuración de Costos y Beneficios</h2>
 
-        <div class="trainer-grid">
+        <div class="row g-3">
             @if (TipoPlanValor == "Basic")
             {
-                <div class="trainer-field">
+                <div class="col-md-6 mb-3">
                     <label>Costo Mensual (S/) <span>*</span></label>
                     <input type="number"
                            min="0"
@@ -77,7 +77,7 @@
             }
             else
             {
-                <div class="trainer-field">
+                <div class="col-md-6 mb-3">
                     <label>Costo Anual (S/) <span>*</span></label>
                     <input type="number"
                            min="0"
@@ -88,7 +88,7 @@
                            @oninput="CambiarCostoAnual" />
                 </div>
 
-                <div class="trainer-field">
+                <div class="col-md-6 mb-3">
                     <label>Invitados por mes <span>*</span></label>
                     <input type="number"
                            min="0"
@@ -101,10 +101,10 @@
         </div>
     </div>
 
-    <div class="trainer-section">
+    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
         <h2>Estado Inicial</h2>
 
-        <div class="trainer-radio-row">
+        <div class="d-flex gap-4 mt-2">
             <label>
                 <input type="radio"
                        name="estadoMembresia"
@@ -123,20 +123,20 @@
         </div>
     </div>
 
-    <div class="trainer-actions">
+    <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
         <button type="button"
-                class="trainer-save-button"
+                class="btn btn-danger fw-bold text-uppercase px-4"
                 @onclick="RegistrarMembresia">
             ✓ Registrar Membresía
         </button>
 
         <button type="button"
-                class="trainer-cancel-button"
+                class="btn btn-secondary fw-bold text-uppercase px-4"
                 @onclick="LimpiarFormulario">
             × Cancelar
         </button>
 
-        <a class="trainer-return-link" href="/admin/membresias">
+        <a class="text-muted text-decoration-none ms-auto" href="/admin/membresias">
             ← Volver al listado
         </a>
     </div>
@@ -249,13 +249,13 @@
     private void MostrarError(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
+        ClaseMensajeFormulario = "alert alert-danger";
     }
 
     private void MostrarExito(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message success";
+        ClaseMensajeFormulario = "alert alert-success";
     }
 
     private void LimpiarFormulario()

@@ -1,30 +1,30 @@
-@page "/admin/entrenadores"
+﻿@page "/admin/entrenadores"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject EntrenadorServicio EntrenadorService
 
-<section class="admin-list-page">
-    <div class="admin-list-header">
+<section class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1>Gestión de Entrenadores</h1>
             <p>Administra los entrenadores del gimnasio.</p>
         </div>
 
-        <a class="new-button" href="/admin/entrenadores/nuevo">
+        <a class="btn btn-danger fw-bold text-uppercase px-4" href="/admin/entrenadores/nuevo">
             + Nuevo Entrenador
         </a>
     </div>
 
-    <div class="admin-list-toolbar">
-        <input class="admin-search"
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-dark p-3 rounded border border-secondary">
+        <input class="form-control bg-black text-white border-secondary"
                type="text"
                placeholder="Buscar por DNI, nombre o especialidad..."
                @bind="TextoBusqueda"
                @bind:event="oninput" />
 
-        <div class="admin-filter-group">
+        <div class="btn-group">
             <button class="@FiltroClaseTodos" @onclick="MostrarTodos">Todos</button>
             <button class="@FiltroClaseActivos" @onclick="MostrarActivos">Activos</button>
             <button class="@FiltroClaseInactivos" @onclick="MostrarInactivos">Inactivos</button>
@@ -35,8 +35,8 @@
         var entrenadores = EntrenadoresPaginados.ToList();
     }
 
-    <div class="admin-table-card">
-        <table class="admin-table">
+    <div class="table-responsive bg-dark border border-secondary rounded shadow">
+        <table class="table table-dark table-hover table-striped align-middle mb-0 table-dark table-hover table-striped align-middle mb-0">
             <thead>
                 <tr>
                     <th>DNI</th>
@@ -75,8 +75,8 @@
                             <td>@entrenador.Dni</td>
 
                             <td>
-                                <div class="trainer-cell">
-                                    <div class="trainer-avatar">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px; height:40px;">
                                         @InicialEntrenador(entrenador)
                                     </div>
 
@@ -95,16 +95,16 @@
                             <td>
                                 @if (entrenador.Activo)
                                 {
-                                    <span class="status-badge active">Activo</span>
+                                    <span class="badge bg-success rounded-pill px-3 py-2">Activo</span>
                                 }
                                 else
                                 {
-                                    <span class="status-badge inactive">Inactivo</span>
+                                    <span class="badge bg-secondary rounded-pill px-3 py-2">Inactivo</span>
                                 }
                             </td>
 
                             <td>
-                                <a class="action-button"
+                                <a class="btn btn-sm btn-outline-light"
                                    href="@($"/admin/entrenadores/editar/{entrenador.IdUsuario}")">
                                     ✎
                                 </a>
@@ -115,9 +115,9 @@
             </tbody>
         </table>
     </div>
-    <div class="socios-pagination">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 bg-dark p-3 rounded border border-secondary">
 
-        <span class="pagination-s-info">
+        <span class="text-muted small">
             Mostrando
             @(((PaginaActual - 1) * ElementosPorPagina) + 1)
             -
@@ -128,9 +128,9 @@
             de @EntrenadoresFiltrados.Count() entrenadores
         </span>
 
-        <div class="pagination-s-btns">
+        <div class="d-flex gap-2">
 
-            <button class="pgbtn"
+            <button class="btn btn-sm btn-outline-secondary"
                     disabled="@(PaginaActual == 1)"
                     @onclick="PaginaAnterior">
                 ‹
@@ -140,13 +140,13 @@
             {
                 int pagina = i;
 
-                <button class="pgbtn @(PaginaActual == pagina ? "pgbtn-active" : "")"
+                <button class="pgbtn @(PaginaActual == pagina ? "btn-danger" : "")"
                         @onclick="() => IrAPagina(pagina)">
                     @pagina
                 </button>
             }
 
-            <button class="pgbtn"
+            <button class="btn btn-sm btn-outline-secondary"
                     disabled="@(PaginaActual == TotalPaginas)"
                     @onclick="PaginaSiguiente">
                 ›
@@ -191,9 +191,9 @@
 
     private List<EntrenadorDTO> Entrenadores = new();
 
-    private string FiltroClaseTodos => FiltroEstado == "Todos" ? "filter-button active" : "filter-button";
-    private string FiltroClaseActivos => FiltroEstado == "Activos" ? "filter-button active" : "filter-button";
-    private string FiltroClaseInactivos => FiltroEstado == "Inactivos" ? "filter-button active" : "filter-button";
+    private string FiltroClaseTodos => FiltroEstado == "Todos" ? "btn btn-danger" : "btn btn-outline-secondary";
+    private string FiltroClaseActivos => FiltroEstado == "Activos" ? "btn btn-danger" : "btn btn-outline-secondary";
+    private string FiltroClaseInactivos => FiltroEstado == "Inactivos" ? "btn btn-danger" : "btn btn-outline-secondary";
 
     protected override async Task OnInitializedAsync()
     {

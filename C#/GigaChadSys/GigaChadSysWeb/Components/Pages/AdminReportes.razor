@@ -1,4 +1,4 @@
-@page "/admin/reportes"
+﻿@page "/admin/reportes"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using System.Globalization
@@ -13,7 +13,7 @@
 @inject ReporteServicio ReporteService
 @inject IJSRuntime JS
 
-<section class="reports-page">
+<section class="container-fluid py-4">
 
     <div class="reports-header">
         <h1>Reportes</h1>
@@ -322,7 +322,7 @@
             <div class="revenue-panel">
                 <h2>Métodos de Pago Utilizados</h2>
 
-                <div class="donut-layout">
+                <div class="row g-4">
                     <div class="donut-card payment-donut" style="@MetodoPagoDonutStyle">
                         <div class="donut-center">
                             <strong>@TotalTransacciones</strong>
@@ -359,7 +359,7 @@
             <div class="revenue-panel">
                 <h2>Estado Financiero</h2>
 
-                <div class="donut-layout">
+                <div class="row g-4">
                     <div class="donut-card status-donut" style="@EstadoPagoDonutStyle">
                         <div class="donut-center">
                             <strong>@TotalPagosEstado</strong>

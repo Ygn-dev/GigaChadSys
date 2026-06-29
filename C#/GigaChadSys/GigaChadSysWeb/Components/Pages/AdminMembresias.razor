@@ -1,4 +1,4 @@
-@page "/admin/membresias"
+﻿@page "/admin/membresias"
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @layout AdminLayout
@@ -6,14 +6,14 @@
 @inject MembresiaBasicServicio BasicService
 @inject MembresiaBlackServicio BlackService
 
-<section class="membership-page">
+<section class="container-fluid py-4">
 
     <div class="membership-header">
         <div>
             <h1>Planes de Membresía</h1>
             <p>Gestiona los planes disponibles para los socios.</p>
         </div>
-        <a class="new-button" href="/admin/membresias/nueva">
+        <a class="btn btn-danger fw-bold text-uppercase px-4" href="/admin/membresias/nueva">
             + Nuevo Plan
         </a>
     </div>

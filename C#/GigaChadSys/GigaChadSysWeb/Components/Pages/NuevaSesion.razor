@@ -1,4 +1,4 @@
-@page "/admin/sesiones/nuevo"
+﻿@page "/admin/sesiones/nuevo"
 @using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
@@ -10,7 +10,7 @@
 @layout AdminLayout
 @rendermode InteractiveServer
 
-<section class="admin-form-page">
+<section class="container-fluid py-4">
 
     <div class="admin-breadcrumb">
         <a href="/admin/inicio">Inicio</a>
@@ -36,20 +36,20 @@
     }
     else
     {
-        <div class="sesion-form-layout">
+        <div class="row g-4">
 
             <div class="sesion-form-left">
 
-                <div class="form-card">
+                <div class="card bg-dark border-secondary p-4 shadow-lg text-white mx-auto" style="max-width: 800px;">
                     <div class="form-card-header">
                         <span class="form-card-icon">📅</span>
                         <h2>Información de la Clase</h2>
                     </div>
 
                     <div class="form-card-body">
-                        <div class="form-group">
+                        <div class="mb-3">
                             <label class="form-label">Clase grupal <span class="required">*</span></label>
-                            <select class="form-select" @bind="ClaseId">
+                            <select class="form-select bg-black text-white border-secondary" @bind="ClaseId">
                                 <option value="0">Seleccione una clase grupal</option>
                                 @foreach (var c in ClasesDisponibles)
                                 {
@@ -60,7 +60,7 @@
                     </div>
                 </div>
 
-                <div class="form-card">
+                <div class="card bg-dark border-secondary p-4 shadow-lg text-white mx-auto" style="max-width: 800px;">
                     <div class="form-card-header">
                         <span class="form-card-icon">👤</span>
                         <h2>Asignación</h2>
@@ -68,9 +68,9 @@
 
                     <div class="form-card-body">
                         <div class="form-row">
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <label class="form-label">Entrenador <span class="required">*</span></label>
-                                <select class="form-select" @bind="EntrenadorId">
+                                <select class="form-select bg-black text-white border-secondary" @bind="EntrenadorId">
                                     <option value="0">Seleccione un entrenador</option>
                                     @foreach (var e in EntrenadoresDisponibles)
                                     {
@@ -79,9 +79,9 @@
                                 </select>
                             </div>
 
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <label class="form-label">Salón <span class="required">*</span></label>
-                                <select class="form-select" @bind="SalonId">
+                                <select class="form-select bg-black text-white border-secondary" @bind="SalonId">
                                     <option value="0">Seleccione un salón</option>
                                     @foreach (var s in SalonesDisponibles)
                                     {
@@ -93,7 +93,7 @@
                     </div>
                 </div>
 
-                <div class="form-card">
+                <div class="card bg-dark border-secondary p-4 shadow-lg text-white mx-auto" style="max-width: 800px;">
                     <div class="form-card-header">
                         <span class="form-card-icon">🕐</span>
                         <h2>Programación</h2>
@@ -101,7 +101,7 @@
 
                     <div class="form-card-body">
                         <div class="form-row">
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <label class="form-label">Fecha <span class="required">*</span></label>
                                 <input class="form-input"
                                        type="date"
@@ -109,7 +109,7 @@
                                        @onchange="CambiarFecha" />
                             </div>
 
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <label class="form-label">Cupos disponibles <span class="required">*</span></label>
                                 <input class="form-input"
                                        type="number"
@@ -121,7 +121,7 @@
                         </div>
 
                         <div class="form-row">
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <label class="form-label">Hora de inicio <span class="required">*</span></label>
                                 <input class="form-input"
                                        type="time"
@@ -129,7 +129,7 @@
                                        @onchange="CambiarHoraInicio" />
                             </div>
 
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <label class="form-label">Hora de fin <span class="required">*</span></label>
                                 <input class="form-input"
                                        type="time"
@@ -418,6 +418,6 @@
     private void MostrarError(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
+        ClaseMensajeFormulario = "alert alert-danger";
     }
 }

@@ -1,4 +1,4 @@
-@page "/admin/sesiones/editar/{Id:int}"
+﻿@page "/admin/sesiones/editar/{Id:int}"
 @using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
@@ -10,7 +10,7 @@
 @layout AdminLayout
 @rendermode InteractiveServer
 
-<div class="socio-form-page">
+<div class="container-fluid py-4">
 
     <nav class="sf-breadcrumb">
         <a href="/admin/sesiones">Sesiones</a>
@@ -40,7 +40,7 @@
     }
     else
     {
-        <div class="sf-edit-layout">
+        <div class="row g-4">
 
             <div>
 
@@ -569,12 +569,12 @@
     private void MostrarError(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
+        ClaseMensajeFormulario = "alert alert-danger";
     }
 
     private void MostrarExito(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message success";
+        ClaseMensajeFormulario = "alert alert-success";
     }
 }

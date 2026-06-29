@@ -1,4 +1,4 @@
-@page "/admin/pagos"
+﻿@page "/admin/pagos"
 @using System.Globalization
 @using System.Text.Json.Serialization
 @layout AdminLayout
@@ -12,15 +12,15 @@
 @inject MetodoPagoServicio MetodoPagoService
 @inject NavigationManager Navigation
 
-<div class="admin-list-page">
+<div class="container-fluid py-4">
 
-    <div class="admin-list-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1>Gestión de Pagos</h1>
             <p>Registra y consulta los movimientos financieros del sistema</p>
         </div>
 
-        <a href="/admin/pagos/registrar" class="new-button">
+        <a href="/admin/pagos/registrar" class="btn btn-danger fw-bold text-uppercase px-4">
             <i class="bi bi-plus-lg"></i>
             Registrar Pago
         </a>
@@ -114,9 +114,9 @@
 
     </div>
 
-    <div class="admin-list-toolbar">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-dark p-3 rounded border border-secondary">
         <input type="text"
-               class="admin-search"
+               class="form-control bg-black text-white border-secondary"
                placeholder="Buscar por usuario, rol, DNI o concepto..."
                @bind="SearchTerm"
                @bind:event="oninput" />
@@ -138,7 +138,7 @@
 
     @if (Cargando)
     {
-        <div class="admin-table-card">
+        <div class="table-responsive bg-dark border border-secondary rounded shadow">
             <div class="empty-row">
                 Cargando pagos...
             </div>
@@ -146,8 +146,8 @@
     }
     else
     {
-        <div class="admin-table-card">
-            <table class="admin-table">
+        <div class="table-responsive bg-dark border border-secondary rounded shadow">
+            <table class="table table-dark table-hover table-striped align-middle mb-0 table-dark table-hover table-striped align-middle mb-0">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -181,8 +181,8 @@
                                 </td>
 
                                 <td>
-                                    <div class="trainer-cell">
-                                        <div class="trainer-avatar">@pago.Iniciales</div>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px; height:40px;">@pago.Iniciales</div>
 
                                         <div>
                                             <strong>@pago.UsuarioNombre</strong>
@@ -246,7 +246,7 @@
                                 </td>
 
                                 <td>
-                                    <button class="action-button"
+                                    <button class="btn btn-sm btn-outline-light"
                                             title="Ver detalle"
                                             @onclick="() => AbrirDetallePago(pago)">
                                         <i class="bi bi-eye"></i>
@@ -260,9 +260,9 @@
 
             @if (PagosFiltrados.Any())
             {
-                <div class="socios-pagination">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 bg-dark p-3 rounded border border-secondary">
 
-                    <span class="pagination-s-info">
+                    <span class="text-muted small">
                         Mostrando
                         @(((paginaActual - 1) * elementosPorPagina) + 1)
                         -
@@ -270,9 +270,9 @@
                         de @PagosFiltrados.Count() pagos
                     </span>
 
-                    <div class="pagination-s-btns">
+                    <div class="d-flex gap-2">
 
-                        <button class="pgbtn"
+                        <button class="btn btn-sm btn-outline-secondary"
                                 disabled="@(paginaActual == 1)"
                                 @onclick="PaginaAnterior">
                             ‹
@@ -282,13 +282,13 @@
                         {
                             int pagina = i;
 
-                            <button class="pgbtn @(paginaActual == pagina ? "pgbtn-active" : "")"
+                            <button class="pgbtn @(paginaActual == pagina ? "btn-danger" : "")"
                                     @onclick="() => IrAPagina(pagina)">
                                 @pagina
                             </button>
                         }
 
-                        <button class="pgbtn"
+                        <button class="btn btn-sm btn-outline-secondary"
                                 disabled="@(paginaActual == TotalPaginas)"
                                 @onclick="PaginaSiguiente">
                             ›
@@ -317,7 +317,7 @@
                 </div>
 
                 <div class="salon-modal-main">
-                    <div class="trainer-avatar">
+                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px; height:40px;">
                         @PagoSeleccionado.Iniciales
                     </div>
 

@@ -1,4 +1,4 @@
-@page "/admin/administradores/nuevo"
+﻿@page "/admin/administradores/nuevo"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using GigaChadSys.Servicios
@@ -6,9 +6,9 @@
 @inject AdministradorServicio AdministradorService
 @inject NavigationManager Nav
 
-<section class="trainer-form-page">
+<section class="container-fluid py-4">
 
-    <div class="trainer-breadcrumb">
+    <div class="mb-4 text-muted small">
         <a href="/admin/inicio">Inicio</a>
         <span>/</span>
         <a href="/admin/administradores">Administradores</a>
@@ -16,7 +16,7 @@
         <strong>Nuevo Administrador</strong>
     </div>
 
-    <div class="trainer-form-title">
+    <div class="mb-4">
         <h1>Registrar Nuevo Administrador</h1>
         <p>Completa la información del personal administrativo del sistema.</p>
     </div>
@@ -28,11 +28,11 @@
         </div>
     }
 
-    <div class="trainer-section">
+    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
         <h2>Información Personal</h2>
 
-        <div class="trainer-grid">
-            <div class="trainer-field">
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
                 <label>DNI <span>*</span></label>
                 <input type="text"
                        maxlength="8"
@@ -42,7 +42,7 @@
                        @oninput="CambiarDni" />
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Fecha de nacimiento <span>*</span></label>
                 <input type="date"
                        autocomplete="off"
@@ -50,7 +50,7 @@
                        @onchange="CambiarFechaNacimiento" />
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Nombres <span>*</span></label>
                 <input type="text"
                        autocomplete="off"
@@ -59,7 +59,7 @@
                        @oninput="CambiarNombres" />
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Apellido paterno <span>*</span></label>
                 <input type="text"
                        autocomplete="off"
@@ -68,7 +68,7 @@
                        @oninput="CambiarApellidoPaterno" />
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Apellido materno <span>*</span></label>
                 <input type="text"
                        autocomplete="off"
@@ -77,7 +77,7 @@
                        @oninput="CambiarApellidoMaterno" />
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Teléfono <span>*</span></label>
                 <input type="text"
                        maxlength="9"
@@ -87,7 +87,7 @@
                        @oninput="CambiarTelefono" />
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Correo electrónico <span>*</span></label>
                 <input type="email"
                        autocomplete="off"
@@ -98,11 +98,11 @@
         </div>
     </div>
 
-    <div class="trainer-section">
+    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
         <h2>Información Profesional</h2>
 
-        <div class="trainer-grid">
-            <div class="trainer-field">
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
                 <label>Sede <span>*</span></label>
                 <select value="@SedeValor" @onchange="CambiarSede">
                     <option value="">Seleccione una sede</option>
@@ -112,7 +112,7 @@
                 </select>
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Cargo <span>*</span></label>
                 <select value="@CargoValor" @onchange="CambiarCargo">
                     <option value="">Seleccione un cargo</option>
@@ -123,7 +123,7 @@
                 </select>
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Sueldo mensual <span>*</span></label>
                 <input type="number"
                        min="0"
@@ -136,11 +136,11 @@
         </div>
     </div>
 
-    <div class="trainer-section">
+    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
         <h2>Cuenta de Acceso</h2>
 
-        <div class="trainer-grid">
-            <div class="trainer-field">
+        <div class="row g-3">
+            <div class="col-md-6 mb-3">
                 <label>Contraseña <span>*</span></label>
                 <input type="password"
                        autocomplete="new-password"
@@ -149,7 +149,7 @@
                        @oninput="CambiarContrasenia" />
             </div>
 
-            <div class="trainer-field">
+            <div class="col-md-6 mb-3">
                 <label>Confirmar contraseña <span>*</span></label>
                 <input type="password"
                        autocomplete="new-password"
@@ -160,10 +160,10 @@
         </div>
     </div>
 
-    <div class="trainer-section">
+    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
         <h2>Estado</h2>
 
-        <div class="trainer-radio-row">
+        <div class="d-flex gap-4 mt-2">
             <label>
                 <input type="radio"
                        name="estadoAdmin"
@@ -182,20 +182,20 @@
         </div>
     </div>
 
-    <div class="trainer-actions">
+    <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
         <button type="button"
-                class="trainer-save-button"
+                class="btn btn-danger fw-bold text-uppercase px-4"
                 @onclick="RegistrarAdministrador">
             ✓ Registrar Administrador
         </button>
 
         <button type="button"
-                class="trainer-cancel-button"
+                class="btn btn-secondary fw-bold text-uppercase px-4"
                 @onclick="LimpiarFormulario">
             × Cancelar
         </button>
 
-        <a class="trainer-return-link" href="/admin/administradores">
+        <a class="text-muted text-decoration-none ms-auto" href="/admin/administradores">
             ← Volver al listado
         </a>
     </div>
@@ -298,13 +298,13 @@
     private void MostrarError(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
+        ClaseMensajeFormulario = "alert alert-danger";
     }
 
     private void MostrarExito(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message success";
+        ClaseMensajeFormulario = "alert alert-success";
     }
 
     private void LimpiarFormulario()

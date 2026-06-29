@@ -1,4 +1,4 @@
-@page "/admin/clases"
+﻿@page "/admin/clases"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using GigaChadSys.Servicios
@@ -6,27 +6,27 @@
 @inject ClaseGrupalServicio ClaseService
 @inject SesionClaseServicio SesionClaseService
 
-<section class="admin-list-page">
+<section class="container-fluid py-4">
 
-    <div class="admin-list-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1>Clases Grupales</h1>
             <p>Gestiona las clases disponibles en el gimnasio</p>
         </div>
 
-        <a class="new-button" href="/admin/clases/nueva">
+        <a class="btn btn-danger fw-bold text-uppercase px-4" href="/admin/clases/nueva">
             <i class="bi bi-plus-lg"></i>
             Nueva Clase
         </a>
     </div>
 
-    <div class="admin-list-toolbar" style="margin-bottom:28px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-dark p-3 rounded border border-secondary" style="margin-bottom:28px;">
         <div class="gc-search-wrapper">
             <span class="gc-search-icon">
                 <i class="bi bi-search"></i>
             </span>
 
-            <input class="admin-search"
+            <input class="form-control bg-black text-white border-secondary"
                    style="border:none;background:transparent;padding-left:0;"
                    type="text"
                    placeholder="Buscar clase o disciplina..."

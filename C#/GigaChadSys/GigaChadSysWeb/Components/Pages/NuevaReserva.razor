@@ -1,4 +1,4 @@
-@page "/admin/reservas/nueva"
+﻿@page "/admin/reservas/nueva"
 @using GigaChadSys.Servicios.DTO
 @layout AdminLayout
 @rendermode InteractiveServer
@@ -8,7 +8,7 @@
 @inject GigaChadSys.Servicios.ReservaServicio ReservaService
 @inject NavigationManager NavManager
 
-<section class="admin-list-page">
+<section class="container-fluid py-4">
 
     <!-- Breadcrumb -->
     <div class="breadcrumb-nav">
@@ -30,7 +30,7 @@
     </div>
 
     <!-- Two-column layout -->
-    <div class="nr-layout">
+    <div class="row g-4">
 
         <!-- LEFT: Form sections -->
         <div class="nr-form-col">
