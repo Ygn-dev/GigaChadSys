@@ -558,10 +558,6 @@
         }
 </style>
 
-@page "/admin/membresias/editar/{IdParam:int}"
-@inject MembresiaBlackServicio BlackService
-@inject NavigationManager Nav
-
 @code {
     [Parameter]
     public int IdParam { get; set; }
