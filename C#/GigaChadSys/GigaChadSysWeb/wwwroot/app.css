@@ -13314,3 +13314,259 @@ h1:focus {
         opacity: 0.65;
         cursor: not-allowed;
     }
+
+    /* =========================================================
+       ASISTENTE DE SOCIO
+       ========================================================= */
+
+    .socio-assistant-shell {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 1090;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 14px;
+        max-width: calc(100vw - 32px);
+    }
+
+    .socio-assistant-launcher {
+        border: 1px solid rgba(255, 94, 94, 0.42);
+        background: linear-gradient(180deg, #ff3a3a, #cc1f1f);
+        color: #fff;
+        border-radius: 999px;
+        min-height: 54px;
+        padding: 0 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 900;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+    }
+
+        .socio-assistant-launcher i {
+            font-size: 1.1rem;
+        }
+
+    .socio-assistant-panel {
+        width: min(420px, calc(100vw - 32px));
+        max-height: min(680px, calc(100vh - 120px));
+        background: linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(10, 10, 10, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 22px;
+        box-shadow: 0 22px 48px rgba(0, 0, 0, 0.42);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .socio-assistant-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 18px 18px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .socio-assistant-kicker {
+        display: inline-flex;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-size: 11px;
+        font-weight: 900;
+        color: #ff6b6b;
+        margin-bottom: 8px;
+    }
+
+    .socio-assistant-header h3 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 900;
+    }
+
+    .socio-assistant-close {
+        border: 0;
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+    }
+
+    .socio-assistant-body {
+        padding: 14px 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 0;
+    }
+
+    .socio-assistant-hint {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.9rem;
+    }
+
+    .socio-assistant-reset {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .socio-assistant-chat {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow: auto;
+        padding-right: 2px;
+        max-height: 360px;
+    }
+
+    .socio-assistant-message {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .socio-assistant-message .message-badge {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.4px;
+    }
+
+    .socio-assistant-message p {
+        margin: 0;
+        padding: 12px 14px;
+        border-radius: 16px;
+        line-height: 1.45;
+        font-size: 0.95rem;
+        flex: 1;
+    }
+
+    .socio-assistant-message.usuario {
+        flex-direction: row-reverse;
+    }
+
+        .socio-assistant-message.usuario .message-badge {
+            background: linear-gradient(180deg, #ff5a5a, #d91d1d);
+            color: #fff;
+        }
+
+        .socio-assistant-message.usuario p {
+            background: rgba(239, 47, 47, 0.16);
+            border: 1px solid rgba(239, 47, 47, 0.22);
+            color: #fff;
+        }
+
+    .socio-assistant-message.asistente .message-badge {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+    }
+
+    .socio-assistant-message.asistente p {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: #e9e9e9;
+    }
+
+    .socio-assistant-shortcuts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+        .socio-assistant-shortcuts button {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            border-radius: 12px;
+            padding: 10px 8px;
+            font-weight: 800;
+            font-size: 0.86rem;
+        }
+
+    .socio-assistant-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .socio-assistant-input {
+        flex: 1;
+        min-width: 0;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        color: #fff;
+        border-radius: 14px;
+        min-height: 48px;
+        padding: 0 14px;
+    }
+
+        .socio-assistant-input::placeholder {
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+    .socio-assistant-send {
+        border: 0;
+        border-radius: 14px;
+        min-height: 48px;
+        padding: 0 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(180deg, #ff4949, #c61e1e);
+        color: #fff;
+        font-weight: 900;
+    }
+
+        .socio-assistant-send:disabled {
+            opacity: 0.68;
+            cursor: not-allowed;
+        }
+
+    @media (max-width: 720px) {
+        .socio-assistant-shell {
+            right: 14px;
+            bottom: 14px;
+            max-width: calc(100vw - 24px);
+        }
+
+        .socio-assistant-panel {
+            width: min(100vw - 24px, 420px);
+        }
+
+        .socio-assistant-hint {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .socio-assistant-shortcuts {
+            grid-template-columns: 1fr;
+        }
+
+        .socio-assistant-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .socio-assistant-send {
+            justify-content: center;
+        }
+    }

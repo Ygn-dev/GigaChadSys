@@ -34,6 +34,7 @@ public static class ServiciosExtensions
         services.AddScoped<MembresiaBasicServicio>();
         services.AddScoped<MembresiaBlackServicio>();
         services.AddScoped<SuscripcionServicio>();
+        services.AddScoped<AsistenteSocioServicio>();
 
         // Pagos
         services.AddScoped<PagoServicio>();

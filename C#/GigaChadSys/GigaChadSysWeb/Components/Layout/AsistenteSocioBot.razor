@@ -1,0 +1,136 @@
+@implements IDisposable
+@inject AsistenteSocioServicio Asistente
+
+<div class="socio-assistant-shell" aria-live="polite">
+    @if (Abierto)
+    {
+        <section class="socio-assistant-panel" role="dialog" aria-label="Asistente de socio">
+            <header class="socio-assistant-header">
+                <div>
+                    <span class="socio-assistant-kicker">Asistente de socio</span>
+                    <h3>@Titulo</h3>
+                </div>
+
+                <button type="button" class="socio-assistant-close" @onclick="TogglePanel" aria-label="Cerrar asistente">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </header>
+
+            <div class="socio-assistant-body">
+                <div class="socio-assistant-hint">
+                    <span>Sesion: @Asistente.NombreUsuario</span>
+                    <button type="button" class="socio-assistant-reset" @onclick="Reiniciar">
+                        Reiniciar charla
+                    </button>
+                </div>
+
+                <div class="socio-assistant-chat">
+                    @foreach (var mensaje in Asistente.Conversacion)
+                    {
+                        <article class="socio-assistant-message @mensaje.Rol">
+                            <div class="message-badge">@(mensaje.Rol == "usuario" ? "Tu" : "GC")</div>
+                            <p>@mensaje.Texto</p>
+                        </article>
+                    }
+
+                    @if (Asistente.Conversacion.Count == 0)
+                    {
+                        <article class="socio-assistant-message asistente">
+                            <div class="message-badge">GC</div>
+                            <p>Hola. Preguntame por tu membresia, tus pagos o tus reservas.</p>
+                        </article>
+                    }
+                </div>
+
+                <div class="socio-assistant-shortcuts">
+                    <button type="button" @onclick="AtajoMembresia">Mi membresia</button>
+                    <button type="button" @onclick="AtajoPagos">Pagos</button>
+                    <button type="button" @onclick="AtajoReservas">Reservas</button>
+                </div>
+
+                <form class="socio-assistant-form" @onsubmit="EnviarAsync" @onsubmit:preventDefault>
+                    <input class="socio-assistant-input"
+                           type="text"
+                           placeholder="Escribe tu pregunta..."
+                           @bind="Consulta"
+                           @bind:event="oninput" />
+
+                    <button type="submit" class="socio-assistant-send" disabled="@Procesando">
+                        <i class="bi bi-send"></i>
+                        <span>@(Procesando ? "..." : "Enviar")</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+    }
+
+    <button type="button" class="socio-assistant-launcher" @onclick="TogglePanel">
+        <i class="bi bi-robot"></i>
+        <span>@(Abierto ? "Cerrar" : "Ayuda")</span>
+    </button>
+</div>
+
+@code {
+    private string Consulta { get; set; } = string.Empty;
+    private bool Abierto { get; set; }
+    private bool Procesando { get; set; }
+
+    private string Titulo => string.IsNullOrWhiteSpace(Asistente.NombreUsuario)
+        ? "Bot de ayuda"
+        : $"Hola, {Asistente.NombreUsuario}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Asistente.CargarContextoAsync();
+    }
+
+    private async Task EnviarAsync()
+    {
+        if (Procesando)
+            return;
+
+        string texto = Consulta.Trim();
+        if (string.IsNullOrWhiteSpace(texto))
+            return;
+
+        Procesando = true;
+        try
+        {
+            Consulta = string.Empty;
+            Abierto = true;
+            await Asistente.ResponderAsync(texto);
+        }
+        finally
+        {
+            Procesando = false;
+        }
+    }
+
+    private async Task UsarAtajoAsync(string texto)
+    {
+        Consulta = texto;
+        await EnviarAsync();
+    }
+
+    private Task AtajoMembresia() => UsarAtajoAsync("Resumeme mi membresia");
+
+    private Task AtajoPagos() => UsarAtajoAsync("Cuales son mis pagos");
+
+    private Task AtajoReservas() => UsarAtajoAsync("Ayudame con reservas");
+
+    private void TogglePanel()
+    {
+        Abierto = !Abierto;
+    }
+
+    private async Task Reiniciar()
+    {
+        Asistente.ReiniciarConversacion();
+        await Asistente.CargarContextoAsync();
+        Abierto = true;
+    }
+
+    public void Dispose()
+    {
+    }
+}
