@@ -1,5 +1,9 @@
 package pe.edu.pucp.gigachadsys.bl.impl.clases;
 
+import pe.edu.pucp.gigachadsys.dao.impl.clases.SesionClaseDAOImpl;
+import pe.edu.pucp.gigachadsys.dao.inter.clases.SesionClaseDAO;
+import pe.edu.pucp.gigachadsys.model.clases.SesionClase;
+
 import pe.edu.pucp.gigachadsys.bl.inter.clases.ReservaBL;
 import pe.edu.pucp.gigachadsys.dao.impl.clases.ReservaDAOImpl;
 import pe.edu.pucp.gigachadsys.dao.inter.clases.ReservaDAO;
@@ -10,6 +14,7 @@ import java.util.List;
 public class ReservaBLImpl implements ReservaBL {
 
     private final ReservaDAO reservaDAO = new ReservaDAOImpl();
+    private final SesionClaseDAO sesionClaseDAO = new SesionClaseDAOImpl();
 
     @Override
     public List<Reserva> listAll() {
@@ -25,6 +30,19 @@ public class ReservaBLImpl implements ReservaBL {
     public String registrar(Reserva reserva) {
         try {
             reservaDAO.save(reserva);
+
+            // AGREGAR: decrementar cupos disponibles
+            int idSesion = reserva.getSesionClase() != null
+                    ? reserva.getSesionClase().getIdSesion() : 0;
+
+            if (idSesion > 0) {
+                SesionClase sesion = sesionClaseDAO.load(idSesion);
+                if (sesion != null && sesion.getCuposDisponibles() > 0) {
+                    sesion.setCuposDisponibles(sesion.getCuposDisponibles() - 1);
+                    sesionClaseDAO.update(sesion);
+                }
+            }
+
             return "Reserva registrada correctamente.";
         } catch (Exception e) {
             return "Error al registrar reserva: " + e.getMessage();
@@ -45,9 +63,24 @@ public class ReservaBLImpl implements ReservaBL {
     @Override
     public String eliminar(int idReserva) {
         try {
-            Reserva reserva = new Reserva();
-            reserva.setIdReserva(idReserva);
+            Reserva reserva = reservaDAO.load(idReserva); // CAMBIAR: cargar primero para obtener idSesion
+
+            if (reserva == null) return "Reserva no encontrada.";
+
             reservaDAO.remove(reserva);
+
+            // AGREGAR: devolver el cupo al cancelar
+            int idSesion = reserva.getSesionClase() != null
+                    ? reserva.getSesionClase().getIdSesion()
+                    : 0;
+            if (idSesion > 0) {
+                SesionClase sesion = sesionClaseDAO.load(idSesion);
+                if (sesion != null) {
+                    sesion.setCuposDisponibles(sesion.getCuposDisponibles() + 1);
+                    sesionClaseDAO.update(sesion);
+                }
+            }
+
             return "Reserva eliminada correctamente.";
         } catch (Exception e) {
             return "Error al eliminar reserva: " + e.getMessage();
