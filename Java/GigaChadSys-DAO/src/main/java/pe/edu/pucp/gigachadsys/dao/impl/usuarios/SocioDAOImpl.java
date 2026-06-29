@@ -88,7 +88,7 @@ public class SocioDAOImpl implements SocioDAO {
     @Override
     public Socio save(Socio socio) {
         normalizarDatosAntesDeGuardar(socio);
-
+        socio.setEstadoMembresia(false);
         String sql =
                 "INSERT INTO Socio (" +
                         "nombres, " +
