@@ -383,12 +383,6 @@
                 <div class="salon-modal-actions">
 
                     <button type="button"
-                            class="salon-modal-edit"
-                            @onclick="() => VerDetalle(PagoSeleccionado.Id)">
-                        Ver Completo
-                    </button>
-
-                    <button type="button"
                             class="salon-modal-cancel"
                             @onclick="CerrarDetallePago">
                         Cerrar
@@ -833,11 +827,6 @@
     private void IrAPagina(int pagina)
     {
         paginaActual = pagina;
-    }
-
-    private void VerDetalle(int id)
-    {
-        Navigation.NavigateTo($"/admin/pagos/{id}");
     }
 
     private static string ObtenerNombreSocio(SocioDTO socio)
