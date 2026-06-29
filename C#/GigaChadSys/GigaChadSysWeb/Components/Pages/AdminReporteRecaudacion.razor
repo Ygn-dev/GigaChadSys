@@ -1,0 +1,2023 @@
+﻿@page "/admin/reportes/recaudacion"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+@using System.Globalization
+@using System.Text
+@using Microsoft.JSInterop
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+
+@inject PagoServicio PagoService
+@inject SuscripcionServicio SuscripcionService
+@inject SocioServicio SocioService
+@inject EntrenadorServicio EntrenadorService
+@inject ReporteServicio ReporteService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<section class="reporte-recaudacion-page">
+
+    <div class="rr-breadcrumb">
+        <button type="button" @onclick="VolverAReportes">
+            <i class="bi bi-arrow-left"></i>
+            Reportes
+        </button>
+        <span>/</span>
+        <strong>Recaudación</strong>
+    </div>
+
+    <div class="rr-header">
+        <div>
+            <span class="rr-kicker">Reporte financiero</span>
+            <h1>Reporte de Recaudación</h1>
+            <p>Analiza ingresos, egresos, balance financiero y recaudación agrupada por tipo de membresía.</p>
+            <small>Período evaluado: @PeriodoTexto</small>
+        </div>
+
+        <button type="button"
+                class="rr-download-btn"
+                @onclick="DescargarReporteRecaudacion"
+                disabled="@DescargandoReporte">
+            @if (DescargandoReporte)
+            {
+                <span>
+                    <i class="bi bi-hourglass-split"></i>
+                    Generando PDF...
+                </span>
+            }
+            else
+            {
+                <span>
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Descargar reporte de recaudación
+                </span>
+            }
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeDescarga))
+    {
+        <div class="rr-alert">
+            <i class="bi bi-info-circle"></i>
+            <span>@MensajeDescarga</span>
+        </div>
+    }
+
+    @if (Cargando)
+    {
+        <div class="rr-loading">
+            <i class="bi bi-hourglass-split"></i>
+            <span>Cargando reporte de recaudación...</span>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(MensajeError))
+    {
+        <div class="rr-error">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>@MensajeError</span>
+        </div>
+    }
+    else
+    {
+        <div class="rr-period-row">
+            <button class="@ClasePeriodoMes" @onclick="MostrarUltimoMes">Último mes</button>
+            <button class="@ClasePeriodoTrimestre" @onclick="MostrarUltimoTrimestre">Último trimestre</button>
+            <button class="@ClasePeriodoAnio" @onclick="MostrarUltimoAnio">Último año</button>
+        </div>
+
+        <div class="rr-kpi-main-grid">
+
+            <div class="rr-kpi-card rr-kpi-feature">
+                <div>
+                    <span>Ingresos brutos</span>
+                    <strong class="rr-green-money">S/ @FormatoMoneda(IngresosBrutos)</strong>
+                    <p>Pagos cobrados de socios</p>
+                </div>
+
+                <div class="rr-kpi-icon green">
+                    <i class="bi bi-arrow-up-right"></i>
+                </div>
+            </div>
+
+            <div class="rr-kpi-card rr-kpi-feature">
+                <div>
+                    <span>Egresos totales</span>
+                    <strong class="rr-red-money">-S/ @FormatoMoneda(EgresosTotales)</strong>
+                    <p>Pagos realizados al staff</p>
+                </div>
+
+                <div class="rr-kpi-icon red">
+                    <i class="bi bi-arrow-down-left"></i>
+                </div>
+            </div>
+
+            <div class="rr-kpi-card rr-kpi-feature rr-balance-card @(BalanceNeto < 0 ? "negative" : "positive")">
+                <div>
+                    <span>Balance neto</span>
+                    <strong class="@(BalanceNeto < 0 ? "rr-red-money" : "rr-green-money")">@BalanceNetoTexto</strong>
+                    <p>Ingresos menos egresos</p>
+                </div>
+
+                <div class="rr-kpi-icon @(BalanceNeto < 0 ? "red" : "green")">
+                    <i class="bi bi-calculator"></i>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="rr-kpi-secondary-grid">
+
+            <div class="rr-kpi-card compact">
+                <div>
+                    <span>Por cobrar socios</span>
+                    <strong class="rr-yellow-money">S/ @FormatoMoneda(PorCobrarSocios)</strong>
+                    <p>@PagosPendientesSocios pagos pendientes</p>
+                </div>
+
+                <div class="rr-kpi-icon yellow">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+
+            <div class="rr-kpi-card compact">
+                <div>
+                    <span>Por pagar staff</span>
+                    <strong class="rr-orange-money">-S/ @FormatoMoneda(PorPagarStaff)</strong>
+                    <p>@PagosPendientesStaff pagos pendientes</p>
+                </div>
+
+                <div class="rr-kpi-icon orange">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+            </div>
+
+            <div class="rr-kpi-card compact">
+                <div>
+                    <span>Total movimientos</span>
+                    <strong>@TotalMovimientos</strong>
+                    <p>Pagos registrados en el período</p>
+                </div>
+
+                <div class="rr-kpi-icon neutral">
+                    <i class="bi bi-list-check"></i>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="rr-panel rr-membership-panel">
+            <div class="rr-panel-header">
+                <div>
+                    <h2>Recaudación por membresía</h2>
+                    <p>Total cobrado agrupado por tipo de membresía dentro del período seleccionado.</p>
+                </div>
+            </div>
+
+            <div class="rr-membership-list">
+                @foreach (var item in RecaudacionPorMembresia)
+                {
+                    <div class="rr-membership-row">
+                        <div class="rr-membership-head">
+                            <div>
+                                <strong>@item.Nombre</strong>
+                                <span>@item.CantidadPagos pagos realizados</span>
+                            </div>
+
+                            <strong class="rr-membership-money">S/ @FormatoMoneda(item.Total)</strong>
+                        </div>
+
+                        <div class="rr-bar-track">
+                            <div class="rr-bar-fill @item.CssClass" style="width:@item.Barra"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="rr-chart-card">
+            <div class="rr-chart-title-row">
+                <h2>Ingresos vs Egresos Mensuales (S/)</h2>
+
+                <div class="rr-chart-legend-inline">
+                    <span><i class="dot green"></i>Ingresos</span>
+                    <span><i class="dot red"></i>Egresos</span>
+                </div>
+            </div>
+
+            <div class="rr-line-chart">
+                <div class="rr-chart-y-label y100">@GraficoLabel100</div>
+                <div class="rr-chart-y-label y75">@GraficoLabel75</div>
+                <div class="rr-chart-y-label y50">@GraficoLabel50</div>
+                <div class="rr-chart-y-label y25">@GraficoLabel25</div>
+                <div class="rr-chart-y-label y0">0</div>
+
+                <div class="rr-chart-grid-line line100"></div>
+                <div class="rr-chart-grid-line line75"></div>
+                <div class="rr-chart-grid-line line50"></div>
+                <div class="rr-chart-grid-line line25"></div>
+                <div class="rr-chart-grid-line line0"></div>
+
+                <svg class="rr-chart-svg" viewBox="0 0 1000 260" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="rrGreenArea" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="#22C55E" stop-opacity="0.30" />
+                            <stop offset="100%" stop-color="#22C55E" stop-opacity="0.02" />
+                        </linearGradient>
+                    </defs>
+
+                    <polygon points="@ChartIngresosAreaPoints" fill="url(#rrGreenArea)" />
+
+                    <polyline points="@ChartIngresosLinePoints"
+                              fill="none"
+                              stroke="#22C55E"
+                              stroke-width="5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round" />
+
+                    <polyline points="@ChartEgresosLinePoints"
+                              fill="none"
+                              stroke="#EF3131"
+                              stroke-width="5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round" />
+
+                    @foreach (var punto in PuntosGrafico)
+                    {
+                        <circle cx="@punto.X"
+                                cy="@punto.YIngresos"
+                                r="7"
+                                fill="#F5F5F5"
+                                stroke="#22C55E"
+                                stroke-width="4" />
+
+                        <circle cx="@punto.X"
+                                cy="@punto.YEgresos"
+                                r="7"
+                                fill="#F5F5F5"
+                                stroke="#EF3131"
+                                stroke-width="4" />
+
+                        @if (punto.Ingresos > 0)
+                        {
+                            @((MarkupString)$"<text x='{punto.X}' y='{punto.LabelYIngresos}' text-anchor='middle' class='rr-chart-income-label'>{punto.ValorIngresos}</text>")
+                        }
+
+                        @if (punto.Egresos > 0)
+                        {
+                            @((MarkupString)$"<text x='{punto.X}' y='{punto.LabelYEgresos}' text-anchor='middle' class='rr-chart-expense-label'>-{punto.ValorEgresos}</text>")
+                        }
+                    }
+                </svg>
+
+                <div class="rr-chart-months">
+                    @foreach (var punto in PuntosGrafico)
+                    {
+                        <span>@punto.Mes</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="rr-bottom-grid">
+
+            <div class="rr-panel">
+                <h2>Métodos de pago utilizados</h2>
+
+                <div class="rr-donut-layout">
+                    <div class="rr-donut-card" style="@MetodoPagoDonutStyle">
+                        <div class="rr-donut-center">
+                            <strong>@TotalMovimientos</strong>
+                            <span>Movimientos</span>
+                        </div>
+                    </div>
+
+                    <div class="rr-donut-list">
+                        <div class="rr-donut-row">
+                            <span><i class="dot red"></i>Efectivo</span>
+                            <strong>@PagosEfectivo (@Porcentaje(PagosEfectivo, TotalMovimientos))</strong>
+                        </div>
+
+                        <div class="rr-donut-row">
+                            <span><i class="dot blue"></i>Tarjeta</span>
+                            <strong>@PagosTarjeta (@Porcentaje(PagosTarjeta, TotalMovimientos))</strong>
+                        </div>
+
+                        <div class="rr-donut-row">
+                            <span><i class="dot green"></i>Yape</span>
+                            <strong>@PagosYape (@Porcentaje(PagosYape, TotalMovimientos))</strong>
+                        </div>
+
+                        <div class="rr-donut-row">
+                            <span><i class="dot orange"></i>Plin</span>
+                            <strong>@PagosPlin (@Porcentaje(PagosPlin, TotalMovimientos))</strong>
+                        </div>
+
+                        <p class="rr-donut-total">Total: @TotalMovimientos movimientos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rr-panel">
+                <h2>Estado financiero</h2>
+
+                <div class="rr-donut-layout">
+                    <div class="rr-donut-card" style="@EstadoPagoDonutStyle">
+                        <div class="rr-donut-center">
+                            <strong>@TotalPagosEstado</strong>
+                            <span>Total</span>
+                        </div>
+                    </div>
+
+                    <div class="rr-donut-list">
+                        <div class="rr-donut-row">
+                            <span><i class="dot green"></i>Ingresos pagados</span>
+                            <strong>@IngresosPagadosCount (@Porcentaje(IngresosPagadosCount, TotalPagosEstado))</strong>
+                        </div>
+
+                        <div class="rr-donut-row">
+                            <span><i class="dot red"></i>Egresos pagados</span>
+                            <strong>@EgresosPagadosCount (@Porcentaje(EgresosPagadosCount, TotalPagosEstado))</strong>
+                        </div>
+
+                        <div class="rr-donut-row">
+                            <span><i class="dot orange"></i>Pendientes</span>
+                            <strong>@PagosPendientes (@Porcentaje(PagosPendientes, TotalPagosEstado))</strong>
+                        </div>
+
+                        <div class="rr-pending-box">
+                            <span>Por cobrar socios</span>
+                            <strong>S/ @FormatoMoneda(PorCobrarSocios) ›</strong>
+                        </div>
+
+                        <div class="rr-pending-box staff">
+                            <span>Por pagar staff</span>
+                            <strong>-S/ @FormatoMoneda(PorPagarStaff) ›</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="rr-table-panel">
+            <div class="rr-panel-header">
+                <div>
+                    <h2>Movimientos financieros</h2>
+                    <p>Detalle de ingresos y egresos ordenados por fecha descendente.</p>
+                </div>
+            </div>
+
+            <div class="rr-table-wrapper">
+                <table class="rr-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Concepto</th>
+                            <th>Tipo</th>
+                            <th>Método</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in MovimientosPaginados)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="rr-user-cell">
+                                        <div class="rr-avatar">@item.Iniciales</div>
+                                        <div>
+                                            <strong>@item.Usuario</strong>
+                                            <span>@item.DetalleUsuario</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>@item.Rol</td>
+                                <td>@item.Concepto</td>
+
+                                <td>
+                                    <span class="rr-status @item.TipoCss">
+                                        @item.TipoMovimiento
+                                    </span>
+                                </td>
+
+                                <td>@item.Metodo</td>
+                                <td>@item.Fecha</td>
+
+                                <td>
+                                    <span class="rr-status @item.EstadoCss">
+                                        @item.Estado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong class="@item.MontoCss">@item.MontoTexto</strong>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (TotalPaginas > 1)
+            {
+                <div class="rr-pagination">
+                    <button type="button" @onclick="PaginaAnterior" disabled="@(PaginaActual == 1)">
+                        <i class="bi bi-chevron-left"></i>
+                        Anterior
+                    </button>
+
+                    <span>Página @PaginaActual de @TotalPaginas</span>
+
+                    <button type="button" @onclick="PaginaSiguiente" disabled="@(PaginaActual == TotalPaginas)">
+                        Siguiente
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+</section>
+
+<style>
+    .reporte-recaudacion-page {
+        width: 100%;
+        min-height: 100%;
+        padding: 28px 36px 48px;
+        color: #f5f5f5;
+        background: #0b0b0b;
+    }
+
+    .rr-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 22px;
+        color: #9ca3af;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+        .rr-breadcrumb button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            color: #E53935;
+            background: transparent;
+            border: none;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .rr-breadcrumb strong {
+            color: #ffffff;
+        }
+
+    .rr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        margin-bottom: 26px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .rr-kicker {
+        display: inline-block;
+        margin-bottom: 8px;
+        color: #E53935;
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .rr-header h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 42px;
+        font-weight: 950;
+        line-height: 1.05;
+    }
+
+    .rr-header p {
+        margin: 10px 0 0;
+        max-width: 760px;
+        color: #b9b9b9;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .rr-header small {
+        display: inline-block;
+        margin-top: 8px;
+        color: #E53935;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .rr-download-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 280px;
+        padding: 13px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(229, 57, 53, 0.45);
+        background: #E53935;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+        .rr-download-btn span {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .rr-download-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+    .rr-alert,
+    .rr-loading,
+    .rr-error {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding: 16px 18px;
+        border-radius: 14px;
+        background: #171717;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f5f5f5;
+        font-weight: 700;
+    }
+
+    .rr-alert {
+        color: #FACC15;
+        border-color: rgba(250, 204, 21, 0.25);
+    }
+
+    .rr-error {
+        color: #ffb4b4;
+        border-color: rgba(229, 57, 53, 0.35);
+    }
+
+    .rr-period-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+        .rr-period-row button {
+            padding: 10px 16px;
+            border-radius: 999px;
+            color: #d8d8d8;
+            background: #151515;
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+            .rr-period-row button.active {
+                color: #ffffff;
+                background: #E53935;
+                border-color: #E53935;
+            }
+
+    .rr-kpi-main-grid,
+    .rr-kpi-secondary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .rr-kpi-secondary-grid {
+        margin-bottom: 28px;
+    }
+
+    .rr-kpi-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 132px;
+        padding: 22px;
+        border-radius: 16px;
+        background: #151515;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+        .rr-kpi-card.compact {
+            min-height: 110px;
+        }
+
+    .rr-balance-card.negative {
+        border-color: rgba(239, 49, 49, 0.32);
+    }
+
+    .rr-balance-card.positive {
+        border-color: rgba(34, 197, 94, 0.28);
+    }
+
+    .rr-kpi-card span {
+        display: block;
+        margin-bottom: 7px;
+        color: #bdbdbd;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+    }
+
+    .rr-kpi-card strong {
+        display: block;
+        color: #ffffff;
+        font-size: 29px;
+        font-weight: 950;
+        line-height: 1.1;
+    }
+
+    .rr-kpi-card p {
+        margin: 8px 0 0;
+        color: #b9b9b9;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .rr-kpi-icon {
+        width: 54px;
+        height: 54px;
+        min-width: 54px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        font-size: 24px;
+    }
+
+        .rr-kpi-icon.green {
+            color: #22C55E;
+            background: rgba(34, 197, 94, 0.12);
+        }
+
+        .rr-kpi-icon.red {
+            color: #EF3131;
+            background: rgba(239, 49, 49, 0.13);
+        }
+
+        .rr-kpi-icon.yellow {
+            color: #FACC15;
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+        .rr-kpi-icon.orange {
+            color: #FF9F43;
+            background: rgba(255, 159, 67, 0.13);
+        }
+
+        .rr-kpi-icon.neutral {
+            color: #d1d5db;
+            background: rgba(209, 213, 219, 0.10);
+        }
+
+    .rr-green-money {
+        color: #22C55E !important;
+    }
+
+    .rr-red-money {
+        color: #ff4d4d !important;
+    }
+
+    .rr-yellow-money {
+        color: #FACC15 !important;
+    }
+
+    .rr-orange-money {
+        color: #FF9F43 !important;
+    }
+
+    .rr-panel,
+    .rr-chart-card,
+    .rr-table-panel {
+        padding: 24px;
+        border-radius: 18px;
+        background: #151515;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .rr-membership-panel,
+    .rr-chart-card,
+    .rr-bottom-grid {
+        margin-bottom: 28px;
+    }
+
+    .rr-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+        .rr-panel-header h2,
+        .rr-panel h2,
+        .rr-chart-title-row h2 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 950;
+        }
+
+        .rr-panel-header p {
+            margin: 6px 0 0;
+            color: #a9a9a9;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+    .rr-membership-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .rr-membership-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        margin-bottom: 10px;
+    }
+
+        .rr-membership-head strong {
+            display: block;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 950;
+        }
+
+        .rr-membership-head span {
+            display: block;
+            margin-top: 4px;
+            color: #a9a9a9;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+    .rr-membership-money {
+        color: #22C55E !important;
+        white-space: nowrap;
+    }
+
+    .rr-bar-track {
+        width: 100%;
+        height: 14px;
+        border-radius: 999px;
+        background: #242424;
+        overflow: hidden;
+    }
+
+    .rr-bar-fill {
+        height: 100%;
+        min-width: 4px;
+        border-radius: 999px;
+    }
+
+        .rr-bar-fill.basic {
+            background: #E53935;
+        }
+
+        .rr-bar-fill.black {
+            background: #FACC15;
+        }
+
+        .rr-bar-fill.sinplan {
+            background: #6B7280;
+        }
+
+    .rr-chart-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 10px;
+    }
+
+    .rr-chart-legend-inline {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        color: #cfcfcf;
+        font-weight: 800;
+        font-size: 13px;
+    }
+
+        .rr-chart-legend-inline span {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+    .rr-line-chart {
+        position: relative;
+        height: 330px;
+        padding: 30px 28px 42px 56px;
+        overflow: hidden;
+    }
+
+    .rr-chart-svg {
+        position: absolute;
+        left: 58px;
+        right: 26px;
+        top: 34px;
+        width: calc(100% - 84px);
+        height: 245px;
+        overflow: visible;
+    }
+
+    .rr-chart-y-label {
+        position: absolute;
+        left: 0;
+        color: #cfcfcf;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+        .rr-chart-y-label.y100 {
+            top: 27px;
+        }
+
+        .rr-chart-y-label.y75 {
+            top: 79px;
+        }
+
+        .rr-chart-y-label.y50 {
+            top: 132px;
+        }
+
+        .rr-chart-y-label.y25 {
+            top: 184px;
+        }
+
+        .rr-chart-y-label.y0 {
+            top: 236px;
+        }
+
+    .rr-chart-grid-line {
+        position: absolute;
+        left: 56px;
+        right: 10px;
+        height: 1px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+        .rr-chart-grid-line.line100 {
+            top: 36px;
+        }
+
+        .rr-chart-grid-line.line75 {
+            top: 88px;
+        }
+
+        .rr-chart-grid-line.line50 {
+            top: 141px;
+        }
+
+        .rr-chart-grid-line.line25 {
+            top: 193px;
+        }
+
+        .rr-chart-grid-line.line0 {
+            top: 245px;
+            border-top-style: solid;
+            border-top-color: rgba(255, 255, 255, 0.16);
+        }
+
+    .rr-chart-income-label {
+        fill: #22C55E;
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    .rr-chart-expense-label {
+        fill: #EF3131;
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    .rr-chart-months {
+        position: absolute;
+        left: 56px;
+        right: 10px;
+        bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        color: #cfcfcf;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .rr-bottom-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .rr-donut-layout {
+        display: grid;
+        grid-template-columns: 190px 1fr;
+        align-items: center;
+        gap: 26px;
+        margin-top: 24px;
+    }
+
+    .rr-donut-card {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+    }
+
+        .rr-donut-card::after {
+            content: "";
+            position: absolute;
+            inset: 38px;
+            border-radius: 50%;
+            background: #151515;
+        }
+
+    .rr-donut-center {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .rr-donut-center strong {
+            color: #ffffff;
+            font-size: 34px;
+            font-weight: 950;
+        }
+
+        .rr-donut-center span {
+            color: #bdbdbd;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+    .rr-donut-list {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+    }
+
+    .rr-donut-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 13px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+        .rr-donut-row span {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: #f5f5f5;
+            font-weight: 750;
+        }
+
+        .rr-donut-row strong {
+            color: #ffffff;
+            font-weight: 900;
+        }
+
+    .rr-donut-total {
+        margin: 8px 0 0;
+        color: #bdbdbd;
+        text-align: right;
+        font-weight: 700;
+    }
+
+    .rr-pending-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-top: 10px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: #202020;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+        .rr-pending-box span {
+            color: #bdbdbd;
+            font-weight: 700;
+        }
+
+        .rr-pending-box strong {
+            color: #FACC15;
+            font-weight: 950;
+        }
+
+        .rr-pending-box.staff {
+            border-color: rgba(239, 49, 49, 0.18);
+        }
+
+            .rr-pending-box.staff strong {
+                color: #ff4d4d;
+            }
+
+    .dot {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        border-radius: 50%;
+    }
+
+        .dot.green {
+            background: #22C55E;
+        }
+
+        .dot.red {
+            background: #EF3131;
+        }
+
+        .dot.blue {
+            background: #1976D2;
+        }
+
+        .dot.orange {
+            background: #FF9800;
+        }
+
+    .rr-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .rr-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1080px;
+    }
+
+        .rr-table th {
+            padding: 14px 16px;
+            color: #a7a7a7;
+            background: #101010;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px;
+            font-weight: 900;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .rr-table td {
+            padding: 16px;
+            color: #e8e8e8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+    .rr-user-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .rr-avatar {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #E53935;
+        color: #ffffff;
+        font-weight: 950;
+    }
+
+    .rr-user-cell strong {
+        display: block;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    .rr-user-cell span {
+        display: block;
+        margin-top: 3px;
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .rr-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+        .rr-status.ingreso,
+        .rr-status.pagado {
+            color: #22C55E;
+            background: rgba(34, 197, 94, 0.12);
+        }
+
+        .rr-status.egreso {
+            color: #EF3131;
+            background: rgba(239, 49, 49, 0.13);
+        }
+
+        .rr-status.pendiente {
+            color: #FACC15;
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+    .rr-money-positive {
+        color: #22C55E;
+    }
+
+    .rr-money-negative {
+        color: #EF3131;
+    }
+
+    .rr-pagination {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 14px;
+        margin-top: 18px;
+        color: #cfcfcf;
+        font-weight: 800;
+    }
+
+        .rr-pagination button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 13px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            background: #1a1a1a;
+            color: #ffffff;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+            .rr-pagination button:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+
+    @@media (max-width: 1180px) {
+        .rr-kpi-main-grid,
+        .rr-kpi-secondary-grid,
+        .rr-bottom-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rr-donut-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .reporte-recaudacion-page {
+            padding: 22px 18px 38px;
+        }
+
+        .rr-header {
+            flex-direction: column;
+        }
+
+            .rr-header h1 {
+                font-size: 34px;
+            }
+
+        .rr-download-btn {
+            width: 100%;
+        }
+
+        .rr-period-row {
+            flex-wrap: wrap;
+        }
+
+        .rr-chart-title-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+@code {
+    private bool Cargando = true;
+    private bool DescargandoReporte = false;
+    private string MensajeError = "";
+    private string MensajeDescarga = "";
+
+    private string PeriodoActual = "Mes";
+
+    private List<PagoDTO> TodosLosPagos = new();
+    private List<SuscripcionDTO> TodasLasSuscripciones = new();
+    private List<SocioDTO> TodosLosSocios = new();
+    private List<EntrenadorDTO> TodosLosEntrenadores = new();
+
+    private List<MovimientoReporteItem> Movimientos = new();
+    private List<RecaudacionMembresiaItem> RecaudacionPorMembresia = new();
+
+    private int PaginaActual = 1;
+    private const int TamanoPagina = 10;
+
+    private string ClasePeriodoMes => PeriodoActual == "Mes" ? "active" : "";
+    private string ClasePeriodoTrimestre => PeriodoActual == "Trimestre" ? "active" : "";
+    private string ClasePeriodoAnio => PeriodoActual == "Anio" ? "active" : "";
+
+    private string PeriodoTexto =>
+        $"{FechaInicioPeriodo:dd/MM/yyyy} - {FechaFinPeriodo:dd/MM/yyyy}";
+
+    private DateTime FechaBasePeriodo
+    {
+        get
+        {
+            var fechas = TodosLosPagos
+                .Where(p => p.FechaPago.HasValue)
+                .Select(p => p.FechaPago!.Value)
+                .ToList();
+
+            return fechas.Any() ? fechas.Max() : DateTime.Today;
+        }
+    }
+
+    private DateTime FechaInicioPeriodo
+    {
+        get
+        {
+            DateTime baseMes = new DateTime(FechaBasePeriodo.Year, FechaBasePeriodo.Month, 1);
+
+            return PeriodoActual switch
+            {
+                "Anio" => baseMes.AddMonths(-11),
+                "Trimestre" => baseMes.AddMonths(-2),
+                _ => baseMes
+            };
+        }
+    }
+
+    private DateTime FechaFinPeriodo =>
+        new DateTime(FechaBasePeriodo.Year, FechaBasePeriodo.Month, 1)
+            .AddMonths(1)
+            .AddDays(-1);
+
+    private IEnumerable<PagoDTO> PagosPeriodo =>
+        TodosLosPagos
+            .Where(p => p.FechaPago.HasValue)
+            .Where(p => p.FechaPago!.Value.Date >= FechaInicioPeriodo.Date &&
+                        p.FechaPago!.Value.Date <= FechaFinPeriodo.Date);
+
+    private List<PagoDTO> PagosPeriodoLista => PagosPeriodo.ToList();
+
+    private decimal IngresosBrutos =>
+        PagosPeriodoLista
+            .Where(p => p.Activo && !EsPagoEgreso(p))
+            .Sum(p => (decimal)p.Monto);
+
+    private decimal EgresosTotales =>
+        PagosPeriodoLista
+            .Where(p => p.Activo && EsPagoEgreso(p))
+            .Sum(p => (decimal)p.Monto);
+
+    private decimal BalanceNeto => IngresosBrutos - EgresosTotales;
+
+    private decimal PorCobrarSocios =>
+        PagosPeriodoLista
+            .Where(p => !p.Activo && !EsPagoEgreso(p))
+            .Sum(p => (decimal)p.Monto);
+
+    private decimal PorPagarStaff =>
+        PagosPeriodoLista
+            .Where(p => !p.Activo && EsPagoEgreso(p))
+            .Sum(p => (decimal)p.Monto);
+
+    private int TotalMovimientos => PagosPeriodoLista.Count;
+
+    private int PagosPendientesSocios =>
+        PagosPeriodoLista.Count(p => !p.Activo && !EsPagoEgreso(p));
+
+    private int PagosPendientesStaff =>
+        PagosPeriodoLista.Count(p => !p.Activo && EsPagoEgreso(p));
+
+    private int PagosPendientes =>
+        PagosPeriodoLista.Count(p => !p.Activo);
+
+    private int IngresosPagadosCount =>
+        PagosPeriodoLista.Count(p => p.Activo && !EsPagoEgreso(p));
+
+    private int EgresosPagadosCount =>
+        PagosPeriodoLista.Count(p => p.Activo && EsPagoEgreso(p));
+
+    private int TotalPagosEstado =>
+        IngresosPagadosCount + EgresosPagadosCount + PagosPendientes;
+
+    private int PagosEfectivo => PagosPeriodoLista.Count(p => p.MetodoPago == 1);
+    private int PagosTarjeta => PagosPeriodoLista.Count(p => p.MetodoPago == 2);
+    private int PagosYape => PagosPeriodoLista.Count(p => p.MetodoPago == 3);
+    private int PagosPlin => PagosPeriodoLista.Count(p => p.MetodoPago == 4);
+
+    private string BalanceNetoTexto =>
+        BalanceNeto < 0
+            ? $"-S/ {FormatoMoneda(Math.Abs(BalanceNeto))}"
+            : $"S/ {FormatoMoneda(BalanceNeto)}";
+
+    private IEnumerable<MovimientoReporteItem> MovimientosPaginados =>
+        Movimientos
+            .Skip((PaginaActual - 1) * TamanoPagina)
+            .Take(TamanoPagina);
+
+    private int TotalPaginas =>
+        Math.Max(1, (int)Math.Ceiling(Movimientos.Count / (double)TamanoPagina));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarReporte();
+    }
+
+    private async Task CargarReporte()
+    {
+        try
+        {
+            Cargando = true;
+            MensajeError = "";
+
+            var pagosTask = PagoService.ListarPagosAsync();
+            var suscripcionesTask = SuscripcionService.ListarSuscripcionesAsync();
+            var sociosTask = SocioService.ListarSociosAsync();
+            var entrenadoresTask = EntrenadorService.ListarEntrenadoresAsync();
+
+            await Task.WhenAll(pagosTask, suscripcionesTask, sociosTask, entrenadoresTask);
+
+            TodosLosPagos = pagosTask.Result ?? new List<PagoDTO>();
+            TodasLasSuscripciones = suscripcionesTask.Result ?? new List<SuscripcionDTO>();
+            TodosLosSocios = sociosTask.Result ?? new List<SocioDTO>();
+            TodosLosEntrenadores = entrenadoresTask.Result ?? new List<EntrenadorDTO>();
+
+            ConstruirReporte();
+        }
+        catch (Exception ex)
+        {
+            MensajeError = $"No se pudo cargar el reporte de recaudación: {ex.Message}";
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private void ConstruirReporte()
+    {
+        ConstruirRecaudacionPorMembresia();
+        ConstruirMovimientos();
+    }
+
+    private void ConstruirRecaudacionPorMembresia()
+    {
+        var pagosIngresos = PagosPeriodoLista
+            .Where(p => p.Activo && !EsPagoEgreso(p))
+            .ToList();
+
+        decimal totalBasic = 0;
+        decimal totalBlack = 0;
+        decimal totalSinPlan = 0;
+
+        int countBasic = 0;
+        int countBlack = 0;
+        int countSinPlan = 0;
+
+        foreach (var pago in pagosIngresos)
+        {
+            var suscripcion = TodasLasSuscripciones.FirstOrDefault(s => s.IdPago == pago.IdPago);
+
+            if (suscripcion?.IdMembresiaBlack != null)
+            {
+                totalBlack += (decimal)pago.Monto;
+                countBlack++;
+            }
+            else if (suscripcion?.IdMembresiaBasic != null)
+            {
+                totalBasic += (decimal)pago.Monto;
+                countBasic++;
+            }
+            else
+            {
+                totalSinPlan += (decimal)pago.Monto;
+                countSinPlan++;
+            }
+        }
+
+        decimal max = new[] { totalBasic, totalBlack, totalSinPlan }.DefaultIfEmpty(0).Max();
+
+        RecaudacionPorMembresia = new List<RecaudacionMembresiaItem>
+        {
+            new()
+            {
+                Nombre = "Membresía Basic",
+                CantidadPagos = countBasic,
+                Total = totalBasic,
+                CssClass = "basic",
+                Barra = CalcularPorcentajeBarra(totalBasic, max)
+            },
+            new()
+            {
+                Nombre = "Membresía Black",
+                CantidadPagos = countBlack,
+                Total = totalBlack,
+                CssClass = "black",
+                Barra = CalcularPorcentajeBarra(totalBlack, max)
+            },
+            new()
+            {
+                Nombre = "Sin membresía identificada",
+                CantidadPagos = countSinPlan,
+                Total = totalSinPlan,
+                CssClass = "sinplan",
+                Barra = CalcularPorcentajeBarra(totalSinPlan, max)
+            }
+        };
+    }
+
+    private void ConstruirMovimientos()
+    {
+        Movimientos = PagosPeriodoLista
+            .OrderByDescending(p => p.FechaPago ?? DateTime.MinValue)
+            .ThenByDescending(p => p.IdPago)
+            .Select(CrearMovimiento)
+            .ToList();
+
+        if (PaginaActual > TotalPaginas)
+        {
+            PaginaActual = TotalPaginas;
+        }
+    }
+
+    private MovimientoReporteItem CrearMovimiento(PagoDTO pago)
+    {
+        bool esEgreso = EsPagoEgreso(pago);
+
+        string usuario = esEgreso
+            ? ObtenerNombreEntrenadorDesdePago(pago)
+            : ObtenerNombreSocioDesdePago(pago);
+
+        string detalle = esEgreso
+            ? "Staff"
+            : ObtenerMembresiaDesdePago(pago);
+
+        decimal monto = (decimal)pago.Monto;
+
+        return new MovimientoReporteItem
+        {
+            Usuario = usuario,
+            DetalleUsuario = detalle,
+            Iniciales = ObtenerInicialesTexto(usuario),
+            Rol = esEgreso ? "Entrenador" : "Socio",
+            Concepto = string.IsNullOrWhiteSpace(pago.Tipo) ? "Pago registrado" : pago.Tipo,
+            TipoMovimiento = esEgreso ? "Egreso" : "Ingreso",
+            TipoCss = esEgreso ? "egreso" : "ingreso",
+            Metodo = ObtenerMetodoPago(pago.MetodoPago),
+            Fecha = pago.FechaPago?.ToString("dd/MM/yyyy") ?? "—",
+            Estado = pago.Activo ? "Pagado" : "Pendiente",
+            EstadoCss = pago.Activo ? "pagado" : "pendiente",
+            MontoTexto = esEgreso
+                ? $"-S/ {FormatoMoneda(monto)}"
+                : $"S/ {FormatoMoneda(monto)}",
+            MontoCss = esEgreso ? "rr-money-negative" : "rr-money-positive"
+        };
+    }
+
+    private string ObtenerNombreSocioDesdePago(PagoDTO pago)
+    {
+        var suscripcion = TodasLasSuscripciones.FirstOrDefault(s => s.IdPago == pago.IdPago);
+
+        if (suscripcion == null)
+        {
+            return "Socio no identificado";
+        }
+
+        var socio = TodosLosSocios.FirstOrDefault(s => s.IdUsuario == suscripcion.IdUsuario);
+
+        if (socio == null)
+        {
+            return "Socio no identificado";
+        }
+
+        return ObtenerNombreCompletoSocio(socio);
+    }
+
+    private string ObtenerMembresiaDesdePago(PagoDTO pago)
+    {
+        var suscripcion = TodasLasSuscripciones.FirstOrDefault(s => s.IdPago == pago.IdPago);
+
+        if (suscripcion == null)
+        {
+            return "Sin membresía";
+        }
+
+        if (suscripcion.IdMembresiaBlack != null)
+        {
+            return "Membresía Black";
+        }
+
+        if (suscripcion.IdMembresiaBasic != null)
+        {
+            return "Membresía Basic";
+        }
+
+        return "Sin membresía";
+    }
+
+    private string ObtenerNombreEntrenadorDesdePago(PagoDTO pago)
+    {
+        var entrenador = ObtenerEntrenadorDesdePago(pago);
+
+        if (entrenador != null)
+        {
+            return ObtenerNombreCompletoEntrenador(entrenador);
+        }
+
+        string extraido = ExtraerNombreEntrenadorDesdePago(pago);
+
+        return string.IsNullOrWhiteSpace(extraido)
+            ? "Staff no identificado"
+            : extraido;
+    }
+
+    private EntrenadorDTO? ObtenerEntrenadorDesdePago(PagoDTO pago)
+    {
+        string tipo = NormalizarTexto(pago.Tipo);
+
+        foreach (var entrenador in TodosLosEntrenadores)
+        {
+            string nombres = NormalizarTexto(entrenador.Nombres);
+            string apellido = NormalizarTexto(entrenador.ApellidoPaterno);
+            string nombreCompleto = NormalizarTexto(ObtenerNombreCompletoEntrenador(entrenador));
+
+            if (!string.IsNullOrWhiteSpace(nombreCompleto) && tipo.Contains(nombreCompleto))
+            {
+                return entrenador;
+            }
+
+            string primerNombre = nombres.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+
+            if (!string.IsNullOrWhiteSpace(primerNombre) && tipo.Contains(primerNombre))
+            {
+                return entrenador;
+            }
+
+            if (!string.IsNullOrWhiteSpace(apellido) && tipo.Contains(apellido))
+            {
+                return entrenador;
+            }
+        }
+
+        return null;
+    }
+
+    private static string ExtraerNombreEntrenadorDesdePago(PagoDTO pago)
+    {
+        if (string.IsNullOrWhiteSpace(pago.Tipo))
+        {
+            return "";
+        }
+
+        string tipo = pago.Tipo;
+
+        tipo = tipo.Replace("Sueldo Entrenador", "", StringComparison.OrdinalIgnoreCase)
+                   .Replace("Sueldo", "", StringComparison.OrdinalIgnoreCase)
+                   .Replace("Entrenador", "", StringComparison.OrdinalIgnoreCase)
+                   .Replace("Bono", "", StringComparison.OrdinalIgnoreCase)
+                   .Trim();
+
+        int guion = tipo.IndexOf('-');
+
+        if (guion >= 0)
+        {
+            tipo = tipo[..guion].Trim();
+        }
+
+        return tipo;
+    }
+
+    private void MostrarUltimoMes()
+    {
+        PeriodoActual = "Mes";
+        PaginaActual = 1;
+        ConstruirReporte();
+    }
+
+    private void MostrarUltimoTrimestre()
+    {
+        PeriodoActual = "Trimestre";
+        PaginaActual = 1;
+        ConstruirReporte();
+    }
+
+    private void MostrarUltimoAnio()
+    {
+        PeriodoActual = "Anio";
+        PaginaActual = 1;
+        ConstruirReporte();
+    }
+
+    private async Task DescargarReporteRecaudacion()
+    {
+        try
+        {
+            DescargandoReporte = true;
+            MensajeDescarga = "";
+
+            var bytes = await ReporteService.DescargarReportePagosAdministradorAsync();
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JS.InvokeVoidAsync(
+                "downloadFileFromBytes",
+                "reporte_recaudacion.pdf",
+                "application/pdf",
+                base64
+            );
+        }
+        catch
+        {
+            MensajeDescarga = "La pantalla está lista. Por ahora usa el PDF financiero existente; luego podemos crear el endpoint específico de recaudación con rango de fechas.";
+        }
+        finally
+        {
+            DescargandoReporte = false;
+        }
+    }
+
+    private void VolverAReportes()
+    {
+        Navigation.NavigateTo("/admin/reportes");
+    }
+
+    private void PaginaAnterior()
+    {
+        if (PaginaActual > 1)
+        {
+            PaginaActual--;
+        }
+    }
+
+    private void PaginaSiguiente()
+    {
+        if (PaginaActual < TotalPaginas)
+        {
+            PaginaActual++;
+        }
+    }
+
+    private static bool EsPagoEgreso(PagoDTO pago)
+    {
+        if (string.IsNullOrWhiteSpace(pago.Tipo))
+        {
+            return false;
+        }
+
+        string tipo = pago.Tipo.Trim().ToLowerInvariant();
+
+        return tipo.Contains("sueldo") ||
+               tipo.Contains("bono") ||
+               tipo.Contains("entrenador");
+    }
+
+    private string MetodoPagoDonutStyle
+    {
+        get
+        {
+            int efectivo = CalcularGrados(PagosEfectivo, TotalMovimientos);
+            int tarjeta = CalcularGrados(PagosTarjeta, TotalMovimientos);
+            int yape = CalcularGrados(PagosYape, TotalMovimientos);
+
+            int finTarjeta = efectivo + tarjeta;
+            int finYape = finTarjeta + yape;
+
+            return $"background: conic-gradient(#E53935 0deg {efectivo}deg, #1976D2 {efectivo}deg {finTarjeta}deg, #4CAF50 {finTarjeta}deg {finYape}deg, #FF9800 {finYape}deg 360deg);";
+        }
+    }
+
+    private string EstadoPagoDonutStyle
+    {
+        get
+        {
+            int ingresos = CalcularGrados(IngresosPagadosCount, TotalPagosEstado);
+            int egresos = CalcularGrados(EgresosPagadosCount, TotalPagosEstado);
+
+            int finEgresos = ingresos + egresos;
+
+            return $"background: conic-gradient(#4CAF50 0deg {ingresos}deg, #EF3131 {ingresos}deg {finEgresos}deg, #FF9800 {finEgresos}deg 360deg);";
+        }
+    }
+
+    private int MesesPeriodo =>
+        PeriodoActual == "Anio"
+            ? 12
+            : PeriodoActual == "Trimestre"
+                ? 3
+                : 1;
+
+    private decimal MaxGrafico
+    {
+        get
+        {
+            var puntos = ConstruirPuntosGrafico(false);
+
+            decimal max = puntos
+                .SelectMany(p => new[] { p.Ingresos, p.Egresos })
+                .DefaultIfEmpty(0)
+                .Max();
+
+            if (max <= 0)
+            {
+                return 100;
+            }
+
+            decimal redondeado = Math.Ceiling(max / 100m) * 100m;
+
+            return redondeado < 100 ? 100 : redondeado;
+        }
+    }
+
+    private string GraficoLabel100 => MaxGrafico.ToString("0", CultureInfo.InvariantCulture);
+    private string GraficoLabel75 => (MaxGrafico * 0.75m).ToString("0", CultureInfo.InvariantCulture);
+    private string GraficoLabel50 => (MaxGrafico * 0.50m).ToString("0", CultureInfo.InvariantCulture);
+    private string GraficoLabel25 => (MaxGrafico * 0.25m).ToString("0", CultureInfo.InvariantCulture);
+
+    private List<PuntoGrafico> PuntosGrafico => ConstruirPuntosGrafico(true);
+
+    private List<PuntoGrafico> ConstruirPuntosGrafico(bool calcularCoordenadas)
+    {
+        int meses = MesesPeriodo;
+
+        DateTime fechaInicio = FechaInicioPeriodo;
+
+        decimal max = calcularCoordenadas ? MaxGrafico : 1;
+
+        var lista = new List<PuntoGrafico>();
+
+        for (int i = 0; i < meses; i++)
+        {
+            DateTime mes = fechaInicio.AddMonths(i);
+
+            decimal ingresos = TodosLosPagos
+                .Where(p => p.Activo &&
+                            !EsPagoEgreso(p) &&
+                            p.FechaPago.HasValue &&
+                            p.FechaPago.Value.Year == mes.Year &&
+                            p.FechaPago.Value.Month == mes.Month)
+                .Sum(p => (decimal)p.Monto);
+
+            decimal egresos = TodosLosPagos
+                .Where(p => p.Activo &&
+                            EsPagoEgreso(p) &&
+                            p.FechaPago.HasValue &&
+                            p.FechaPago.Value.Year == mes.Year &&
+                            p.FechaPago.Value.Month == mes.Month)
+                .Sum(p => (decimal)p.Monto);
+
+            double x = meses == 1
+                ? 500
+                : 80 + (840.0 * i / (meses - 1));
+
+            double yIngresos = calcularCoordenadas ? CalcularY(ingresos, max) : 0;
+            double yEgresos = calcularCoordenadas ? CalcularY(egresos, max) : 0;
+
+            lista.Add(new PuntoGrafico
+            {
+                Mes = mes.ToString("MMM", new CultureInfo("es-PE")),
+                Ingresos = ingresos,
+                Egresos = egresos,
+                ValorIngresos = ingresos.ToString("0", CultureInfo.InvariantCulture),
+                ValorEgresos = egresos.ToString("0", CultureInfo.InvariantCulture),
+                X = x.ToString("0", CultureInfo.InvariantCulture),
+                YIngresos = yIngresos.ToString("0", CultureInfo.InvariantCulture),
+                YEgresos = yEgresos.ToString("0", CultureInfo.InvariantCulture),
+                LabelYIngresos = Math.Max(18, yIngresos - 14).ToString("0", CultureInfo.InvariantCulture),
+                LabelYEgresos = Math.Min(250, yEgresos + 20).ToString("0", CultureInfo.InvariantCulture)
+            });
+        }
+
+        return lista;
+    }
+
+    private static double CalcularY(decimal valor, decimal max)
+    {
+        if (max <= 0)
+        {
+            return 230;
+        }
+
+        double proporcion = (double)(valor / max);
+        double y = 230 - (proporcion * 180);
+
+        if (y < 35)
+        {
+            y = 35;
+        }
+
+        if (y > 230)
+        {
+            y = 230;
+        }
+
+        return y;
+    }
+
+    private string ChartIngresosLinePoints =>
+        string.Join(" ", PuntosGrafico.Select(p => $"{p.X},{p.YIngresos}"));
+
+    private string ChartEgresosLinePoints =>
+        string.Join(" ", PuntosGrafico.Select(p => $"{p.X},{p.YEgresos}"));
+
+    private string ChartIngresosAreaPoints
+    {
+        get
+        {
+            if (!PuntosGrafico.Any())
+            {
+                return "";
+            }
+
+            var primero = PuntosGrafico.First();
+            var ultimo = PuntosGrafico.Last();
+
+            return $"{ChartIngresosLinePoints} {ultimo.X},250 {primero.X},250";
+        }
+    }
+
+    private static int CalcularGrados(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return 0;
+        }
+
+        return Convert.ToInt32(Math.Round(360.0 * cantidad / total));
+    }
+
+    private static string Porcentaje(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return "0.0%";
+        }
+
+        double porcentaje = 100.0 * cantidad / total;
+        return porcentaje.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private static string CalcularPorcentajeBarra(decimal valor, decimal maximo)
+    {
+        if (maximo <= 0)
+        {
+            return "4%";
+        }
+
+        decimal porcentaje = 100 * valor / maximo;
+        return Math.Max((double)porcentaje, 4).ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private static string FormatoMoneda(decimal valor)
+    {
+        return valor.ToString("0.00", CultureInfo.InvariantCulture);
+    }
+
+    private static string ObtenerMetodoPago(int idMetodoPago)
+    {
+        return idMetodoPago switch
+        {
+            1 => "Efectivo",
+            2 => "Tarjeta",
+            3 => "Yape",
+            4 => "Plin",
+            _ => "Sin método"
+        };
+    }
+
+    private static string ObtenerNombreCompletoSocio(SocioDTO socio)
+    {
+        string nombre = $"{socio.Nombres} {socio.ApellidoPaterno} {socio.ApellidoMaterno}".Trim();
+        return string.IsNullOrWhiteSpace(nombre) ? "Socio sin nombre" : nombre;
+    }
+
+    private static string ObtenerNombreCompletoEntrenador(EntrenadorDTO entrenador)
+    {
+        string nombre = $"{entrenador.Nombres} {entrenador.ApellidoPaterno} {entrenador.ApellidoMaterno}".Trim();
+        return string.IsNullOrWhiteSpace(nombre) ? "Entrenador sin nombre" : nombre;
+    }
+
+    private static string ObtenerInicialesTexto(string texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+        {
+            return "U";
+        }
+
+        var partes = texto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (partes.Length == 1)
+        {
+            return partes[0][0].ToString().ToUpperInvariant();
+        }
+
+        return $"{partes[0][0]}{partes[1][0]}".ToUpperInvariant();
+    }
+
+    private static string NormalizarTexto(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+        {
+            return "";
+        }
+
+        string normalizado = texto.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+
+        var builder = new StringBuilder();
+
+        foreach (char c in normalizado)
+        {
+            var categoria = CharUnicodeInfo.GetUnicodeCategory(c);
+
+            if (categoria != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(c);
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+    private class PuntoGrafico
+    {
+        public string Mes { get; set; } = "";
+        public decimal Ingresos { get; set; }
+        public decimal Egresos { get; set; }
+        public string ValorIngresos { get; set; } = "";
+        public string ValorEgresos { get; set; } = "";
+        public string X { get; set; } = "";
+        public string YIngresos { get; set; } = "";
+        public string YEgresos { get; set; } = "";
+        public string LabelYIngresos { get; set; } = "";
+        public string LabelYEgresos { get; set; } = "";
+    }
+
+    private class RecaudacionMembresiaItem
+    {
+        public string Nombre { get; set; } = "";
+        public int CantidadPagos { get; set; }
+        public decimal Total { get; set; }
+        public string CssClass { get; set; } = "";
+        public string Barra { get; set; } = "4%";
+    }
+
+    private class MovimientoReporteItem
+    {
+        public string Usuario { get; set; } = "";
+        public string DetalleUsuario { get; set; } = "";
+        public string Iniciales { get; set; } = "";
+        public string Rol { get; set; } = "";
+        public string Concepto { get; set; } = "";
+        public string TipoMovimiento { get; set; } = "";
+        public string TipoCss { get; set; } = "";
+        public string Metodo { get; set; } = "";
+        public string Fecha { get; set; } = "";
+        public string Estado { get; set; } = "";
+        public string EstadoCss { get; set; } = "";
+        public string MontoTexto { get; set; } = "";
+        public string MontoCss { get; set; } = "";
+    }
+}

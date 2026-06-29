@@ -1,0 +1,1295 @@
+﻿@page "/admin/reportes/entrenadores"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+@using System.Globalization
+@using System.Text
+@using Microsoft.JSInterop
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+
+@inject EntrenadorServicio EntrenadorService
+@inject SesionClaseServicio SesionClaseService
+@inject PagoServicio PagoService
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<section class="reporte-entrenadores-page">
+
+    <div class="re-breadcrumb">
+        <button type="button" @onclick="VolverAReportes">
+            <i class="bi bi-arrow-left"></i>
+            Reportes
+        </button>
+        <span>/</span>
+        <strong>Entrenadores</strong>
+    </div>
+
+    <div class="re-header">
+        <div>
+            <span class="re-kicker">Reporte administrativo</span>
+            <h1>Reporte de Entrenadores</h1>
+            <p>Consulta el estado del staff, sueldos del mes y carga de sesiones asignadas.</p>
+            <small>Mes evaluado: @MesReferenciaTexto</small>
+        </div>
+
+        <button type="button"
+                class="re-download-btn"
+                @onclick="DescargarReporteEntrenadores"
+                disabled="@DescargandoReporte">
+            @if (DescargandoReporte)
+            {
+                <span>
+                    <i class="bi bi-hourglass-split"></i>
+                    Generando PDF...
+                </span>
+            }
+            else
+            {
+                <span>
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Descargar reporte de entrenadores
+                </span>
+            }
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeDescarga))
+    {
+        <div class="re-alert">
+            <i class="bi bi-info-circle"></i>
+            <span>@MensajeDescarga</span>
+        </div>
+    }
+
+    @if (Cargando)
+    {
+        <div class="re-loading">
+            <i class="bi bi-hourglass-split"></i>
+            <span>Cargando reporte de entrenadores...</span>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(MensajeError))
+    {
+        <div class="re-error">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>@MensajeError</span>
+        </div>
+    }
+    else
+    {
+        <div class="re-kpi-grid">
+
+            <div class="re-kpi-card">
+                <div class="re-kpi-icon blue">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <div>
+                    <span>Entrenadores activos</span>
+                    <strong>@EntrenadoresActivos</strong>
+                    <p>@Porcentaje(EntrenadoresActivos, TotalEntrenadores) del staff</p>
+                </div>
+            </div>
+
+            <div class="re-kpi-card">
+                <div class="re-kpi-icon green">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div>
+                    <span>Sueldos pagados</span>
+                    <strong>S/ @FormatoMoneda(SueldosPagadosMes)</strong>
+                    <p>Pagos de staff registrados como cobrados</p>
+                </div>
+            </div>
+
+            <div class="re-kpi-card">
+                <div class="re-kpi-icon yellow">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div>
+                    <span>Sueldos pendientes</span>
+                    <strong>S/ @FormatoMoneda(SueldosPendientesMes)</strong>
+                    <p>Pagos de staff pendientes</p>
+                </div>
+            </div>
+
+            <div class="re-kpi-card">
+                <div class="re-kpi-icon red">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div>
+                    <span>Sesiones asignadas</span>
+                    <strong>@SesionesAsignadasMes</strong>
+                    <p>Clases programadas en el mes</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="re-main-grid">
+
+            <div class="re-panel">
+                <div class="re-panel-header">
+                    <div>
+                        <h2>Sesiones por entrenador</h2>
+                        <p>Carga de clases asignadas durante el mes evaluado.</p>
+                    </div>
+                </div>
+
+                <div class="re-bars-list">
+                    @foreach (var item in EntrenadoresReporte)
+                    {
+                        <div class="re-bar-row">
+                            <div class="re-bar-head">
+                                <span>@item.NombreCompleto</span>
+                                <strong>@item.SesionesAsignadas sesiones</strong>
+                            </div>
+
+                            <div class="re-bar-track">
+                                <div class="re-bar-fill red"
+                                     style="width:@item.BarraSesiones">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="re-panel">
+                <div class="re-panel-header">
+                    <div>
+                        <h2>Estado de pagos</h2>
+                        <p>Resumen del pago de sueldos del staff.</p>
+                    </div>
+                </div>
+
+                <div class="re-state-content">
+                    <div class="re-donut" style="@EstadoPagosDonutStyle">
+                        <div class="re-donut-center">
+                            <strong>@TotalEntrenadores</strong>
+                            <span>Staff</span>
+                        </div>
+                    </div>
+
+                    <div class="re-donut-list">
+                        <div class="re-donut-row">
+                            <span><i class="dot green"></i>Pagados</span>
+                            <strong>@PagosPagados (@Porcentaje(PagosPagados, TotalEntrenadores))</strong>
+                        </div>
+
+                        <div class="re-donut-row">
+                            <span><i class="dot yellow"></i>Pendientes</span>
+                            <strong>@PagosPendientes (@Porcentaje(PagosPendientes, TotalEntrenadores))</strong>
+                        </div>
+
+                        <div class="re-donut-row">
+                            <span><i class="dot gray"></i>Sin registro</span>
+                            <strong>@PagosSinRegistro (@Porcentaje(PagosSinRegistro, TotalEntrenadores))</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="re-panel re-egresos-panel">
+            <div class="re-panel-header">
+                <div>
+                    <h2>Resumen de egresos por staff</h2>
+                    <p>Entrenadores ordenados de mayor a menor sueldo mensual.</p>
+                </div>
+            </div>
+
+            <div class="re-salary-list">
+                @foreach (var item in EntrenadoresReporteOrdenadosPorSueldo)
+                {
+                    <div class="re-salary-row">
+                        <div class="re-salary-info">
+                            <strong>@item.NombreCompleto</strong>
+                            <span>@item.Especialidad</span>
+                        </div>
+
+                        <div class="re-salary-bar">
+                            <div style="width:@item.BarraSueldo"></div>
+                        </div>
+
+                        <strong class="re-salary-money">S/ @FormatoMoneda(item.SueldoMensual)</strong>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="re-table-panel">
+            <div class="re-panel-header">
+                <div>
+                    <h2>Detalle por entrenador</h2>
+                    <p>Información personal, especialidad, sueldo, pago del mes y sesiones asignadas.</p>
+                </div>
+            </div>
+
+            <div class="re-table-wrapper">
+                <table class="re-table">
+                    <thead>
+                        <tr>
+                            <th>Entrenador</th>
+                            <th>DNI</th>
+                            <th>Especialidad</th>
+                            <th>Estado</th>
+                            <th>Sueldo</th>
+                            <th>Pago del mes</th>
+                            <th>Sesiones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in EntrenadoresReporte)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="re-user-cell">
+                                        <div class="re-avatar">@item.Iniciales</div>
+                                        <div>
+                                            <strong>@item.NombreCompleto</strong>
+                                            <span>@item.Email</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>@item.Dni</td>
+                                <td>@item.Especialidad</td>
+
+                                <td>
+                                    <span class="re-status @item.EstadoCss">
+                                        @item.Estado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong>S/ @FormatoMoneda(item.SueldoMensual)</strong>
+                                </td>
+
+                                <td>
+                                    <span class="re-status @item.EstadoPagoCss">
+                                        @item.EstadoPago
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong>@item.SesionesAsignadas</strong>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</section>
+
+<style>
+    .reporte-entrenadores-page {
+        width: 100%;
+        min-height: 100%;
+        padding: 28px 36px 48px;
+        color: #f5f5f5;
+        background: #0b0b0b;
+    }
+
+    .re-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 22px;
+        color: #9ca3af;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+        .re-breadcrumb button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            color: #E53935;
+            background: transparent;
+            border: none;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .re-breadcrumb strong {
+            color: #ffffff;
+        }
+
+    .re-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        margin-bottom: 26px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .re-kicker {
+        display: inline-block;
+        margin-bottom: 8px;
+        color: #E53935;
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .re-header h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 42px;
+        font-weight: 950;
+        line-height: 1.05;
+    }
+
+    .re-header p {
+        margin: 10px 0 0;
+        max-width: 720px;
+        color: #b9b9b9;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .re-header small {
+        display: inline-block;
+        margin-top: 8px;
+        color: #E53935;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .re-download-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 285px;
+        padding: 13px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(229, 57, 53, 0.45);
+        background: #E53935;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+        .re-download-btn span {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .re-download-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+    .re-alert,
+    .re-loading,
+    .re-error {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding: 16px 18px;
+        border-radius: 14px;
+        background: #171717;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f5f5f5;
+        font-weight: 700;
+    }
+
+    .re-alert {
+        color: #FACC15;
+        border-color: rgba(250, 204, 21, 0.25);
+    }
+
+    .re-error {
+        color: #ffb4b4;
+        border-color: rgba(229, 57, 53, 0.35);
+    }
+
+    .re-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .re-kpi-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-height: 126px;
+        padding: 20px;
+        border-radius: 16px;
+        background: #151515;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .re-kpi-icon {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        font-size: 23px;
+    }
+
+        .re-kpi-icon.green {
+            color: #22C55E;
+            background: rgba(34, 197, 94, 0.12);
+        }
+
+        .re-kpi-icon.red {
+            color: #EF3131;
+            background: rgba(239, 49, 49, 0.13);
+        }
+
+        .re-kpi-icon.yellow {
+            color: #FACC15;
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+        .re-kpi-icon.blue {
+            color: #60A5FA;
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+    .re-kpi-card span {
+        display: block;
+        margin-bottom: 6px;
+        color: #bdbdbd;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+    }
+
+    .re-kpi-card strong {
+        display: block;
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 950;
+        line-height: 1.1;
+    }
+
+    .re-kpi-card p {
+        margin: 8px 0 0;
+        color: #b9b9b9;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .re-main-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .re-panel,
+    .re-table-panel {
+        padding: 24px;
+        border-radius: 18px;
+        background: #151515;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .re-egresos-panel {
+        margin-bottom: 28px;
+    }
+
+    .re-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+        .re-panel-header h2 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 950;
+        }
+
+        .re-panel-header p {
+            margin: 6px 0 0;
+            color: #a9a9a9;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+    .re-bars-list {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+    }
+
+    .re-bar-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 10px;
+    }
+
+        .re-bar-head span {
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .re-bar-head strong {
+            color: #dcdcdc;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+    .re-bar-track {
+        width: 100%;
+        height: 13px;
+        border-radius: 999px;
+        background: #242424;
+        overflow: hidden;
+    }
+
+    .re-bar-fill {
+        height: 100%;
+        min-width: 4px;
+        border-radius: 999px;
+    }
+
+        .re-bar-fill.red {
+            background: #E53935;
+        }
+
+    .re-state-content {
+        display: grid;
+        grid-template-columns: 190px 1fr;
+        align-items: center;
+        gap: 26px;
+    }
+
+    .re-donut {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+    }
+
+        .re-donut::after {
+            content: "";
+            position: absolute;
+            inset: 38px;
+            border-radius: 50%;
+            background: #151515;
+        }
+
+    .re-donut-center {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .re-donut-center strong {
+            color: #ffffff;
+            font-size: 34px;
+            font-weight: 950;
+        }
+
+        .re-donut-center span {
+            color: #bdbdbd;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+    .re-donut-list {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+    }
+
+    .re-donut-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 13px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+        .re-donut-row span {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: #f5f5f5;
+            font-weight: 750;
+        }
+
+        .re-donut-row strong {
+            color: #ffffff;
+            font-weight: 900;
+        }
+
+    .dot {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        border-radius: 50%;
+    }
+
+        .dot.green {
+            background: #22C55E;
+        }
+
+        .dot.yellow {
+            background: #FACC15;
+        }
+
+        .dot.gray {
+            background: #6B7280;
+        }
+
+    .re-salary-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .re-salary-row {
+        display: grid;
+        grid-template-columns: 250px 1fr 120px;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .re-salary-info strong {
+        display: block;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    .re-salary-info span {
+        display: block;
+        margin-top: 4px;
+        color: #a9a9a9;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .re-salary-bar {
+        width: 100%;
+        height: 13px;
+        border-radius: 999px;
+        background: #242424;
+        overflow: hidden;
+    }
+
+        .re-salary-bar div {
+            height: 100%;
+            min-width: 4px;
+            border-radius: 999px;
+            background: #E53935;
+        }
+
+    .re-salary-money {
+        color: #ffffff;
+        text-align: right;
+        font-weight: 950;
+    }
+
+    .re-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .re-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1000px;
+    }
+
+        .re-table th {
+            padding: 14px 16px;
+            color: #a7a7a7;
+            background: #101010;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px;
+            font-weight: 900;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .re-table td {
+            padding: 16px;
+            color: #e8e8e8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+    .re-user-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .re-avatar {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #E53935;
+        color: #ffffff;
+        font-weight: 950;
+    }
+
+    .re-user-cell strong {
+        display: block;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    .re-user-cell span {
+        display: block;
+        margin-top: 3px;
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .re-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+        .re-status.activo,
+        .re-status.pagado {
+            color: #22C55E;
+            background: rgba(34, 197, 94, 0.12);
+        }
+
+        .re-status.inactivo {
+            color: #EF3131;
+            background: rgba(239, 49, 49, 0.13);
+        }
+
+        .re-status.pendiente {
+            color: #FACC15;
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+        .re-status.sinregistro {
+            color: #9CA3AF;
+            background: rgba(156, 163, 175, 0.13);
+        }
+
+    @@media (max-width: 1180px) {
+        .re-kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .re-main-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .re-salary-row {
+            grid-template-columns: 1fr;
+        }
+
+        .re-salary-money {
+            text-align: left;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .reporte-entrenadores-page {
+            padding: 22px 18px 38px;
+        }
+
+        .re-header {
+            flex-direction: column;
+        }
+
+            .re-header h1 {
+                font-size: 34px;
+            }
+
+        .re-download-btn {
+            width: 100%;
+        }
+
+        .re-kpi-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .re-state-content {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private bool Cargando = true;
+    private bool DescargandoReporte = false;
+    private string MensajeError = "";
+    private string MensajeDescarga = "";
+
+    private List<EntrenadorDTO> TodosLosEntrenadores = new();
+    private List<SesionClaseDTO> TodasLasSesiones = new();
+    private List<PagoDTO> TodosLosPagos = new();
+
+    private List<EntrenadorReporteItem> EntrenadoresReporte = new();
+
+    private DateTime MesReferencia = DateTime.Today;
+
+    private int TotalEntrenadores = 0;
+    private int EntrenadoresActivos = 0;
+    private int SesionesAsignadasMes = 0;
+
+    private int PagosPagados = 0;
+    private int PagosPendientes = 0;
+    private int PagosSinRegistro = 0;
+
+    private decimal SueldosPagadosMes = 0;
+    private decimal SueldosPendientesMes = 0;
+
+    private string MesReferenciaTexto =>
+        MesReferencia.ToString("MMMM yyyy", new CultureInfo("es-PE"));
+
+    private IEnumerable<EntrenadorReporteItem> EntrenadoresReporteOrdenadosPorSueldo =>
+        EntrenadoresReporte.OrderByDescending(e => e.SueldoMensual);
+
+    private string EstadoPagosDonutStyle
+    {
+        get
+        {
+            if (TotalEntrenadores == 0)
+            {
+                return "background:#242424;";
+            }
+
+            int pagados = CalcularGrados(PagosPagados, TotalEntrenadores);
+            int pendientes = CalcularGrados(PagosPendientes, TotalEntrenadores);
+
+            int finPagados = pagados;
+            int finPendientes = pagados + pendientes;
+
+            return $"background: conic-gradient(#22C55E 0deg {finPagados}deg, #FACC15 {finPagados}deg {finPendientes}deg, #6B7280 {finPendientes}deg 360deg);";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarReporte();
+    }
+
+    private async Task CargarReporte()
+    {
+        try
+        {
+            Cargando = true;
+            MensajeError = "";
+
+            var entrenadoresTask = EntrenadorService.ListarEntrenadoresAsync();
+            var sesionesTask = SesionClaseService.ListarSesionesAsync();
+            var pagosTask = PagoService.ListarPagosAsync();
+
+            await Task.WhenAll(entrenadoresTask, sesionesTask, pagosTask);
+
+            TodosLosEntrenadores = entrenadoresTask.Result ?? new List<EntrenadorDTO>();
+            TodasLasSesiones = sesionesTask.Result ?? new List<SesionClaseDTO>();
+            TodosLosPagos = pagosTask.Result ?? new List<PagoDTO>();
+
+            ConfigurarMesReferencia();
+            ConstruirReporte();
+        }
+        catch (Exception ex)
+        {
+            MensajeError = $"No se pudo cargar el reporte de entrenadores: {ex.Message}";
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private void ConfigurarMesReferencia()
+    {
+        var pagosStaff = TodosLosPagos
+            .Where(EsPagoEgreso)
+            .Where(p => p.FechaPago.HasValue)
+            .ToList();
+
+        bool hayPagosMesActual = pagosStaff.Any(p => EsDelMes(DateTime.Today, p.FechaPago!.Value));
+
+        if (hayPagosMesActual)
+        {
+            MesReferencia = DateTime.Today;
+            return;
+        }
+
+        var ultimoPagoStaff = pagosStaff
+            .OrderByDescending(p => p.FechaPago)
+            .FirstOrDefault();
+
+        if (ultimoPagoStaff?.FechaPago != null)
+        {
+            MesReferencia = ultimoPagoStaff.FechaPago.Value;
+        }
+        else
+        {
+            MesReferencia = DateTime.Today;
+        }
+    }
+
+    private void ConstruirReporte()
+    {
+        EntrenadoresReporte.Clear();
+
+        var pagosStaffMes = TodosLosPagos
+            .Where(EsPagoEgreso)
+            .Where(EsPagoDelMesReferencia)
+            .ToList();
+
+        var sesionesMes = TodasLasSesiones
+            .Where(s => s.Activo)
+            .Where(s => s.FechaSesion != default)
+            .Where(s => EsDelMes(MesReferencia, s.FechaSesion))
+            .ToList();
+
+        foreach (var entrenador in TodosLosEntrenadores)
+        {
+            var pagoMes = ObtenerPagoEntrenadorMes(entrenador, pagosStaffMes);
+
+            int sesionesAsignadas = sesionesMes
+                .Count(s => s.Entrenador != null && s.Entrenador.IdUsuario == entrenador.IdUsuario);
+
+            decimal sueldoMensual = pagoMes != null
+                ? (decimal)pagoMes.Monto
+                : (decimal)entrenador.Sueldo;
+
+            string estadoPago = ObtenerEstadoPago(pagoMes);
+            string estadoPagoCss = ObtenerEstadoPagoCss(estadoPago);
+
+            EntrenadoresReporte.Add(new EntrenadorReporteItem
+            {
+                IdUsuario = entrenador.IdUsuario,
+                NombreCompleto = ObtenerNombreCompleto(entrenador),
+                Iniciales = ObtenerIniciales(entrenador),
+                Email = entrenador.Email,
+                Dni = entrenador.Dni == 0 ? "—" : entrenador.Dni.ToString(),
+                Especialidad = string.IsNullOrWhiteSpace(entrenador.Especialidad) ? "Sin especialidad" : entrenador.Especialidad,
+                Estado = entrenador.Activo ? "Activo" : "Inactivo",
+                EstadoCss = entrenador.Activo ? "activo" : "inactivo",
+                SueldoMensual = sueldoMensual,
+                EstadoPago = estadoPago,
+                EstadoPagoCss = estadoPagoCss,
+                SesionesAsignadas = sesionesAsignadas
+            });
+        }
+
+        TotalEntrenadores = EntrenadoresReporte.Count;
+        EntrenadoresActivos = EntrenadoresReporte.Count(e => e.Estado == "Activo");
+        SesionesAsignadasMes = EntrenadoresReporte.Sum(e => e.SesionesAsignadas);
+
+        SueldosPagadosMes = pagosStaffMes
+            .Where(p => p.Activo)
+            .Sum(p => (decimal)p.Monto);
+
+        SueldosPendientesMes = pagosStaffMes
+            .Where(p => !p.Activo)
+            .Sum(p => (decimal)p.Monto);
+
+        PagosPagados = EntrenadoresReporte.Count(e => e.EstadoPago == "Pagado");
+        PagosPendientes = EntrenadoresReporte.Count(e => e.EstadoPago == "Pendiente");
+        PagosSinRegistro = EntrenadoresReporte.Count(e => e.EstadoPago == "Sin registro");
+
+        CalcularBarras();
+    }
+
+    private void CalcularBarras()
+    {
+        int maxSesiones = EntrenadoresReporte.Any()
+            ? EntrenadoresReporte.Max(e => e.SesionesAsignadas)
+            : 0;
+
+        decimal maxSueldo = EntrenadoresReporte.Any()
+            ? EntrenadoresReporte.Max(e => e.SueldoMensual)
+            : 0;
+
+        foreach (var item in EntrenadoresReporte)
+        {
+            item.BarraSesiones = CalcularPorcentajeBarra(item.SesionesAsignadas, maxSesiones);
+            item.BarraSueldo = CalcularPorcentajeBarra(item.SueldoMensual, maxSueldo);
+        }
+    }
+
+    private PagoDTO? ObtenerPagoEntrenadorMes(EntrenadorDTO entrenador, List<PagoDTO> pagosStaffMes)
+    {
+        return pagosStaffMes
+            .Where(p => PagoPerteneceAEntrenador(p, entrenador))
+            .OrderByDescending(p => p.Activo)
+            .ThenByDescending(p => p.FechaPago ?? DateTime.MinValue)
+            .FirstOrDefault();
+    }
+
+    private static bool PagoPerteneceAEntrenador(PagoDTO pago, EntrenadorDTO entrenador)
+    {
+        string tipo = NormalizarTexto(pago.Tipo);
+        string nombres = NormalizarTexto(entrenador.Nombres);
+        string apellidoPaterno = NormalizarTexto(entrenador.ApellidoPaterno);
+        string nombreCompleto = NormalizarTexto(ObtenerNombreCompleto(entrenador));
+
+        if (string.IsNullOrWhiteSpace(tipo))
+        {
+            return false;
+        }
+
+        if (!tipo.Contains("entrenador") && !tipo.Contains("sueldo") && !tipo.Contains("bono"))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(nombreCompleto) && tipo.Contains(nombreCompleto))
+        {
+            return true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(nombres))
+        {
+            var primerNombre = nombres.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+
+            if (!string.IsNullOrWhiteSpace(primerNombre) && tipo.Contains(primerNombre))
+            {
+                return true;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(apellidoPaterno) && tipo.Contains(apellidoPaterno))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool EsPagoDelMesReferencia(PagoDTO pago)
+    {
+        if (pago.FechaPago.HasValue)
+        {
+            return EsDelMes(MesReferencia, pago.FechaPago.Value);
+        }
+
+        string tipo = NormalizarTexto(pago.Tipo);
+        string mesTexto = NormalizarTexto(MesReferencia.ToString("MMMM yyyy", new CultureInfo("es-PE")));
+
+        return tipo.Contains(mesTexto);
+    }
+
+    private static bool EsDelMes(DateTime referencia, DateTime fecha)
+    {
+        return referencia.Month == fecha.Month && referencia.Year == fecha.Year;
+    }
+
+    private static bool EsPagoEgreso(PagoDTO pago)
+    {
+        if (string.IsNullOrWhiteSpace(pago.Tipo))
+        {
+            return false;
+        }
+
+        string tipo = pago.Tipo.Trim().ToLowerInvariant();
+
+        return tipo.Contains("sueldo") ||
+               tipo.Contains("bono") ||
+               tipo.Contains("entrenador");
+    }
+
+    private static string ObtenerEstadoPago(PagoDTO? pago)
+    {
+        if (pago == null)
+        {
+            return "Sin registro";
+        }
+
+        return pago.Activo ? "Pagado" : "Pendiente";
+    }
+
+    private static string ObtenerEstadoPagoCss(string estadoPago)
+    {
+        return estadoPago switch
+        {
+            "Pagado" => "pagado",
+            "Pendiente" => "pendiente",
+            _ => "sinregistro"
+        };
+    }
+
+    private async Task DescargarReporteEntrenadores()
+    {
+        try
+        {
+            DescargandoReporte = true;
+            MensajeDescarga = "";
+
+            var bytes = await Http.GetByteArrayAsync("reportes/entrenadores");
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JS.InvokeVoidAsync(
+                "downloadFileFromBytes",
+                "reporte_entrenadores.pdf",
+                "application/pdf",
+                base64
+            );
+        }
+        catch
+        {
+            MensajeDescarga = "La pantalla ya está lista. Falta conectar el endpoint Java del PDF: reportes/entrenadores.";
+        }
+        finally
+        {
+            DescargandoReporte = false;
+        }
+    }
+
+    private void VolverAReportes()
+    {
+        Navigation.NavigateTo("/admin/reportes");
+    }
+
+    private static string ObtenerNombreCompleto(EntrenadorDTO entrenador)
+    {
+        string nombre = $"{entrenador.Nombres} {entrenador.ApellidoPaterno} {entrenador.ApellidoMaterno}".Trim();
+        return string.IsNullOrWhiteSpace(nombre) ? "Entrenador sin nombre" : nombre;
+    }
+
+    private static string ObtenerIniciales(EntrenadorDTO entrenador)
+    {
+        string nombres = entrenador.Nombres?.Trim() ?? "";
+        string apellido = entrenador.ApellidoPaterno?.Trim() ?? "";
+
+        string inicial1 = !string.IsNullOrWhiteSpace(nombres) ? nombres[0].ToString().ToUpperInvariant() : "E";
+        string inicial2 = !string.IsNullOrWhiteSpace(apellido) ? apellido[0].ToString().ToUpperInvariant() : "";
+
+        return inicial1 + inicial2;
+    }
+
+    private static string FormatoMoneda(decimal valor)
+    {
+        return valor.ToString("0.00", CultureInfo.InvariantCulture);
+    }
+
+    private static string Porcentaje(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return "0.0%";
+        }
+
+        double porcentaje = 100.0 * cantidad / total;
+        return porcentaje.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private static int CalcularGrados(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return 0;
+        }
+
+        return Convert.ToInt32(Math.Round(360.0 * cantidad / total));
+    }
+
+    private static string CalcularPorcentajeBarra(int valor, int maximo)
+    {
+        if (maximo <= 0)
+        {
+            return "4%";
+        }
+
+        double porcentaje = 100.0 * valor / maximo;
+        return Math.Max(porcentaje, 4).ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private static string CalcularPorcentajeBarra(decimal valor, decimal maximo)
+    {
+        if (maximo <= 0)
+        {
+            return "4%";
+        }
+
+        decimal porcentaje = 100 * valor / maximo;
+        return Math.Max((double)porcentaje, 4).ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private static string NormalizarTexto(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+        {
+            return "";
+        }
+
+        string normalizado = texto.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+
+        var builder = new StringBuilder();
+
+        foreach (char c in normalizado)
+        {
+            var categoria = CharUnicodeInfo.GetUnicodeCategory(c);
+
+            if (categoria != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(c);
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+    private class EntrenadorReporteItem
+    {
+        public int IdUsuario { get; set; }
+        public string NombreCompleto { get; set; } = "";
+        public string Iniciales { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Dni { get; set; } = "";
+        public string Especialidad { get; set; } = "";
+        public string Estado { get; set; } = "";
+        public string EstadoCss { get; set; } = "";
+        public decimal SueldoMensual { get; set; }
+        public string EstadoPago { get; set; } = "";
+        public string EstadoPagoCss { get; set; } = "";
+        public int SesionesAsignadas { get; set; }
+        public string BarraSesiones { get; set; } = "4%";
+        public string BarraSueldo { get; set; } = "4%";
+    }
+}

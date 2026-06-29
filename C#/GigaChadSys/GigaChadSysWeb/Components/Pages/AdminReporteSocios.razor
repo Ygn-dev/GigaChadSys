@@ -1,0 +1,1076 @@
+﻿@page "/admin/reportes/socios"
+@layout AdminLayout
+@rendermode InteractiveServer
+
+@using System.Globalization
+@using Microsoft.JSInterop
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+
+@inject SocioServicio SocioService
+@inject SuscripcionServicio SuscripcionService
+@inject PagoServicio PagoService
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<section class="reporte-socios-page">
+
+    <div class="rs-breadcrumb">
+        <button type="button" @onclick="VolverAReportes">
+            <i class="bi bi-arrow-left"></i>
+            Reportes
+        </button>
+        <span>/</span>
+        <strong>Socios</strong>
+    </div>
+
+    <div class="rs-header">
+        <div>
+            <span class="rs-kicker">Reporte administrativo</span>
+            <h1>Reporte de Socios</h1>
+            <p>Consulta el estado de membresías, distribución de planes y pagos pendientes de los socios.</p>
+        </div>
+
+        <button type="button"
+                class="rs-download-btn"
+                @onclick="DescargarReporteSocios"
+                disabled="@DescargandoReporte">
+            @if (DescargandoReporte)
+            {
+                <span>
+                    <i class="bi bi-hourglass-split"></i>
+                    Generando PDF...
+                </span>
+            }
+            else
+            {
+                <span>
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Descargar reporte de socios
+                </span>
+            }
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeDescarga))
+    {
+        <div class="rs-alert">
+            <i class="bi bi-info-circle"></i>
+            <span>@MensajeDescarga</span>
+        </div>
+    }
+
+    @if (Cargando)
+    {
+        <div class="rs-loading">
+            <i class="bi bi-hourglass-split"></i>
+            <span>Cargando reporte de socios...</span>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(MensajeError))
+    {
+        <div class="rs-error">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>@MensajeError</span>
+        </div>
+    }
+    else
+    {
+        <div class="rs-kpi-grid">
+
+            <div class="rs-kpi-card">
+                <div class="rs-kpi-icon green">
+                    <i class="bi bi-person-check"></i>
+                </div>
+                <div>
+                    <span>Socios activos</span>
+                    <strong>@SociosActivos</strong>
+                    <p>@Porcentaje(SociosActivos, TotalSocios) del total</p>
+                </div>
+            </div>
+
+            <div class="rs-kpi-card">
+                <div class="rs-kpi-icon red">
+                    <i class="bi bi-person-x"></i>
+                </div>
+                <div>
+                    <span>Socios inactivos</span>
+                    <strong>@SociosInactivos</strong>
+                    <p>@Porcentaje(SociosInactivos, TotalSocios) del total</p>
+                </div>
+            </div>
+
+            <div class="rs-kpi-card">
+                <div class="rs-kpi-icon yellow">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div>
+                    <span>Pendiente por cobrar</span>
+                    <strong>S/ @FormatoMoneda(PendientePorCobrar)</strong>
+                    <p>@SociosPendientes socios con pago pendiente</p>
+                </div>
+            </div>
+
+            <div class="rs-kpi-card">
+                <div class="rs-kpi-icon blue">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div>
+                    <span>Total socios</span>
+                    <strong>@TotalSocios</strong>
+                    <p>Registrados en el sistema</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="rs-main-grid">
+
+            <div class="rs-panel">
+                <div class="rs-panel-header">
+                    <div>
+                        <h2>Distribución por membresía</h2>
+                        <p>Comparación de socios según el plan asociado.</p>
+                    </div>
+                </div>
+
+                <div class="rs-membership-list">
+                    @foreach (var membresia in Membresias)
+                    {
+                        <div class="rs-bar-row">
+                            <div class="rs-bar-head">
+                                <span>@membresia.Nombre</span>
+                                <strong>@membresia.Cantidad socios</strong>
+                            </div>
+
+                            <div class="rs-bar-track">
+                                <div class="rs-bar-fill @membresia.CssClass"
+                                     style="width:@membresia.PorcentajeAncho">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="rs-panel">
+                <div class="rs-panel-header">
+                    <div>
+                        <h2>Estado de socios</h2>
+                        <p>Resumen visual de activos, inactivos y pendientes.</p>
+                    </div>
+                </div>
+
+                <div class="rs-state-content">
+                    <div class="rs-donut" style="@EstadoDonutStyle">
+                        <div class="rs-donut-center">
+                            <strong>@TotalSocios</strong>
+                            <span>Socios</span>
+                        </div>
+                    </div>
+
+                    <div class="rs-donut-list">
+                        <div class="rs-donut-row">
+                            <span><i class="dot green"></i>Activos</span>
+                            <strong>@SociosActivos (@Porcentaje(SociosActivos, TotalSocios))</strong>
+                        </div>
+
+                        <div class="rs-donut-row">
+                            <span><i class="dot red"></i>Inactivos</span>
+                            <strong>@SociosInactivos (@Porcentaje(SociosInactivos, TotalSocios))</strong>
+                        </div>
+
+                        <div class="rs-donut-row">
+                            <span><i class="dot yellow"></i>Pendientes</span>
+                            <strong>@SociosPendientes (@Porcentaje(SociosPendientes, TotalSocios))</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="rs-table-panel">
+            <div class="rs-panel-header">
+                <div>
+                    <h2>Estado de membresías</h2>
+                    <p>Listado detallado de socios, membresía asociada y deuda pendiente.</p>
+                </div>
+            </div>
+
+            <div class="rs-table-wrapper">
+                <table class="rs-table">
+                    <thead>
+                        <tr>
+                            <th>Socio</th>
+                            <th>DNI</th>
+                            <th>Membresía</th>
+                            <th>Estado</th>
+                            <th>Pago pendiente</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var socio in SociosReporte)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="rs-user-cell">
+                                        <div class="rs-avatar">@socio.Iniciales</div>
+                                        <div>
+                                            <strong>@socio.NombreCompleto</strong>
+                                            <span>@socio.Email</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>@socio.Dni</td>
+                                <td>@socio.Membresia</td>
+
+                                <td>
+                                    <span class="rs-status @socio.EstadoCss">
+                                        @socio.Estado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (socio.MontoPendiente > 0)
+                                    {
+                                        <strong class="rs-money-yellow">
+                                            S/ @FormatoMoneda(socio.MontoPendiente)
+                                        </strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="rs-muted">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</section>
+
+<style>
+    .reporte-socios-page {
+        width: 100%;
+        min-height: 100%;
+        padding: 28px 36px 48px;
+        color: #f5f5f5;
+        background: #0b0b0b;
+    }
+
+    .rs-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 22px;
+        color: #9ca3af;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+        .rs-breadcrumb button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            color: #E53935;
+            background: transparent;
+            border: none;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .rs-breadcrumb strong {
+            color: #ffffff;
+        }
+
+    .rs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        margin-bottom: 26px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .rs-kicker {
+        display: inline-block;
+        margin-bottom: 8px;
+        color: #E53935;
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .rs-header h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 42px;
+        font-weight: 950;
+        line-height: 1.05;
+    }
+
+    .rs-header p {
+        margin: 10px 0 0;
+        max-width: 720px;
+        color: #b9b9b9;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .rs-download-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 240px;
+        padding: 13px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(229, 57, 53, 0.45);
+        background: #E53935;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+        .rs-download-btn span {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .rs-download-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+    .rs-alert,
+    .rs-loading,
+    .rs-error {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding: 16px 18px;
+        border-radius: 14px;
+        background: #171717;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f5f5f5;
+        font-weight: 700;
+    }
+
+    .rs-alert {
+        color: #FACC15;
+        border-color: rgba(250, 204, 21, 0.25);
+    }
+
+    .rs-error {
+        color: #ffb4b4;
+        border-color: rgba(229, 57, 53, 0.35);
+    }
+
+    .rs-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .rs-kpi-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-height: 126px;
+        padding: 20px;
+        border-radius: 16px;
+        background: #151515;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .rs-kpi-icon {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        font-size: 23px;
+    }
+
+        .rs-kpi-icon.green {
+            color: #22C55E;
+            background: rgba(34, 197, 94, 0.12);
+        }
+
+        .rs-kpi-icon.red {
+            color: #EF3131;
+            background: rgba(239, 49, 49, 0.13);
+        }
+
+        .rs-kpi-icon.yellow {
+            color: #FACC15;
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+        .rs-kpi-icon.blue {
+            color: #60A5FA;
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+    .rs-kpi-card span {
+        display: block;
+        margin-bottom: 6px;
+        color: #bdbdbd;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+    }
+
+    .rs-kpi-card strong {
+        display: block;
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 950;
+        line-height: 1.1;
+    }
+
+    .rs-kpi-card p {
+        margin: 8px 0 0;
+        color: #b9b9b9;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .rs-main-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .rs-panel,
+    .rs-table-panel {
+        padding: 24px;
+        border-radius: 18px;
+        background: #151515;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .rs-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+        .rs-panel-header h2 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 950;
+        }
+
+        .rs-panel-header p {
+            margin: 6px 0 0;
+            color: #a9a9a9;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+    .rs-membership-list {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+    }
+
+    .rs-bar-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 10px;
+    }
+
+        .rs-bar-head span {
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .rs-bar-head strong {
+            color: #dcdcdc;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+    .rs-bar-track {
+        width: 100%;
+        height: 13px;
+        border-radius: 999px;
+        background: #242424;
+        overflow: hidden;
+    }
+
+    .rs-bar-fill {
+        height: 100%;
+        min-width: 4px;
+        border-radius: 999px;
+    }
+
+        .rs-bar-fill.basic {
+            background: #E53935;
+        }
+
+        .rs-bar-fill.black {
+            background: #FACC15;
+        }
+
+        .rs-bar-fill.sinplan {
+            background: #6B7280;
+        }
+
+    .rs-state-content {
+        display: grid;
+        grid-template-columns: 190px 1fr;
+        align-items: center;
+        gap: 26px;
+    }
+
+    .rs-donut {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+    }
+
+        .rs-donut::after {
+            content: "";
+            position: absolute;
+            inset: 38px;
+            border-radius: 50%;
+            background: #151515;
+        }
+
+    .rs-donut-center {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .rs-donut-center strong {
+            color: #ffffff;
+            font-size: 34px;
+            font-weight: 950;
+        }
+
+        .rs-donut-center span {
+            color: #bdbdbd;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+    .rs-donut-list {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+    }
+
+    .rs-donut-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 13px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+        .rs-donut-row span {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: #f5f5f5;
+            font-weight: 750;
+        }
+
+        .rs-donut-row strong {
+            color: #ffffff;
+            font-weight: 900;
+        }
+
+    .dot {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        border-radius: 50%;
+    }
+
+        .dot.green {
+            background: #22C55E;
+        }
+
+        .dot.red {
+            background: #EF3131;
+        }
+
+        .dot.yellow {
+            background: #FACC15;
+        }
+
+    .rs-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .rs-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 860px;
+    }
+
+        .rs-table th {
+            padding: 14px 16px;
+            color: #a7a7a7;
+            background: #101010;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px;
+            font-weight: 900;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .rs-table td {
+            padding: 16px;
+            color: #e8e8e8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+    .rs-user-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .rs-avatar {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #E53935;
+        color: #ffffff;
+        font-weight: 950;
+    }
+
+    .rs-user-cell strong {
+        display: block;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    .rs-user-cell span {
+        display: block;
+        margin-top: 3px;
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .rs-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+        .rs-status.activo {
+            color: #22C55E;
+            background: rgba(34, 197, 94, 0.12);
+        }
+
+        .rs-status.inactivo {
+            color: #EF3131;
+            background: rgba(239, 49, 49, 0.13);
+        }
+
+        .rs-status.pendiente {
+            color: #FACC15;
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+    .rs-money-yellow {
+        color: #FACC15;
+    }
+
+    .rs-muted {
+        color: #777;
+    }
+
+    @@media (max-width: 1180px) {
+        .rs-kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .rs-main-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .reporte-socios-page {
+            padding: 22px 18px 38px;
+        }
+
+        .rs-header {
+            flex-direction: column;
+        }
+
+            .rs-header h1 {
+                font-size: 34px;
+            }
+
+        .rs-download-btn {
+            width: 100%;
+        }
+
+        .rs-kpi-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rs-state-content {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    private bool Cargando = true;
+    private bool DescargandoReporte = false;
+    private string MensajeError = "";
+    private string MensajeDescarga = "";
+
+    private List<SocioDTO> TodosLosSocios = new();
+    private List<SuscripcionDTO> TodasLasSuscripciones = new();
+    private List<PagoDTO> TodosLosPagos = new();
+
+    private List<SocioReporteItem> SociosReporte = new();
+    private List<MembresiaResumenItem> Membresias = new();
+
+    private int TotalSocios = 0;
+    private int SociosActivos = 0;
+    private int SociosInactivos = 0;
+    private int SociosPendientes = 0;
+    private decimal PendientePorCobrar = 0;
+
+    private string EstadoDonutStyle
+    {
+        get
+        {
+            if (TotalSocios == 0)
+            {
+                return "background:#242424;";
+            }
+
+            int activos = CalcularGrados(SociosActivos, TotalSocios);
+            int pendientes = CalcularGrados(SociosPendientes, TotalSocios);
+
+            int finActivos = activos;
+            int finPendientes = activos + pendientes;
+
+            return $"background: conic-gradient(#22C55E 0deg {finActivos}deg, #FACC15 {finActivos}deg {finPendientes}deg, #EF3131 {finPendientes}deg 360deg);";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarReporte();
+    }
+
+    private async Task CargarReporte()
+    {
+        try
+        {
+            Cargando = true;
+            MensajeError = "";
+
+            var sociosTask = SocioService.ListarSociosAsync();
+            var suscripcionesTask = SuscripcionService.ListarSuscripcionesAsync();
+            var pagosTask = PagoService.ListarPagosAsync();
+
+            await Task.WhenAll(sociosTask, suscripcionesTask, pagosTask);
+
+            TodosLosSocios = sociosTask.Result ?? new List<SocioDTO>();
+            TodasLasSuscripciones = suscripcionesTask.Result ?? new List<SuscripcionDTO>();
+            TodosLosPagos = pagosTask.Result ?? new List<PagoDTO>();
+
+            ConstruirReporte();
+        }
+        catch (Exception ex)
+        {
+            MensajeError = $"No se pudo cargar el reporte de socios: {ex.Message}";
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private void ConstruirReporte()
+    {
+        SociosReporte.Clear();
+
+        foreach (var socio in TodosLosSocios)
+        {
+            var suscripcion = ObtenerSuscripcionPrincipal(socio.IdUsuario);
+            var pago = suscripcion == null
+                ? null
+                : TodosLosPagos.FirstOrDefault(p => p.IdPago == suscripcion.IdPago);
+
+            bool tienePagoPendiente = pago != null && !pago.Activo && !EsPagoEgreso(pago);
+            decimal montoPendiente = tienePagoPendiente ? (decimal)pago!.Monto : 0;
+
+            string membresia = ObtenerNombreMembresia(suscripcion);
+            string estado = ObtenerEstadoSocio(socio, tienePagoPendiente);
+            string estadoCss = estado.ToLowerInvariant();
+
+            SociosReporte.Add(new SocioReporteItem
+            {
+                IdUsuario = socio.IdUsuario,
+                NombreCompleto = ObtenerNombreCompleto(socio),
+                Iniciales = ObtenerIniciales(socio),
+                Email = socio.Email,
+                Dni = socio.Dni == 0 ? "—" : socio.Dni.ToString(),
+                Membresia = membresia,
+                Estado = estado,
+                EstadoCss = estadoCss,
+                MontoPendiente = montoPendiente
+            });
+        }
+
+        TotalSocios = SociosReporte.Count;
+        SociosActivos = SociosReporte.Count(s => s.Estado == "Activo");
+        SociosInactivos = SociosReporte.Count(s => s.Estado == "Inactivo");
+        SociosPendientes = SociosReporte.Count(s => s.Estado == "Pendiente");
+        PendientePorCobrar = SociosReporte.Sum(s => s.MontoPendiente);
+
+        ConstruirDistribucionMembresias();
+    }
+
+    private void ConstruirDistribucionMembresias()
+    {
+        int basic = SociosReporte.Count(s => s.Membresia.Contains("Basic", StringComparison.OrdinalIgnoreCase));
+        int black = SociosReporte.Count(s => s.Membresia.Contains("Black", StringComparison.OrdinalIgnoreCase));
+        int sinPlan = SociosReporte.Count(s => s.Membresia.Contains("Sin plan", StringComparison.OrdinalIgnoreCase));
+
+        Membresias = new List<MembresiaResumenItem>
+        {
+            new()
+            {
+                Nombre = "Membresía Basic",
+                Cantidad = basic,
+                CssClass = "basic",
+                PorcentajeAncho = PorcentajeAncho(basic, TotalSocios)
+            },
+            new()
+            {
+                Nombre = "Membresía Black",
+                Cantidad = black,
+                CssClass = "black",
+                PorcentajeAncho = PorcentajeAncho(black, TotalSocios)
+            },
+            new()
+            {
+                Nombre = "Sin plan asignado",
+                Cantidad = sinPlan,
+                CssClass = "sinplan",
+                PorcentajeAncho = PorcentajeAncho(sinPlan, TotalSocios)
+            }
+        };
+    }
+
+    private SuscripcionDTO? ObtenerSuscripcionPrincipal(int idUsuario)
+    {
+        return TodasLasSuscripciones
+            .Where(s => s.IdUsuario == idUsuario)
+            .OrderByDescending(s => s.Activo)
+            .ThenByDescending(s => s.FechaFinMembresia ?? DateTime.MinValue)
+            .FirstOrDefault();
+    }
+
+    private static string ObtenerNombreMembresia(SuscripcionDTO? suscripcion)
+    {
+        if (suscripcion == null)
+        {
+            return "Sin plan";
+        }
+
+        if (suscripcion.IdMembresiaBlack.HasValue)
+        {
+            return "Membresía Black";
+        }
+
+        if (suscripcion.IdMembresiaBasic.HasValue)
+        {
+            return "Membresía Basic";
+        }
+
+        return "Sin plan";
+    }
+
+    private static string ObtenerEstadoSocio(SocioDTO socio, bool tienePagoPendiente)
+    {
+        if (!socio.Activo)
+        {
+            return "Inactivo";
+        }
+
+        if (tienePagoPendiente)
+        {
+            return "Pendiente";
+        }
+
+        return "Activo";
+    }
+
+    private async Task DescargarReporteSocios()
+    {
+        try
+        {
+            DescargandoReporte = true;
+            MensajeDescarga = "";
+
+            var bytes = await Http.GetByteArrayAsync("reportes/estado-socios");
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JS.InvokeVoidAsync(
+                "downloadFileFromBytes",
+                "reporte_estado_socios.pdf",
+                "application/pdf",
+                base64
+            );
+        }
+        catch
+        {
+            MensajeDescarga = "La pantalla ya está lista. Falta conectar el endpoint Java del PDF: reportes/estado-socios.";
+        }
+        finally
+        {
+            DescargandoReporte = false;
+        }
+    }
+
+    private void VolverAReportes()
+    {
+        Navigation.NavigateTo("/admin/reportes");
+    }
+
+    private static bool EsPagoEgreso(PagoDTO pago)
+    {
+        if (string.IsNullOrWhiteSpace(pago.Tipo))
+        {
+            return false;
+        }
+
+        string tipo = pago.Tipo.Trim().ToLowerInvariant();
+
+        return tipo.Contains("sueldo") ||
+               tipo.Contains("bono") ||
+               tipo.Contains("entrenador");
+    }
+
+    private static string ObtenerNombreCompleto(SocioDTO socio)
+    {
+        string nombre = $"{socio.Nombres} {socio.ApellidoPaterno} {socio.ApellidoMaterno}".Trim();
+        return string.IsNullOrWhiteSpace(nombre) ? "Socio sin nombre" : nombre;
+    }
+
+    private static string ObtenerIniciales(SocioDTO socio)
+    {
+        string nombres = socio.Nombres?.Trim() ?? "";
+        string apellido = socio.ApellidoPaterno?.Trim() ?? "";
+
+        string inicial1 = !string.IsNullOrWhiteSpace(nombres) ? nombres[0].ToString().ToUpperInvariant() : "S";
+        string inicial2 = !string.IsNullOrWhiteSpace(apellido) ? apellido[0].ToString().ToUpperInvariant() : "";
+
+        return inicial1 + inicial2;
+    }
+
+    private static string FormatoMoneda(decimal valor)
+    {
+        return valor.ToString("0.00", CultureInfo.InvariantCulture);
+    }
+
+    private static string Porcentaje(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return "0.0%";
+        }
+
+        double porcentaje = 100.0 * cantidad / total;
+        return porcentaje.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private static string PorcentajeAncho(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return "0%";
+        }
+
+        double porcentaje = 100.0 * cantidad / total;
+        return porcentaje.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    }
+
+    private static int CalcularGrados(int cantidad, int total)
+    {
+        if (total == 0)
+        {
+            return 0;
+        }
+
+        return Convert.ToInt32(Math.Round(360.0 * cantidad / total));
+    }
+
+    private class SocioReporteItem
+    {
+        public int IdUsuario { get; set; }
+        public string NombreCompleto { get; set; } = "";
+        public string Iniciales { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Dni { get; set; } = "";
+        public string Membresia { get; set; } = "";
+        public string Estado { get; set; } = "";
+        public string EstadoCss { get; set; } = "";
+        public decimal MontoPendiente { get; set; }
+    }
+
+    private class MembresiaResumenItem
+    {
+        public string Nombre { get; set; } = "";
+        public int Cantidad { get; set; }
+        public string PorcentajeAncho { get; set; } = "0%";
+        public string CssClass { get; set; } = "";
+    }
+}

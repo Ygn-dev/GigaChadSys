@@ -1,399 +1,179 @@
 @page "/admin/reportes"
 @layout AdminLayout
 @rendermode InteractiveServer
+
 @using System.Globalization
-@using System.Linq
-@using Microsoft.AspNetCore.Components
-@using Microsoft.JSInterop
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
+
 @inject SocioServicio SocioService
-@inject SuscripcionServicio SuscripcionService
+@inject EntrenadorServicio EntrenadorService
 @inject PagoServicio PagoService
-@inject ReporteServicio ReporteService
-@inject IJSRuntime JS
+@inject NavigationManager Navigation
 
-<section class="reports-page">
+<section class="reportes-hub-page">
 
-    <div class="reports-header">
-        <h1>Reportes</h1>
-        <p>Visualiza métricas y estadísticas del gimnasio.</p>
-    </div>
-
-    <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
-        <button type="button"
-                class="admin-report-button"
-                @onclick="DescargarReportePagos"
-                disabled="@DescargandoReporte">
-            @if (DescargandoReporte)
-            {
-                <span>
-                    <i class="bi bi-hourglass-split"></i>
-                    Generando PDF...
-                </span>
-            }
-            else
-            {
-                <span>
-                    <i class="bi bi-file-earmark-pdf"></i>
-                    Descargar reporte de pagos
-                </span>
-            }
-        </button>
-    </div>
-
-    <div class="reports-tabs">
-        <button class="@ClaseTabSocios" @onclick="MostrarReporteSocios">
-            Reporte de Socios
-        </button>
-
-        <button class="@ClaseTabRecaudacion" @onclick="MostrarReporteRecaudacion">
-            Reporte de Recaudación
-        </button>
-    </div>
-
-    @if (ReporteActual == "Socios")
-    {
-        <div class="reports-stats-grid">
-            <div class="report-stat-card">
-                <div class="report-stat-icon green">
-                    <i class="bi bi-person-check"></i>
-                </div>
-                <span>Socios activos</span>
-                <strong>@SociosActivos</strong>
-                <p>@Porcentaje(SociosActivos, TotalSocios)</p>
-            </div>
-
-            <div class="report-stat-card">
-                <div class="report-stat-icon red">
-                    <i class="bi bi-person-x"></i>
-                </div>
-                <span>Socios inactivos</span>
-                <strong>@SociosInactivos</strong>
-                <p>@Porcentaje(SociosInactivos, TotalSocios)</p>
-            </div>
-
-            <div class="report-stat-card">
-                <div class="report-stat-icon yellow">
-                    <i class="bi bi-cash-coin"></i>
-                </div>
-                <span>Pendiente por cobrar</span>
-                <strong>@PagosPendientesSociosTotal</strong>
-                <p>S/ @DeudaPendienteSocios en deuda de socios</p>
-            </div>
-
-            <div class="report-stat-card">
-                <div class="report-stat-icon blue">
-                    <i class="bi bi-people"></i>
-                </div>
-                <span>Total socios</span>
-                <strong>@TotalSocios</strong>
-                <p>Registrados en el sistema</p>
-            </div>
+    <div class="reportes-hub-header">
+        <div>
+            <span class="reportes-hub-kicker">Panel de análisis</span>
+            <h1>Reportes</h1>
+            <p>Visualiza métricas y estadísticas del gimnasio.</p>
         </div>
+    </div>
 
-        <div class="reports-content-grid">
-            <div class="report-panel">
-                <h2>Distribución por Membresía</h2>
-
-                <div class="membership-bar-row">
-                    <div class="membership-bar-header">
-                        <span>Membresía Basic</span>
-                        <strong>@SociosBasic socios</strong>
-                    </div>
-                    <div class="membership-bar-track">
-                        <div class="membership-bar-fill basic" style="width: @PorcentajeAncho(SociosBasic, TotalSocios)"></div>
-                    </div>
-                </div>
-
-                <div class="membership-bar-row">
-                    <div class="membership-bar-header">
-                        <span>Membresía Black</span>
-                        <strong>@SociosBlack socios</strong>
-                    </div>
-                    <div class="membership-bar-track">
-                        <div class="membership-bar-fill black" style="width: @PorcentajeAncho(SociosBlack, TotalSocios)"></div>
-                    </div>
-                </div>
-
-                <div class="report-legend">
-                    <span><i class="legend-basic"></i> Basic</span>
-                    <span><i class="legend-black"></i> Black</span>
-                </div>
-            </div>
-
-            <div class="report-panel">
-                <h2>Estado de Membresías</h2>
-
-                <div class="report-member-list">
-                    @foreach (var socio in Socios)
-                    {
-                        <div class="report-member-row">
-                            <div class="member-avatar-small">
-                                <i class="bi bi-person-circle"></i>
-                            </div>
-
-                            <div class="member-info-report">
-                                <strong>@socio.Nombre</strong>
-                                <span>@socio.Membresia</span>
-                            </div>
-
-                            @if (socio.Activo)
-                            {
-                                <span class="report-status active">Activo</span>
-                            }
-                            else
-                            {
-                                <span class="report-status inactive">Inactivo</span>
-                            }
-                        </div>
-                    }
-                </div>
-            </div>
+    @if (Cargando)
+    {
+        <div class="reportes-loading-card">
+            <i class="bi bi-hourglass-split"></i>
+            <span>Cargando resumen de reportes...</span>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(MensajeError))
+    {
+        <div class="reportes-error-card">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>@MensajeError</span>
         </div>
     }
     else
     {
-        <div class="revenue-filter-row">
-            <button class="@ClasePeriodoMes" @onclick="MostrarUltimoMes">Último Mes</button>
-            <button class="@ClasePeriodoTrimestre" @onclick="MostrarUltimoTrimestre">Último Trimestre</button>
-            <button class="@ClasePeriodoAnio" @onclick="MostrarUltimoAnio">Último Año</button>
-        </div>
+        <div class="reportes-summary-grid">
 
-        <div class="revenue-kpi-grid revenue-kpi-grid-six">
-            <div class="revenue-kpi-card">
-                <div>
-                    <span>Ingresos brutos</span>
-                    <strong class="green-money">S/ @IngresosBrutos</strong>
-                    <p>Dinero real cobrado</p>
+            <div class="reportes-summary-card">
+                <div class="reportes-summary-icon green">
+                    <i class="bi bi-person-check"></i>
                 </div>
 
-                <div class="revenue-kpi-icon green">
-                    <i class="bi bi-arrow-up-right"></i>
+                <div class="reportes-summary-info">
+                    <span>Socios activos</span>
+                    <strong>@SociosActivos</strong>
+                    <p>Clientes actualmente habilitados</p>
                 </div>
             </div>
 
-            <div class="revenue-kpi-card">
-                <div>
+            <div class="reportes-summary-card">
+                <div class="reportes-summary-icon blue">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+
+                <div class="reportes-summary-info">
+                    <span>Entrenadores activos</span>
+                    <strong>@EntrenadoresActivos</strong>
+                    <p>Personal disponible del gimnasio</p>
+                </div>
+            </div>
+
+            <div class="reportes-summary-card">
+                <div class="reportes-summary-icon purple">
+                    <i class="bi bi-people"></i>
+                </div>
+
+                <div class="reportes-summary-info">
+                    <span>Comunidad activa</span>
+                    <strong>@ComunidadActiva</strong>
+                    <p>Socios y entrenadores habilitados</p>
+                </div>
+            </div>
+
+            <div class="reportes-summary-card">
+                <div class="reportes-summary-icon green">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+
+                <div class="reportes-summary-info">
+                    <span>Ingresos totales</span>
+                    <strong>S/ @FormatoMoneda(IngresosTotales)</strong>
+                    <p>Pagos cobrados de socios</p>
+                </div>
+            </div>
+
+            <div class="reportes-summary-card">
+                <div class="reportes-summary-icon red">
+                    <i class="bi bi-graph-down-arrow"></i>
+                </div>
+
+                <div class="reportes-summary-info">
                     <span>Egresos totales</span>
-                    <strong class="red-money">-S/ @EgresosTotales</strong>
-                    <p>Sueldos y salidas pagadas</p>
-                </div>
-
-                <div class="revenue-kpi-icon red">
-                    <i class="bi bi-arrow-down-left"></i>
+                    <strong>-S/ @FormatoMoneda(EgresosTotales)</strong>
+                    <p>Pagos realizados al staff</p>
                 </div>
             </div>
 
-            <div class="revenue-kpi-card">
-                <div>
-                    <span>Balance neto</span>
-                    <strong class="@ClaseBalance">@BalanceNetoTexto</strong>
-                    <p>Ingresos menos egresos</p>
-                </div>
-
-                <div class="revenue-kpi-icon neutral">
+            <div class="reportes-summary-card">
+                <div class="reportes-summary-icon @(BalanceNeto < 0 ? "red" : "green")">
                     <i class="bi bi-calculator"></i>
                 </div>
-            </div>
 
-            <div class="revenue-kpi-card">
-                <div>
-                    <span>Por cobrar socios</span>
-                    <strong class="yellow-money">S/ @PorCobrarSocios</strong>
-                    <p>@PagosPendientesSociosTotal pagos pendientes</p>
-                </div>
-
-                <div class="revenue-kpi-icon yellow">
-                    <i class="bi bi-hourglass-split"></i>
+                <div class="reportes-summary-info">
+                    <span>Balance neto</span>
+                    <strong class="@(BalanceNeto < 0 ? "text-red" : "text-green")">
+                        @BalanceNetoTexto
+                    </strong>
+                    <p>Ingresos menos egresos</p>
                 </div>
             </div>
 
-            <div class="revenue-kpi-card">
-                <div>
-                    <span>Por pagar staff</span>
-                    <strong class="orange-money">-S/ @PorPagarStaff</strong>
-                    <p>@PagosPendientesStaffTotal pagos pendientes</p>
-                </div>
-
-                <div class="revenue-kpi-icon orange">
-                    <i class="bi bi-clock-history"></i>
-                </div>
-            </div>
-
-            <div class="revenue-kpi-card">
-                <div>
-                    <span>Total movimientos</span>
-                    <strong>S/ @TotalMovimientosTexto</strong>
-                    <p>@TotalTransacciones movimientos registrados</p>
-                </div>
-
-                <div class="revenue-kpi-icon neutral">
-                    <i class="bi bi-list-check"></i>
-                </div>
-            </div>
         </div>
 
-        <div class="revenue-chart-card">
-            <div class="chart-title-row">
-                <h2>Ingresos vs Egresos Mensuales (S/)</h2>
-
-                <div class="chart-legend-inline">
-                    <span><i class="dot green"></i>Ingresos</span>
-                    <span><i class="dot red"></i>Egresos</span>
-                </div>
+        <div class="reportes-access-section">
+            <div class="reportes-section-title">
+                <span>Acceder a reportes</span>
+                <h2>Selecciona el reporte que deseas revisar</h2>
             </div>
 
-            <div class="fake-line-chart">
-                <div class="chart-y-label y1200">@GraficoLabel100</div>
-                <div class="chart-y-label y900">@GraficoLabel75</div>
-                <div class="chart-y-label y600">@GraficoLabel50</div>
-                <div class="chart-y-label y300">@GraficoLabel25</div>
-                <div class="chart-y-label y0">0</div>
+            <div class="reportes-access-grid">
 
-                <div class="chart-grid-line line1200"></div>
-                <div class="chart-grid-line line900"></div>
-                <div class="chart-grid-line line600"></div>
-                <div class="chart-grid-line line300"></div>
-                <div class="chart-grid-line line0"></div>
-
-                <svg class="chart-svg" viewBox="0 0 1000 260" preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient id="greenArea" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stop-color="#22C55E" stop-opacity="0.30" />
-                            <stop offset="100%" stop-color="#22C55E" stop-opacity="0.02" />
-                        </linearGradient>
-                    </defs>
-
-                    <polygon points="@ChartIngresosAreaPoints" fill="url(#greenArea)" />
-
-                    <polyline points="@ChartIngresosLinePoints"
-                              fill="none"
-                              stroke="#22C55E"
-                              stroke-width="5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round" />
-
-                    <polyline points="@ChartEgresosLinePoints"
-                              fill="none"
-                              stroke="#EF3131"
-                              stroke-width="5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round" />
-
-                    @foreach (var punto in PuntosGrafico)
-                    {
-                        <circle cx="@punto.X"
-                                cy="@punto.YIngresos"
-                                r="7"
-                                fill="#F5F5F5"
-                                stroke="#22C55E"
-                                stroke-width="4" />
-
-                        <circle cx="@punto.X"
-                                cy="@punto.YEgresos"
-                                r="7"
-                                fill="#F5F5F5"
-                                stroke="#EF3131"
-                                stroke-width="4" />
-
-                        @if (punto.Ingresos > 0)
-                        {
-                            @((MarkupString)$"<text x='{punto.X}' y='{punto.LabelYIngresos}' text-anchor='middle' class='chart-income-label'>{punto.ValorIngresos}</text>")
-                        }
-
-                        @if (punto.Egresos > 0)
-                        {
-                            @((MarkupString)$"<text x='{punto.X}' y='{punto.LabelYEgresos}' text-anchor='middle' class='chart-expense-label'>-{punto.ValorEgresos}</text>")
-                        }
-                    }
-                </svg>
-
-                <div class="chart-months">
-                    @foreach (var punto in PuntosGrafico)
-                    {
-                        <span>@punto.Mes</span>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <div class="revenue-bottom-grid">
-            <div class="revenue-panel">
-                <h2>Métodos de Pago Utilizados</h2>
-
-                <div class="donut-layout">
-                    <div class="donut-card payment-donut" style="@MetodoPagoDonutStyle">
-                        <div class="donut-center">
-                            <strong>@TotalTransacciones</strong>
-                            <span>Movimientos</span>
-                        </div>
+                <button type="button"
+                        class="reportes-access-card"
+                        @onclick="IrAReporteSocios">
+                    <div class="reportes-access-icon">
+                        <i class="bi bi-people"></i>
                     </div>
 
-                    <div class="donut-list">
-                        <div class="donut-row">
-                            <span><i class="dot red"></i>Efectivo</span>
-                            <strong>@PagosEfectivo (@Porcentaje(PagosEfectivo, TotalTransaccionesEntero))</strong>
-                        </div>
-
-                        <div class="donut-row">
-                            <span><i class="dot blue"></i>Tarjeta</span>
-                            <strong>@PagosTarjeta (@Porcentaje(PagosTarjeta, TotalTransaccionesEntero))</strong>
-                        </div>
-
-                        <div class="donut-row">
-                            <span><i class="dot green"></i>Yape</span>
-                            <strong>@PagosYape (@Porcentaje(PagosYape, TotalTransaccionesEntero))</strong>
-                        </div>
-
-                        <div class="donut-row">
-                            <span><i class="dot orange"></i>Plin</span>
-                            <strong>@PagosPlin (@Porcentaje(PagosPlin, TotalTransaccionesEntero))</strong>
-                        </div>
-
-                        <p class="donut-total">Total: @TotalTransacciones movimientos</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="revenue-panel">
-                <h2>Estado Financiero</h2>
-
-                <div class="donut-layout">
-                    <div class="donut-card status-donut" style="@EstadoPagoDonutStyle">
-                        <div class="donut-center">
-                            <strong>@TotalPagosEstado</strong>
-                            <span>Total</span>
-                        </div>
+                    <div class="reportes-access-content">
+                        <h3>Reporte de Socios</h3>
+                        <p>Membresías, estado y distribución de socios.</p>
                     </div>
 
-                    <div class="donut-list">
-                        <div class="donut-row">
-                            <span><i class="dot green"></i>Ingresos pagados</span>
-                            <strong>@IngresosPagadosCount (@Porcentaje(IngresosPagadosCount, TotalPagosEstado))</strong>
-                        </div>
-
-                        <div class="donut-row">
-                            <span><i class="dot red"></i>Egresos pagados</span>
-                            <strong>@EgresosPagadosCount (@Porcentaje(EgresosPagadosCount, TotalPagosEstado))</strong>
-                        </div>
-
-                        <div class="donut-row">
-                            <span><i class="dot orange"></i>Pendientes</span>
-                            <strong>@PagosPendientes (@Porcentaje(PagosPendientes, TotalPagosEstado))</strong>
-                        </div>
-
-                        <div class="pending-box">
-                            <span>Por cobrar socios</span>
-                            <strong>S/ @PorCobrarSocios ›</strong>
-                        </div>
-
-                        <div class="pending-box pending-box-staff">
-                            <span>Por pagar staff</span>
-                            <strong>-S/ @PorPagarStaff ›</strong>
-                        </div>
+                    <div class="reportes-access-arrow">
+                        <i class="bi bi-arrow-right"></i>
                     </div>
-                </div>
+                </button>
+
+                <button type="button"
+                        class="reportes-access-card"
+                        @onclick="IrAReporteEntrenadores">
+                    <div class="reportes-access-icon">
+                        <i class="bi bi-person-workspace"></i>
+                    </div>
+
+                    <div class="reportes-access-content">
+                        <h3>Reporte de Entrenadores</h3>
+                        <p>Staff activo, sueldos y carga de clases.</p>
+                    </div>
+
+                    <div class="reportes-access-arrow">
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </button>
+
+                <button type="button"
+                        class="reportes-access-card"
+                        @onclick="IrAReporteRecaudacion">
+                    <div class="reportes-access-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+
+                    <div class="reportes-access-content">
+                        <h3>Reporte de Recaudación</h3>
+                        <p>Ingresos, egresos y balance financiero.</p>
+                    </div>
+
+                    <div class="reportes-access-arrow">
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </button>
+
             </div>
         </div>
     }
@@ -401,375 +181,377 @@
 </section>
 
 <style>
-    .revenue-kpi-grid-six {
+    .reportes-hub-page {
+        width: 100%;
+        min-height: 100%;
+        padding: 28px 36px 48px;
+        color: #f5f5f5;
+        background: #0b0b0b;
+    }
+
+    .reportes-hub-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        margin-bottom: 26px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .reportes-hub-kicker {
+        display: inline-block;
+        margin-bottom: 8px;
+        color: #E53935;
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .reportes-hub-header h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 42px;
+        font-weight: 900;
+        line-height: 1.05;
+    }
+
+    .reportes-hub-header p {
+        margin: 10px 0 0;
+        color: #b9b9b9;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .reportes-loading-card,
+    .reportes-error-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 18px 20px;
+        border-radius: 14px;
+        background: #171717;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f5f5f5;
+        font-weight: 700;
+    }
+
+        .reportes-loading-card i {
+            color: #E53935;
+            font-size: 20px;
+        }
+
+    .reportes-error-card {
+        border-color: rgba(229, 57, 53, 0.35);
+        color: #ffb4b4;
+    }
+
+        .reportes-error-card i {
+            color: #E53935;
+            font-size: 20px;
+        }
+
+    .reportes-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 36px;
+    }
+
+    .reportes-summary-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-height: 128px;
+        padding: 20px;
+        border-radius: 16px;
+        background: #151515;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: background 0.18s ease, border-color 0.18s ease;
+    }
+
+        .reportes-summary-card:hover {
+            background: #1a1a1a;
+            border-color: rgba(229, 57, 53, 0.35);
+        }
+
+    .reportes-summary-icon {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        font-size: 23px;
+    }
+
+        .reportes-summary-icon.green {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22C55E;
+        }
+
+        .reportes-summary-icon.red {
+            background: rgba(239, 49, 49, 0.13);
+            color: #EF3131;
+        }
+
+        .reportes-summary-icon.blue {
+            background: rgba(59, 130, 246, 0.12);
+            color: #60A5FA;
+        }
+
+        .reportes-summary-icon.purple {
+            background: rgba(168, 85, 247, 0.13);
+            color: #A855F7;
+        }
+
+    .reportes-summary-info {
+        min-width: 0;
+    }
+
+        .reportes-summary-info span {
+            display: block;
+            margin-bottom: 5px;
+            color: #a5a5a5;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .reportes-summary-info strong {
+            display: block;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 950;
+            line-height: 1.1;
+        }
+
+        .reportes-summary-info p {
+            margin: 8px 0 0;
+            color: #bdbdbd;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+    .text-green {
+        color: #22C55E !important;
+    }
+
+    .text-red {
+        color: #EF3131 !important;
+    }
+
+    .reportes-access-section {
+        margin-top: 12px;
+    }
+
+    .reportes-section-title {
+        margin-bottom: 18px;
+    }
+
+        .reportes-section-title span {
+            display: inline-block;
+            margin-bottom: 6px;
+            color: #E53935;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .reportes-section-title h2 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+    .reportes-access-grid {
+        display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 18px;
     }
 
-    .red-money {
-        color: #ff4d4d !important;
-    }
-
-    .orange-money {
-        color: #ff9f43 !important;
-    }
-
-    .revenue-kpi-icon.red {
-        background: rgba(239, 49, 49, 0.13);
-        color: #ff4d4d;
-    }
-
-    .revenue-kpi-icon.orange {
-        background: rgba(255, 159, 67, 0.13);
-        color: #ff9f43;
-    }
-
-    .chart-title-row {
+    .reportes-access-card {
+        position: relative;
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 18px;
-        margin-bottom: 10px;
+        width: 100%;
+        min-height: 170px;
+        padding: 24px;
+        text-align: left;
+        color: #ffffff;
+        background: #151515;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: 3px solid transparent;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
     }
 
-        .chart-title-row h2 {
+        .reportes-access-card:hover {
+            background: #1b1b1b;
+            border-left-color: #E53935;
+            border-top-color: rgba(229, 57, 53, 0.26);
+            border-right-color: rgba(229, 57, 53, 0.26);
+            border-bottom-color: rgba(229, 57, 53, 0.26);
+            transform: translateY(-2px);
+        }
+
+    .reportes-access-icon {
+        width: 62px;
+        height: 62px;
+        min-width: 62px;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        background: rgba(229, 57, 53, 0.11);
+        color: #E53935;
+        font-size: 30px;
+    }
+
+    .reportes-access-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+        .reportes-access-content h3 {
+            margin: 0 0 8px;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 900;
+        }
+
+        .reportes-access-content p {
             margin: 0;
+            color: #bdbdbd;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.45;
         }
 
-    .chart-legend-inline {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        color: #cfcfcf;
-        font-weight: 800;
-        font-size: 13px;
+    .reportes-access-arrow {
+        color: #8f8f8f;
+        font-size: 21px;
+        transition: color 0.18s ease, transform 0.18s ease;
     }
 
-        .chart-legend-inline span {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-    .chart-income-label {
-        fill: #22C55E;
-        font-size: 14px;
-        font-weight: 900;
+    .reportes-access-card:hover .reportes-access-arrow {
+        color: #E53935;
+        transform: translateX(4px);
     }
-
-    .chart-expense-label {
-        fill: #EF3131;
-        font-size: 14px;
-        font-weight: 900;
-    }
-
-    .pending-box-staff {
-        margin-top: 10px;
-        border-color: rgba(239, 49, 49, 0.18) !important;
-    }
-
-        .pending-box-staff strong {
-            color: #ff4d4d !important;
-        }
 
     @@media (max-width: 1180px) {
-        .revenue-kpi-grid-six {
+        .reportes-summary-grid,
+        .reportes-access-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
     @@media (max-width: 760px) {
-        .revenue-kpi-grid-six {
+        .reportes-hub-page {
+            padding: 22px 18px 38px;
+        }
+
+        .reportes-hub-header h1 {
+            font-size: 34px;
+        }
+
+        .reportes-summary-grid,
+        .reportes-access-grid {
             grid-template-columns: 1fr;
         }
 
-        .chart-title-row {
-            flex-direction: column;
-            align-items: flex-start;
+        .reportes-access-card {
+            min-height: 150px;
         }
     }
 </style>
 
 @code {
-    private string ReporteActual { get; set; } = "Socios";
-    private string PeriodoActual { get; set; } = "Mes";
-
-    private string ClaseTabSocios =>
-        ReporteActual == "Socios" ? "report-tab active" : "report-tab";
-
-    private string ClaseTabRecaudacion =>
-        ReporteActual == "Recaudacion" ? "report-tab active" : "report-tab";
-
-    private string ClasePeriodoMes =>
-        PeriodoActual == "Mes" ? "revenue-period-button active" : "revenue-period-button";
-
-    private string ClasePeriodoTrimestre =>
-        PeriodoActual == "Trimestre" ? "revenue-period-button active" : "revenue-period-button";
-
-    private string ClasePeriodoAnio =>
-        PeriodoActual == "Anio" ? "revenue-period-button active" : "revenue-period-button";
-
-    private void MostrarReporteSocios()
-    {
-        ReporteActual = "Socios";
-    }
-
-    private void MostrarReporteRecaudacion()
-    {
-        ReporteActual = "Recaudacion";
-    }
-
-    private void MostrarUltimoMes()
-    {
-        PeriodoActual = "Mes";
-    }
-
-    private void MostrarUltimoTrimestre()
-    {
-        PeriodoActual = "Trimestre";
-    }
-
-    private void MostrarUltimoAnio()
-    {
-        PeriodoActual = "Anio";
-    }
-
-    private bool DescargandoReporte = false;
-
-    private async Task DescargarReportePagos()
-    {
-        try
-        {
-            DescargandoReporte = true;
-
-            var bytes = await ReporteService.DescargarReportePagosAdministradorAsync();
-            var base64 = Convert.ToBase64String(bytes);
-
-            await JS.InvokeVoidAsync(
-                "downloadFileFromBytes",
-                "reporte_pagos_administrador.pdf",
-                "application/pdf",
-                base64
-            );
-        }
-        finally
-        {
-            DescargandoReporte = false;
-        }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        var sociosTask = SocioService.ListarSociosAsync();
-        var suscripcionesTask = SuscripcionService.ListarSuscripcionesAsync();
-        var pagosTask = PagoService.ListarPagosAsync();
-
-        await Task.WhenAll(sociosTask, suscripcionesTask, pagosTask);
-
-        TodosLosSocios = sociosTask.Result;
-        TodasLasSuscripciones = suscripcionesTask.Result;
-        TodosLosPagos = pagosTask.Result;
-
-        TotalSocios = TodosLosSocios.Count;
-        SociosActivos = TodosLosSocios.Count(s => s.Activo);
-        SociosInactivos = TotalSocios - SociosActivos;
-
-        var pagosPendientesSocios = TodosLosPagos
-            .Where(p => !p.Activo && !EsPagoEgreso(p))
-            .ToList();
-
-        PagosPendientesSociosTotal = pagosPendientesSocios.Count;
-        DeudaPendienteSocios = pagosPendientesSocios
-            .Sum(p => (decimal)p.Monto)
-            .ToString("0.00", CultureInfo.InvariantCulture);
-
-        SociosBasic = TodasLasSuscripciones.Count(s => s.Activo && s.IdMembresiaBasic != null);
-        SociosBlack = TodasLasSuscripciones.Count(s => s.Activo && s.IdMembresiaBlack != null);
-
-        Socios.Clear();
-        foreach (var s in TodosLosSocios)
-        {
-            var suscripcion = TodasLasSuscripciones.FirstOrDefault(sus => sus.IdUsuario == s.IdUsuario && sus.Activo);
-
-            string membresia = "Sin plan";
-
-            if (suscripcion != null)
-            {
-                if (suscripcion.IdMembresiaBlack != null)
-                {
-                    membresia = "Membresía Black";
-                }
-                else if (suscripcion.IdMembresiaBasic != null)
-                {
-                    membresia = "Membresía Basic";
-                }
-            }
-
-            Socios.Add(new SocioReporte
-            {
-                Nombre = $"{s.Nombres} {s.ApellidoPaterno}",
-                Membresia = membresia,
-                Activo = s.Activo
-            });
-        }
-    }
+    private bool Cargando = true;
+    private string MensajeError = "";
 
     private List<SocioDTO> TodosLosSocios = new();
-    private List<SuscripcionDTO> TodasLasSuscripciones = new();
+    private List<EntrenadorDTO> TodosLosEntrenadores = new();
     private List<PagoDTO> TodosLosPagos = new();
 
     private int SociosActivos = 0;
-    private int SociosInactivos = 0;
-    private int TotalSocios = 0;
-    private int PagosPendientesSociosTotal = 0;
-    private string DeudaPendienteSocios = "0.00";
-    private int SociosBasic = 0;
-    private int SociosBlack = 0;
+    private int EntrenadoresActivos = 0;
+    private int ComunidadActiva = 0;
 
-    private decimal IngresosBrutosNumero =>
-        TodosLosPagos
+    private decimal IngresosTotales = 0;
+    private decimal EgresosTotales = 0;
+    private decimal BalanceNeto = 0;
+
+    private string BalanceNetoTexto =>
+        BalanceNeto < 0
+            ? $"-S/ {FormatoMoneda(Math.Abs(BalanceNeto))}"
+            : $"S/ {FormatoMoneda(BalanceNeto)}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Cargando = true;
+            MensajeError = "";
+
+            var sociosTask = SocioService.ListarSociosAsync();
+            var entrenadoresTask = EntrenadorService.ListarEntrenadoresAsync();
+            var pagosTask = PagoService.ListarPagosAsync();
+
+            await Task.WhenAll(sociosTask, entrenadoresTask, pagosTask);
+
+            TodosLosSocios = sociosTask.Result ?? new List<SocioDTO>();
+            TodosLosEntrenadores = entrenadoresTask.Result ?? new List<EntrenadorDTO>();
+            TodosLosPagos = pagosTask.Result ?? new List<PagoDTO>();
+
+            CalcularResumen();
+        }
+        catch (Exception ex)
+        {
+            MensajeError = $"No se pudo cargar el resumen de reportes: {ex.Message}";
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private void CalcularResumen()
+    {
+        SociosActivos = TodosLosSocios.Count(s => s.Activo);
+        EntrenadoresActivos = TodosLosEntrenadores.Count(e => e.Activo);
+        ComunidadActiva = SociosActivos + EntrenadoresActivos;
+
+        IngresosTotales = TodosLosPagos
             .Where(p => p.Activo && !EsPagoEgreso(p))
             .Sum(p => (decimal)p.Monto);
 
-    private decimal EgresosTotalesNumero =>
-        TodosLosPagos
+        EgresosTotales = TodosLosPagos
             .Where(p => p.Activo && EsPagoEgreso(p))
             .Sum(p => (decimal)p.Monto);
 
-    private decimal BalanceNetoNumero =>
-        IngresosBrutosNumero - EgresosTotalesNumero;
-
-    private decimal PorCobrarSociosNumero =>
-        TodosLosPagos
-            .Where(p => !p.Activo && !EsPagoEgreso(p))
-            .Sum(p => (decimal)p.Monto);
-
-    private decimal PorPagarStaffNumero =>
-        TodosLosPagos
-            .Where(p => !p.Activo && EsPagoEgreso(p))
-            .Sum(p => (decimal)p.Monto);
-
-    private decimal TotalMovimientosNumero =>
-        IngresosBrutosNumero + EgresosTotalesNumero;
-
-    private int TotalTransaccionesEntero =>
-        TodosLosPagos.Count;
-
-    private int PagosPendientes =>
-        TodosLosPagos.Count(p => !p.Activo);
-
-    private int IngresosPagadosCount =>
-        TodosLosPagos.Count(p => p.Activo && !EsPagoEgreso(p));
-
-    private int EgresosPagadosCount =>
-        TodosLosPagos.Count(p => p.Activo && EsPagoEgreso(p));
-
-    private int PagosPagados =>
-        IngresosPagadosCount + EgresosPagadosCount;
-
-    private int TotalPagosEstado =>
-        PagosPagados + PagosPendientes;
-
-    private int PagosPendientesStaffTotal =>
-        TodosLosPagos.Count(p => !p.Activo && EsPagoEgreso(p));
-
-    private string IngresosBrutos =>
-        IngresosBrutosNumero.ToString("0.00", CultureInfo.InvariantCulture);
-
-    private string EgresosTotales =>
-        EgresosTotalesNumero.ToString("0.00", CultureInfo.InvariantCulture);
-
-    private string PorCobrarSocios =>
-        PorCobrarSociosNumero.ToString("0.00", CultureInfo.InvariantCulture);
-
-    private string PorPagarStaff =>
-        PorPagarStaffNumero.ToString("0.00", CultureInfo.InvariantCulture);
-
-    private string TotalMovimientosTexto =>
-        TotalMovimientosNumero.ToString("0.00", CultureInfo.InvariantCulture);
-
-    private string BalanceNetoTexto =>
-        BalanceNetoNumero < 0
-            ? $"-S/ {Math.Abs(BalanceNetoNumero).ToString("0.00", CultureInfo.InvariantCulture)}"
-            : $"S/ {BalanceNetoNumero.ToString("0.00", CultureInfo.InvariantCulture)}";
-
-    private string ClaseBalance =>
-        BalanceNetoNumero < 0
-            ? "red-money"
-            : "green-money";
-
-    private string TotalTransacciones =>
-        TotalTransaccionesEntero.ToString();
-
-    private int PagosEfectivo =>
-        TodosLosPagos.Count(p => p.MetodoPago == 1);
-
-    private int PagosTarjeta =>
-        TodosLosPagos.Count(p => p.MetodoPago == 2);
-
-    private int PagosYape =>
-        TodosLosPagos.Count(p => p.MetodoPago == 3);
-
-    private int PagosPlin =>
-        TodosLosPagos.Count(p => p.MetodoPago == 4);
-
-    private string MetodoPagoDonutStyle
-    {
-        get
-        {
-            int efectivo = CalcularGrados(PagosEfectivo, TotalTransaccionesEntero);
-            int tarjeta = CalcularGrados(PagosTarjeta, TotalTransaccionesEntero);
-            int yape = CalcularGrados(PagosYape, TotalTransaccionesEntero);
-
-            int finTarjeta = efectivo + tarjeta;
-            int finYape = finTarjeta + yape;
-
-            return $"background: conic-gradient(#E53935 0deg {efectivo}deg, #1976D2 {efectivo}deg {finTarjeta}deg, #4CAF50 {finTarjeta}deg {finYape}deg, #FF9800 {finYape}deg 360deg);";
-        }
+        BalanceNeto = IngresosTotales - EgresosTotales;
     }
 
-    private string EstadoPagoDonutStyle
+    private void IrAReporteSocios()
     {
-        get
-        {
-            int ingresos = CalcularGrados(IngresosPagadosCount, TotalPagosEstado);
-            int egresos = CalcularGrados(EgresosPagadosCount, TotalPagosEstado);
-
-            int finEgresos = ingresos + egresos;
-
-            return $"background: conic-gradient(#4CAF50 0deg {ingresos}deg, #EF3131 {ingresos}deg {finEgresos}deg, #FF9800 {finEgresos}deg 360deg);";
-        }
+        Navigation.NavigateTo("/admin/reportes/socios");
     }
 
-    private int CalcularGrados(int cantidad, int total)
+    private void IrAReporteEntrenadores()
     {
-        if (total == 0)
-        {
-            return 0;
-        }
-
-        return Convert.ToInt32(Math.Round(360.0 * cantidad / total));
+        Navigation.NavigateTo("/admin/reportes/entrenadores");
     }
 
-    private string PorcentajeAncho(int cantidad, int total)
+    private void IrAReporteRecaudacion()
     {
-        if (total == 0)
-        {
-            return "0%";
-        }
-
-        return (100.0 * cantidad / total).ToString("0.0", CultureInfo.InvariantCulture) + "%";
-    }
-
-    private string Porcentaje(int cantidad, int total)
-    {
-        if (total == 0)
-        {
-            return "0.0%";
-        }
-
-        double porcentaje = 100.0 * cantidad / total;
-        return porcentaje.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+        Navigation.NavigateTo("/admin/reportes/recaudacion");
     }
 
     private static bool EsPagoEgreso(PagoDTO pago)
@@ -786,185 +568,8 @@
                tipo.Contains("entrenador");
     }
 
-    private int MesesPeriodo =>
-        PeriodoActual == "Anio"
-            ? 12
-            : PeriodoActual == "Trimestre"
-                ? 3
-                : 5;
-
-    private DateTime FechaBaseGrafico
+    private static string FormatoMoneda(decimal valor)
     {
-        get
-        {
-            var fechas = TodosLosPagos
-                .Where(p => p.FechaPago != null)
-                .Select(p => p.FechaPago!.Value)
-                .ToList();
-
-            if (fechas.Count == 0)
-            {
-                return DateTime.Today;
-            }
-
-            return fechas.Max();
-        }
-    }
-
-    private decimal MaxGrafico
-    {
-        get
-        {
-            var puntos = ConstruirPuntosGrafico(false);
-
-            decimal max = puntos
-                .SelectMany(p => new[] { p.Ingresos, p.Egresos })
-                .DefaultIfEmpty(0)
-                .Max();
-
-            if (max <= 0)
-            {
-                return 100;
-            }
-
-            decimal redondeado = Math.Ceiling(max / 100m) * 100m;
-
-            return redondeado < 100 ? 100 : redondeado;
-        }
-    }
-
-    private string GraficoLabel100 => MaxGrafico.ToString("0", CultureInfo.InvariantCulture);
-    private string GraficoLabel75 => (MaxGrafico * 0.75m).ToString("0", CultureInfo.InvariantCulture);
-    private string GraficoLabel50 => (MaxGrafico * 0.50m).ToString("0", CultureInfo.InvariantCulture);
-    private string GraficoLabel25 => (MaxGrafico * 0.25m).ToString("0", CultureInfo.InvariantCulture);
-
-    private List<PuntoGrafico> PuntosGrafico =>
-        ConstruirPuntosGrafico(true);
-
-    private List<PuntoGrafico> ConstruirPuntosGrafico(bool calcularCoordenadas)
-    {
-        int meses = MesesPeriodo;
-
-        DateTime fechaInicio = new DateTime(
-            FechaBaseGrafico.Year,
-            FechaBaseGrafico.Month,
-            1
-        ).AddMonths(-(meses - 1));
-
-        decimal max = calcularCoordenadas ? MaxGrafico : 1;
-
-        var lista = new List<PuntoGrafico>();
-
-        for (int i = 0; i < meses; i++)
-        {
-            DateTime mes = fechaInicio.AddMonths(i);
-
-            decimal ingresos = TodosLosPagos
-                .Where(p => p.Activo &&
-                            !EsPagoEgreso(p) &&
-                            p.FechaPago != null &&
-                            p.FechaPago.Value.Year == mes.Year &&
-                            p.FechaPago.Value.Month == mes.Month)
-                .Sum(p => (decimal)p.Monto);
-
-            decimal egresos = TodosLosPagos
-                .Where(p => p.Activo &&
-                            EsPagoEgreso(p) &&
-                            p.FechaPago != null &&
-                            p.FechaPago.Value.Year == mes.Year &&
-                            p.FechaPago.Value.Month == mes.Month)
-                .Sum(p => (decimal)p.Monto);
-
-            double x = meses == 1
-                ? 500
-                : 80 + (840.0 * i / (meses - 1));
-
-            double yIngresos = calcularCoordenadas ? CalcularY(ingresos, max) : 0;
-            double yEgresos = calcularCoordenadas ? CalcularY(egresos, max) : 0;
-
-            lista.Add(new PuntoGrafico
-            {
-                Mes = mes.ToString("MMM", new CultureInfo("es-ES")),
-                Ingresos = ingresos,
-                Egresos = egresos,
-                ValorIngresos = ingresos.ToString("0", CultureInfo.InvariantCulture),
-                ValorEgresos = egresos.ToString("0", CultureInfo.InvariantCulture),
-                X = x.ToString("0", CultureInfo.InvariantCulture),
-                YIngresos = yIngresos.ToString("0", CultureInfo.InvariantCulture),
-                YEgresos = yEgresos.ToString("0", CultureInfo.InvariantCulture),
-                LabelYIngresos = Math.Max(18, yIngresos - 14).ToString("0", CultureInfo.InvariantCulture),
-                LabelYEgresos = Math.Min(250, yEgresos + 20).ToString("0", CultureInfo.InvariantCulture)
-            });
-        }
-
-        return lista;
-    }
-
-    private static double CalcularY(decimal valor, decimal max)
-    {
-        if (max <= 0)
-        {
-            return 230;
-        }
-
-        double proporcion = (double)(valor / max);
-        double y = 230 - (proporcion * 180);
-
-        if (y < 35)
-        {
-            y = 35;
-        }
-
-        if (y > 230)
-        {
-            y = 230;
-        }
-
-        return y;
-    }
-
-    private string ChartIngresosLinePoints =>
-        string.Join(" ", PuntosGrafico.Select(p => $"{p.X},{p.YIngresos}"));
-
-    private string ChartEgresosLinePoints =>
-        string.Join(" ", PuntosGrafico.Select(p => $"{p.X},{p.YEgresos}"));
-
-    private string ChartIngresosAreaPoints
-    {
-        get
-        {
-            if (!PuntosGrafico.Any())
-            {
-                return "";
-            }
-
-            var primero = PuntosGrafico.First();
-            var ultimo = PuntosGrafico.Last();
-
-            return $"{ChartIngresosLinePoints} {ultimo.X},250 {primero.X},250";
-        }
-    }
-
-    private List<SocioReporte> Socios { get; set; } = new();
-
-    private class PuntoGrafico
-    {
-        public string Mes { get; set; } = "";
-        public decimal Ingresos { get; set; }
-        public decimal Egresos { get; set; }
-        public string ValorIngresos { get; set; } = "";
-        public string ValorEgresos { get; set; } = "";
-        public string X { get; set; } = "";
-        public string YIngresos { get; set; } = "";
-        public string YEgresos { get; set; } = "";
-        public string LabelYIngresos { get; set; } = "";
-        public string LabelYEgresos { get; set; } = "";
-    }
-
-    private class SocioReporte
-    {
-        public string Nombre { get; set; } = "";
-        public string Membresia { get; set; } = "";
-        public bool Activo { get; set; }
+        return valor.ToString("0.00", CultureInfo.InvariantCulture);
     }
 }
