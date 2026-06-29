@@ -7,6 +7,7 @@
 @inject SesionClaseServicio SesionClaseService
 @inject ReservaServicio ReservaService
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <section class="reservar-page">
 
@@ -175,22 +176,6 @@
         </div>
     }
 
-    @if (!string.IsNullOrWhiteSpace(MensajeReserva))
-    {
-        <div style="position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-            min-width: 260px; max-width: 360px;
-            padding: 16px 20px; border-radius: 10px;
-            color: #ffffff; font-weight: 600; font-size: 14px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
-            background-color: @(ReservaFueExitosa ? "#1f9d55" : "#c0392b");
-            display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 18px;">
-                <i class="bi @(ReservaFueExitosa ? "bi-check-circle" : "bi-x-circle")"></i>
-            </span>
-            <span>@MensajeReserva</span>
-        </div>
-    }
-
 </section>
 
 @code {
@@ -201,9 +186,6 @@
     private bool Cargando { get; set; } = true;
 
     private List<ClaseDisponible> Clases { get; set; } = new();
-
-    private string MensajeReserva { get; set; } = "";
-    private bool ReservaFueExitosa { get; set; } = false;
 
     private string ReservandoIdSesion { get; set; } = "";
 
@@ -340,7 +322,7 @@
     {
         if (!Session.EstaAutenticado)
         {
-            MostrarMensaje("Debes iniciar sesión para reservar.", false);
+            ToastService.ShowError("Debes iniciar sesión para reservar.");
             return;
         }
 
@@ -351,7 +333,7 @@
 
         if (claseSeleccionada == null)
         {
-            MostrarMensaje("No se encontró la clase seleccionada.", false);
+            ToastService.ShowError("No se encontró la clase seleccionada.");
             return;
         }
 
@@ -366,7 +348,7 @@
 
         if (yaExisteMismaClase)
         {
-            MostrarMensaje("Ya tienes una reserva activa para esta clase.", false);
+            ToastService.ShowError("Ya tienes una reserva activa para esta clase.");
             return;
         }
 
@@ -388,7 +370,7 @@
 
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
-            MostrarMensaje("Reserva registrada correctamente.", true);
+            ToastService.ShowSuccess("Reserva registrada correctamente.");
 
             await Task.Delay(700);
 
@@ -396,22 +378,10 @@
         }
         else
         {
-            MostrarMensaje(resultado, false);
+            ToastService.ShowError(resultado);
         }
 
         StateHasChanged();
-    }
-
-    private void MostrarMensaje(string mensaje, bool exitoso)
-    {
-        MensajeReserva = mensaje;
-        ReservaFueExitosa = exitoso;
-
-        _ = Task.Delay(3000).ContinueWith(_ =>
-        {
-            MensajeReserva = "";
-            InvokeAsync(StateHasChanged);
-        });
     }
 
     private string ObtenerClaseCupos(int cupos)

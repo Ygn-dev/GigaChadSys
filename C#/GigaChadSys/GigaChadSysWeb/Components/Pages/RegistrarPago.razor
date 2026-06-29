@@ -8,6 +8,7 @@
 @inject SocioServicio SocioService
 @inject SuscripcionServicio SuscripcionService
 @inject PagoServicio PagoService
+@inject ToastService ToastService
 
 <div class="rp-page">
 
@@ -164,7 +165,7 @@
                             <span class="rp-monto-prefix">S/</span>
 
                             <input type="number"
-                                   class="rp-monto-input"
+                                   class="rp-monto-input @(IntentoGuardar && Monto <= 0 ? "input-error" : "")"
                                    placeholder="0.00"
                                    min="0"
                                    step="0.01"
@@ -192,7 +193,7 @@
                     </label>
 
                     <input type="text"
-                           class="rp-text-input"
+                           class="rp-text-input @(IntentoGuardar && string.IsNullOrWhiteSpace(Concepto) ? "input-error" : "")"
                            placeholder="Ej: Membresía Black - Junio 2026"
                            @bind="Concepto"
                            @bind:event="oninput" />
@@ -249,31 +250,18 @@
             <div class="rp-actions">
                 <button type="button"
                         class="rp-btn-primary"
-                        disabled="@Procesando"
+                        disabled="@Guardando"
                         @onclick="Registrar">
-                    @(Procesando ? "Registrando..." : "Registrar Pago")
+                    @(Guardando ? "Registrando..." : "Registrar Pago")
                 </button>
 
                 <button type="button"
                         class="rp-btn-secondary"
+                        disabled="@Guardando"
                         @onclick="Cancelar">
                     Cancelar
                 </button>
             </div>
-
-            @if (!string.IsNullOrWhiteSpace(MensajeExito))
-            {
-                <div class="socios-toast socios-toast-ok" style="margin-top:16px;">
-                    @MensajeExito
-                </div>
-            }
-
-            @if (!string.IsNullOrWhiteSpace(MensajeError))
-            {
-                <div class="socios-toast socios-toast-err" style="margin-top:16px;">
-                    @MensajeError
-                </div>
-            }
 
         </div>
 
@@ -284,7 +272,8 @@
 @code {
     private string SocioBusqueda { get; set; } = "";
     private bool MostrarDropdown { get; set; } = false;
-    private bool Procesando { get; set; } = false;
+    private bool Guardando { get; set; } = false;
+    private bool IntentoGuardar { get; set; } = false;
 
     private SocioVista? SocioSeleccionado { get; set; }
 
@@ -297,9 +286,6 @@
     private string FechaPagoInput { get; set; } = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     private string Concepto { get; set; } = "";
-
-    private string MensajeExito { get; set; } = "";
-    private string MensajeError { get; set; } = "";
 
     private List<SocioVista> TodosLosSocios = new();
 
@@ -426,37 +412,36 @@
 
     private async Task Registrar()
     {
-        MensajeError = "";
-        MensajeExito = "";
+        IntentoGuardar = true;
 
-        if (Procesando)
+        if (Guardando)
             return;
 
         if (SocioSeleccionado == null)
         {
-            MensajeError = "Debe buscar y seleccionar un socio.";
+            ToastService.ShowError("Debe buscar y seleccionar un socio.");
             return;
         }
 
         if (SocioSeleccionado.IdSuscripcion <= 0)
         {
-            MensajeError = "El socio seleccionado no tiene una suscripción activa.";
+            ToastService.ShowError("El socio seleccionado no tiene una suscripción activa.");
             return;
         }
 
         if (Monto <= 0)
         {
-            MensajeError = "El monto debe ser mayor a cero.";
+            ToastService.ShowError("El monto debe ser mayor a cero.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Concepto))
         {
-            MensajeError = "Debe ingresar un concepto para el pago.";
+            ToastService.ShowError("Debe ingresar un concepto para el pago.");
             return;
         }
 
-        Procesando = true;
+        Guardando = true;
 
         try
         {
@@ -483,7 +468,7 @@
             if (mensajeResultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase) ||
                 mensajeResultado.ToLower().Contains("error"))
             {
-                MensajeError = mensajeResultado;
+                ToastService.ShowError(mensajeResultado);
                 return;
             }
 
@@ -509,14 +494,13 @@
                 }
             }
 
-            MensajeExito = $"Pago de {Concepto} registrado correctamente.";
+            ToastService.ShowSuccess($"Pago de {Concepto} registrado correctamente.");
 
-            await Task.Delay(1000);
             Navigation.NavigateTo("/admin/pagos");
         }
         finally
         {
-            Procesando = false;
+            Guardando = false;
         }
     }
 

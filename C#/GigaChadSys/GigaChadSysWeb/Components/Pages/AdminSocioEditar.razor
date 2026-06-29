@@ -6,6 +6,7 @@
 @using GigaChadSys.Servicios.DTO
 @inject SocioServicio SocioService
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <section class="socio-form-page">
 
@@ -59,10 +60,6 @@
                                    placeholder="40234123"
                                    maxlength="8"
                                    class="@(errores.ContainsKey("dni") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("dni"))
-                            {
-                                <span class="sf-error-msg">@errores["dni"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -71,10 +68,6 @@
                                    @bind="form.Nombres"
                                    placeholder="Lucia Maria"
                                    class="@(errores.ContainsKey("nombres") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("nombres"))
-                            {
-                                <span class="sf-error-msg">@errores["nombres"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -83,10 +76,6 @@
                                    @bind="form.ApellidoPaterno"
                                    placeholder="Torres"
                                    class="@(errores.ContainsKey("apellidoPaterno") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("apellidoPaterno"))
-                            {
-                                <span class="sf-error-msg">@errores["apellidoPaterno"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -95,10 +84,6 @@
                                    @bind="form.ApellidoMaterno"
                                    placeholder="García"
                                    class="@(errores.ContainsKey("apellidoMaterno") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("apellidoMaterno"))
-                            {
-                                <span class="sf-error-msg">@errores["apellidoMaterno"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -116,10 +101,6 @@
                                    placeholder="987654321"
                                    maxlength="9"
                                    class="@(errores.ContainsKey("telefono") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("telefono"))
-                            {
-                                <span class="sf-error-msg">@errores["telefono"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -128,10 +109,6 @@
                                    @bind="form.Email"
                                    placeholder="lucia@email.com"
                                    class="@(errores.ContainsKey("email") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("email"))
-                            {
-                                <span class="sf-error-msg">@errores["email"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -158,7 +135,7 @@
                     <div class="sf-form-grid">
                         <div class="sf-form-group sf-form-full">
                             <label>Correo electrónico <span class="sf-req">*</span></label>
-                            <input type="email" @bind="form.Email" placeholder="lucia@email.com" />
+                            <input type="email" @bind="form.Email" placeholder="lucia@email.com" class="@(errores.ContainsKey("email") ? "sf-input-error" : "")" />
                         </div>
 
                         <div class="sf-form-group">
@@ -166,15 +143,12 @@
                             <div class="sf-input-pass">
                                 <input type="@(verPass ? "text" : "password")"
                                        @bind="form.Contrasenia"
-                                       placeholder="Dejar vacío si no se cambia" />
+                                       placeholder="Dejar vacío si no se cambia"
+                                       class="@(errores.ContainsKey("contrasenia") ? "sf-input-error" : "")" />
                                 <button type="button" class="sf-eye-btn" @onclick="() => verPass = !verPass">
                                     <i class="bi @(verPass ? "bi-eye-slash" : "bi-eye")"></i>
                                 </button>
                             </div>
-                            @if (errores.ContainsKey("contrasenia"))
-                            {
-                                <span class="sf-error-msg">@errores["contrasenia"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -188,10 +162,6 @@
                                     <i class="bi @(verConfirm ? "bi-eye-slash" : "bi-eye")"></i>
                                 </button>
                             </div>
-                            @if (errores.ContainsKey("confirmar"))
-                            {
-                                <span class="sf-error-msg">@errores["confirmar"]</span>
-                            }
                         </div>
                     </div>
                 </div>
@@ -361,25 +331,15 @@
     }
 </section>
 
-@if (mostrarToast)
-{
-    <div class="socios-toast socios-toast-show">
-        <span><i class="bi bi-check-circle"></i></span>
-        <span>@mensajeToast</span>
-    </div>
-}
-
 @code {
     [Parameter]
     public int Id { get; set; }
 
     private bool verPass = false;
     private bool verConfirm = false;
-    private bool mostrarToast = false;
     private bool cargando = true;
     private bool guardando = false;
 
-    private string mensajeToast = "";
     private Dictionary<string, string> errores = new();
     private FormEditarSocio form = new();
 
@@ -497,6 +457,8 @@
 
         if (errores.Any())
         {
+            var firstError = errores.First().Value;
+            ToastService.ShowError(firstError);
             StateHasChanged();
             return;
         }
@@ -551,18 +513,13 @@
             if (!resultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase) &&
                 !resultado.ToLower().Contains("error"))
             {
-                mensajeToast = "Cambios guardados correctamente.";
-                mostrarToast = true;
-                StateHasChanged();
-
-                await Task.Delay(1000);
-
-                mostrarToast = false;
+                ToastService.ShowSuccess("Cambios guardados correctamente.");
                 Nav.NavigateTo("/admin/socios", forceLoad: true);
             }
             else
             {
                 errores["dni"] = resultado;
+                ToastService.ShowError(resultado);
                 StateHasChanged();
             }
         }

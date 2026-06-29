@@ -6,6 +6,7 @@
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject SalonServicio SalonService
+@inject ToastService ToastService
 
 <section class="salon-form-page">
 
@@ -40,7 +41,7 @@
             <div class="salon-form-group">
                 <label>Nombre del salón <span>*</span></label>
 
-                <input class="form-input"
+                <input class="form-input @(intentoGuardar && string.IsNullOrWhiteSpace(nombreSalon) ? "input-error" : "")"
                        type="text"
                        placeholder="Ej: Sala Principal, Sala Yoga, Sala Ciclo..."
                        @bind="nombreSalon"
@@ -52,7 +53,7 @@
             <div class="salon-form-group">
                 <label>Capacidad máxima <span>*</span></label>
 
-                <input class="form-input"
+                <input class="form-input @(intentoGuardar && (capacidad is null || capacidad <= 0) ? "input-error" : "")"
                        type="number"
                        min="1"
                        placeholder="Ej: 30"
@@ -140,15 +141,17 @@
         <div class="salon-action-right">
             <button type="button"
                     class="salon-cancel-btn"
-                    @onclick="Cancelar">
+                    @onclick="Cancelar"
+                    disabled="@guardando">
                 Cancelar
             </button>
 
             <button type="button"
                     class="salon-save-btn"
-                    @onclick="GuardarCambios">
+                    @onclick="GuardarCambios"
+                    disabled="@guardando">
                 <span>▣</span>
-                Guardar cambios
+                @(guardando ? "Guardando..." : "Guardar cambios")
             </button>
         </div>
     </div>
@@ -162,6 +165,8 @@
     private string nombreSalon = string.Empty;
     private int? capacidad;
     private bool estado = true;
+    private bool intentoGuardar = false;
+    private bool guardando = false;
 
     private string NombrePreview =>
         string.IsNullOrWhiteSpace(nombreSalon)
@@ -200,21 +205,40 @@
 
     private async Task GuardarCambios()
     {
+        intentoGuardar = true;
+
         if (string.IsNullOrWhiteSpace(nombreSalon) || capacidad is null or <= 0)
         {
             return;
         }
 
-        var salonEditado = new SalonDTO
+        try
         {
-            IdSalon = Id,
-            NombreSalon = nombreSalon.Trim(),
-            AforoMaximo = capacidad.Value,
-            Estado = estado
-        };
+            guardando = true;
 
-        await SalonService.ActualizarAsync(Id, salonEditado);
+            var salonEditado = new SalonDTO
+            {
+                IdSalon = Id,
+                NombreSalon = nombreSalon.Trim(),
+                AforoMaximo = capacidad.Value,
+                Estado = estado
+            };
 
-        Navigation.NavigateTo("/admin/salones");
+            var msj = await SalonService.ActualizarAsync(Id, salonEditado);
+
+            if (!msj.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Salón actualizado correctamente.");
+                Navigation.NavigateTo("/admin/salones");
+            }
+            else
+            {
+                ToastService.ShowError(msj);
+            }
+        }
+        finally
+        {
+            guardando = false;
+        }
     }
 }

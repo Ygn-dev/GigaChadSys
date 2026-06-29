@@ -7,6 +7,7 @@
 @inject SessionServicio Session
 @inject SocioServicio SocioService
 @inject SuscripcionServicio SuscripcionService
+@inject ToastService ToastService
 
 <section class="sp-page">
 
@@ -14,14 +15,6 @@
         <h1>Mi Perfil</h1>
         <p>Tu información personal y membresía</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(mensaje))
-    {
-        <div class="@claseMensaje">
-            <i class="@iconoMensaje"></i>
-            <span>@mensaje</span>
-        </div>
-    }
 
     @if (cargando)
     {
@@ -126,7 +119,7 @@
 
                         @if (editando)
                         {
-                            <input class="sp-input"
+                            <input class="sp-input @(intentoGuardar && string.IsNullOrWhiteSpace(editNombres) ? "input-error" : "")"
                                    type="text"
                                    @bind="editNombres"
                                    placeholder="Nombres" />
@@ -145,7 +138,7 @@
 
                         @if (editando)
                         {
-                            <input class="sp-input"
+                            <input class="sp-input @(intentoGuardar && string.IsNullOrWhiteSpace(editApellidoPaterno) ? "input-error" : "")"
                                    type="text"
                                    @bind="editApellidoPaterno"
                                    placeholder="Apellido paterno" />
@@ -164,7 +157,7 @@
 
                         @if (editando)
                         {
-                            <input class="sp-input"
+                            <input class="sp-input @(intentoGuardar && string.IsNullOrWhiteSpace(editApellidoMaterno) ? "input-error" : "")"
                                    type="text"
                                    @bind="editApellidoMaterno"
                                    placeholder="Apellido materno" />
@@ -183,7 +176,7 @@
 
                         @if (editando)
                         {
-                            <input class="sp-input"
+                            <input class="sp-input @(intentoGuardar && (string.IsNullOrWhiteSpace(editTelefono) || editTelefono.Length != 9) ? "input-error" : "")"
                                    type="text"
                                    maxlength="9"
                                    @bind="editTelefono"
@@ -203,7 +196,7 @@
 
                         @if (editando)
                         {
-                            <input class="sp-input"
+                            <input class="sp-input @(intentoGuardar && (string.IsNullOrWhiteSpace(editEmail) || !editEmail.Contains("@")) ? "input-error" : "")"
                                    type="email"
                                    @bind="editEmail"
                                    placeholder="Correo electrónico" />
@@ -334,7 +327,7 @@
                 <div class="sp-password-grid">
                     <div class="sp-form-group">
                         <label>Nueva contraseña</label>
-                        <input class="sp-input"
+                        <input class="sp-input @(intentoGuardar && (string.IsNullOrWhiteSpace(nuevaContrasenia) || nuevaContrasenia.Length < 6) ? "input-error" : "")"
                                type="password"
                                @bind="nuevaContrasenia"
                                placeholder="Nueva contraseña" />
@@ -342,7 +335,7 @@
 
                     <div class="sp-form-group">
                         <label>Confirmar contraseña</label>
-                        <input class="sp-input"
+                        <input class="sp-input @(intentoGuardar && nuevaContrasenia != confirmarContrasenia ? "input-error" : "")"
                                type="password"
                                @bind="confirmarContrasenia"
                                placeholder="Confirmar contraseña" />
@@ -881,9 +874,7 @@
     private string nuevaContrasenia = "";
     private string confirmarContrasenia = "";
 
-    private string mensaje = "";
-    private string claseMensaje = "";
-    private string iconoMensaje = "";
+    private bool intentoGuardar = false;
 
     private string InicialesPerfil
     {
@@ -1008,7 +999,7 @@
         if (socioActual == null)
             return;
 
-        LimpiarMensaje();
+        intentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(editNombres))
         {
@@ -1082,7 +1073,7 @@
         if (socioActual == null)
             return;
 
-        LimpiarMensaje();
+        intentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(nuevaContrasenia))
         {
@@ -1134,23 +1125,17 @@
 
     private void MostrarExito(string texto)
     {
-        mensaje = texto;
-        claseMensaje = "sp-message success";
-        iconoMensaje = "bi bi-check-circle";
+        ToastService.ShowSuccess(texto);
     }
 
     private void MostrarError(string texto)
     {
-        mensaje = texto;
-        claseMensaje = "sp-message error";
-        iconoMensaje = "bi bi-exclamation-triangle";
+        ToastService.ShowError(texto);
     }
 
     private void LimpiarMensaje()
     {
-        mensaje = "";
-        claseMensaje = "";
-        iconoMensaje = "";
+        // No-op
     }
 
     private class PerfilSocio

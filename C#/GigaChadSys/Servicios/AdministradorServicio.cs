@@ -42,6 +42,7 @@ public class AdministradorServicio
     /// </summary>
     public async Task<string> RegistrarAsync(AdministradorDTO administrador)
     {
+        EncriptarPassword(administrador);
         var response = await _httpClient.PostAsJsonAsync(Endpoint, administrador);
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar administrador.");
     }
@@ -51,6 +52,7 @@ public class AdministradorServicio
     /// </summary>
     public async Task<string> ActualizarAsync(int idUsuario, AdministradorDTO administrador)
     {
+        EncriptarPassword(administrador);
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", administrador);
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar administrador.");
     }
@@ -62,5 +64,17 @@ public class AdministradorServicio
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idUsuario}");
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar administrador.");
+    }
+
+    private static void EncriptarPassword(UsuarioDTO usuario)
+    {
+        if (!string.IsNullOrWhiteSpace(usuario.Contrasenia) &&
+            !usuario.Contrasenia.StartsWith("$2a$") &&
+            !usuario.Contrasenia.StartsWith("$2b$") &&
+            !usuario.Contrasenia.StartsWith("$2x$") &&
+            !usuario.Contrasenia.StartsWith("$2y$"))
+        {
+            usuario.Contrasenia = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasenia);
+        }
     }
 }

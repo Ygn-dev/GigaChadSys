@@ -1,0 +1,54 @@
+@using GigaChadSys.Servicios
+@inject ToastService ToastService
+@implements IDisposable
+@rendermode InteractiveServer
+
+@if (IsVisible)
+{
+    <div class="socios-toast socios-toast-show">
+        <span>@Icon</span>
+        <span>@Message</span>
+    </div>
+}
+
+@code {
+    private bool IsVisible = false;
+    private string Message = "";
+    private string Icon = "";
+    private System.Threading.Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += ShowToast;
+    }
+
+    private void ShowToast(string icon, string message)
+    {
+        InvokeAsync(() =>
+        {
+            Icon = icon;
+            Message = message;
+            IsVisible = true;
+            StateHasChanged();
+
+            // Reiniciar el timer cada vez que se muestra un nuevo toast
+            _timer?.Dispose();
+            _timer = new System.Threading.Timer(HideToast, null, 3500, System.Threading.Timeout.Infinite);
+        });
+    }
+
+    private void HideToast(object? state)
+    {
+        InvokeAsync(() =>
+        {
+            IsVisible = false;
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= ShowToast;
+        _timer?.Dispose();
+    }
+}

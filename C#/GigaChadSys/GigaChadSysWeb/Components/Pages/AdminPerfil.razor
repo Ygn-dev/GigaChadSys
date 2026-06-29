@@ -6,6 +6,7 @@
 @rendermode InteractiveServer
 @inject SessionServicio Session
 @inject AdministradorServicio AdministradorService
+@inject ToastService ToastService
 
 <section class="perfil-page perfil-admin-page">
 
@@ -13,14 +14,6 @@
         <h1>Mi Perfil</h1>
         <p class="perfil-subtitle">Información personal y cuenta de administrador</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(Mensaje))
-    {
-        <div class="@ClaseMensaje">
-            <i class="@IconoMensaje"></i>
-            <span>@Mensaje</span>
-        </div>
-    }
 
     @if (Cargando)
     {
@@ -117,7 +110,7 @@
                             <span class="perfil-info-label">Nombres</span>
                             @if (Editando)
                             {
-                                <input class="admin-profile-input" @bind="EditNombres" />
+                                <input class="admin-profile-input @(IntentoGuardar && string.IsNullOrWhiteSpace(EditNombres) ? "input-error" : "")" @bind="EditNombres" />
                             }
                             else
                             {
@@ -135,7 +128,7 @@
                             <span class="perfil-info-label">Apellido paterno</span>
                             @if (Editando)
                             {
-                                <input class="admin-profile-input" @bind="EditApellidoPaterno" />
+                                <input class="admin-profile-input @(IntentoGuardar && string.IsNullOrWhiteSpace(EditApellidoPaterno) ? "input-error" : "")" @bind="EditApellidoPaterno" />
                             }
                             else
                             {
@@ -153,7 +146,7 @@
                             <span class="perfil-info-label">Apellido materno</span>
                             @if (Editando)
                             {
-                                <input class="admin-profile-input" @bind="EditApellidoMaterno" />
+                                <input class="admin-profile-input @(IntentoGuardar && string.IsNullOrWhiteSpace(EditApellidoMaterno) ? "input-error" : "")" @bind="EditApellidoMaterno" />
                             }
                             else
                             {
@@ -182,7 +175,7 @@
                             <span class="perfil-info-label">Teléfono</span>
                             @if (Editando)
                             {
-                                <input class="admin-profile-input" maxlength="9" @bind="EditTelefono" />
+                                <input class="admin-profile-input @(IntentoGuardar && (string.IsNullOrWhiteSpace(EditTelefono) || EditTelefono.Length != 9) ? "input-error" : "")" maxlength="9" @bind="EditTelefono" />
                             }
                             else
                             {
@@ -200,7 +193,7 @@
                             <span class="perfil-info-label">Correo electrónico</span>
                             @if (Editando)
                             {
-                                <input class="admin-profile-input" type="email" @bind="EditCorreo" />
+                                <input class="admin-profile-input @(IntentoGuardar && (string.IsNullOrWhiteSpace(EditCorreo) || !EditCorreo.Contains("@")) ? "input-error" : "")" type="email" @bind="EditCorreo" />
                             }
                             else
                             {
@@ -314,7 +307,7 @@
                     <div class="admin-password-box">
                         <div class="admin-password-field">
                             <label>Nueva contraseña</label>
-                            <input class="admin-profile-input"
+                            <input class="admin-profile-input @(IntentoGuardar && (string.IsNullOrWhiteSpace(NuevaContrasenia) || NuevaContrasenia.Length < 6) ? "input-error" : "")"
                                    type="password"
                                    @bind="NuevaContrasenia"
                                    placeholder="Nueva contraseña" />
@@ -322,7 +315,7 @@
 
                         <div class="admin-password-field">
                             <label>Confirmar contraseña</label>
-                            <input class="admin-profile-input"
+                            <input class="admin-profile-input @(IntentoGuardar && NuevaContrasenia != ConfirmarContrasenia ? "input-error" : "")"
                                    type="password"
                                    @bind="ConfirmarContrasenia"
                                    placeholder="Confirmar contraseña" />
@@ -596,9 +589,7 @@
     private string NuevaContrasenia = "";
     private string ConfirmarContrasenia = "";
 
-    private string Mensaje = "";
-    private string ClaseMensaje = "";
-    private string IconoMensaje = "";
+    private bool IntentoGuardar = false;
 
     private string InicialesAdmin
     {
@@ -703,7 +694,7 @@
         if (administradorActual == null)
             return;
 
-        LimpiarMensaje();
+        IntentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(EditNombres))
         {
@@ -781,7 +772,7 @@
         if (administradorActual == null)
             return;
 
-        LimpiarMensaje();
+        IntentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(NuevaContrasenia))
         {
@@ -836,23 +827,17 @@
 
     private void MostrarExito(string texto)
     {
-        Mensaje = texto;
-        ClaseMensaje = "admin-profile-message success";
-        IconoMensaje = "bi bi-check-circle";
+        ToastService.ShowSuccess(texto);
     }
 
     private void MostrarError(string texto)
     {
-        Mensaje = texto;
-        ClaseMensaje = "admin-profile-message error";
-        IconoMensaje = "bi bi-exclamation-triangle";
+        ToastService.ShowError(texto);
     }
 
     private void LimpiarMensaje()
     {
-        Mensaje = "";
-        ClaseMensaje = "";
-        IconoMensaje = "";
+        // No-op
     }
 
     private class PerfilAdmin

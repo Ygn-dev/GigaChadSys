@@ -7,6 +7,7 @@
 @inject EntrenadorServicio EntrenadorService
 @inject SalonServicio SalonService
 @inject NavigationManager Navigation
+@inject ToastService ToastService
 @layout AdminLayout
 @rendermode InteractiveServer
 
@@ -22,13 +23,6 @@
         <h1>Editar Sesión</h1>
         <p class="sf-page-subtitle">Modifica los datos de la sesión programada</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
-    {
-        <div class="@ClaseMensajeFormulario">
-            @MensajeFormulario
-        </div>
-    }
 
     @if (Cargando)
     {
@@ -57,47 +51,35 @@
 
                         <div class="sf-form-group">
                             <label>CLASE <span class="sf-req">*</span></label>
-                            <select @bind="claseId" class="@(errores.ContainsKey("claseId") ? "sf-input-error" : "")">
+                            <select @bind="claseId" class="@(errores.ContainsKey("claseId") ? "input-error" : "")">
                                 <option value="0">Seleccionar clase...</option>
                                 @foreach (var c in clasesDisponibles)
                                 {
                                     <option value="@c.IdClase">@c.NombreDisciplina</option>
                                 }
                             </select>
-                            @if (errores.ContainsKey("claseId"))
-                            {
-                                <span class="sf-error-msg">@errores["claseId"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
                             <label>ENTRENADOR <span class="sf-req">*</span></label>
-                            <select @bind="entrenadorId" class="@(errores.ContainsKey("entrenadorId") ? "sf-input-error" : "")">
+                            <select @bind="entrenadorId" class="@(errores.ContainsKey("entrenadorId") ? "input-error" : "")">
                                 <option value="0">Seleccionar entrenador...</option>
                                 @foreach (var e in entrenadoresDisponibles)
                                 {
                                     <option value="@e.IdUsuario">@e.NombreCompleto</option>
                                 }
                             </select>
-                            @if (errores.ContainsKey("entrenadorId"))
-                            {
-                                <span class="sf-error-msg">@errores["entrenadorId"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
                             <label>SALÓN <span class="sf-req">*</span></label>
-                            <select @bind="salonId" class="@(errores.ContainsKey("salonId") ? "sf-input-error" : "")">
+                            <select @bind="salonId" class="@(errores.ContainsKey("salonId") ? "input-error" : "")">
                                 <option value="0">Seleccionar salón...</option>
                                 @foreach (var s in salonesDisponibles)
                                 {
                                     <option value="@s.IdSalon">@s.NombreSalon (Aforo: @s.AforoMaximo)</option>
                                 }
                             </select>
-                            @if (errores.ContainsKey("salonId"))
-                            {
-                                <span class="sf-error-msg">@errores["salonId"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -108,11 +90,7 @@
                                    @onchange="CambiarCuposDisponiblesInput"
                                    min="0"
                                    max="200"
-                                   class="@(errores.ContainsKey("cuposDisponibles") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("cuposDisponibles"))
-                            {
-                                <span class="sf-error-msg">@errores["cuposDisponibles"]</span>
-                            }
+                                   class="@(errores.ContainsKey("cuposDisponibles") ? "input-error" : "")" />
                         </div>
 
                         <div class="sf-form-group">
@@ -121,11 +99,7 @@
                                    value="@FechaInput"
                                    @oninput="CambiarFechaInput"
                                    @onchange="CambiarFechaInput"
-                                   class="@(errores.ContainsKey("fecha") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("fecha"))
-                            {
-                                <span class="sf-error-msg">@errores["fecha"]</span>
-                            }
+                                   class="@(errores.ContainsKey("fecha") ? "input-error" : "")" />
                         </div>
 
                         <div class="sf-form-group"></div>
@@ -136,11 +110,7 @@
                                    value="@HoraInicioInput"
                                    @oninput="CambiarHoraInicioInput"
                                    @onchange="CambiarHoraInicioInput"
-                                   class="@(errores.ContainsKey("horaInicio") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("horaInicio"))
-                            {
-                                <span class="sf-error-msg">@errores["horaInicio"]</span>
-                            }
+                                   class="@(errores.ContainsKey("horaInicio") ? "input-error" : "")" />
                         </div>
 
                         <div class="sf-form-group">
@@ -149,11 +119,7 @@
                                    value="@HoraFinInput"
                                    @oninput="CambiarHoraFinInput"
                                    @onchange="CambiarHoraFinInput"
-                                   class="@(errores.ContainsKey("horaFin") ? "sf-input-error" : "")" />
-                            @if (errores.ContainsKey("horaFin"))
-                            {
-                                <span class="sf-error-msg">@errores["horaFin"]</span>
-                            }
+                                   class="@(errores.ContainsKey("horaFin") ? "input-error" : "")" />
                         </div>
 
                     </div>
@@ -201,7 +167,7 @@
                         }
                     </button>
 
-                    <button class="sf-btn-secondary" @onclick="Cancelar">Cancelar</button>
+                    <button class="sf-btn-secondary" @onclick="Cancelar" disabled="@guardando">Cancelar</button>
 
                     <div class="sf-back-link">
                         <a href="/admin/sesiones">← Volver a Sesiones</a>
@@ -281,9 +247,6 @@
 
     private bool guardando = false;
     private bool Cargando = true;
-
-    private string MensajeFormulario = "";
-    private string ClaseMensajeFormulario = "";
 
     private Dictionary<string, string> errores = new();
 
@@ -476,11 +439,14 @@
 
     private async Task GuardarCambios()
     {
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
-
         if (!Validar(out var fechaSesion, out var horaInicio, out var horaFin, out var cuposDisponibles))
+        {
+            if (errores.Count > 0)
+            {
+                ToastService.ShowError(errores.Values.First());
+            }
             return;
+        }
 
         guardando = true;
 
@@ -509,13 +475,12 @@
 
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
-            MostrarExito("Sesión actualizada correctamente.");
-            await Task.Delay(800);
+            ToastService.ShowSuccess("Sesión actualizada correctamente.");
             Navigation.NavigateTo("/admin/sesiones");
         }
         else
         {
-            MostrarError(resultado);
+            ToastService.ShowError(resultado);
         }
     }
 
@@ -566,15 +531,4 @@
         return valor;
     }
 
-    private void MostrarError(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
-    }
-
-    private void MostrarExito(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message success";
-    }
 }

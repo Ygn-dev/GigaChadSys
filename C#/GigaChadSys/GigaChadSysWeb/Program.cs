@@ -25,6 +25,9 @@ builder.Services.AddSingleton<AppAdminsToggleService>();
 // Generar Reportes
 builder.Services.AddScoped<ReporteServicio>();
 
+// UI Global Toast
+builder.Services.AddScoped<ToastService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

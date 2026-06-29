@@ -6,6 +6,7 @@
 @rendermode InteractiveServer
 @inject NavigationManager Nav
 @inject SocioServicio SocioService
+@inject ToastService ToastService
 
 <section class="socios-page">
 
@@ -230,15 +231,6 @@
 
 </section>
 
-<!-- ── TOAST ── -->
-@if (mostrarToast)
-{
-    <div class="socios-toast socios-toast-show">
-        <span>@iconoToast</span>
-        <span>@mensajeToast</span>
-    </div>
-}
-
 @code {
     private List<SocioDTO> socios = new();
     private bool cargando = true;
@@ -312,7 +304,7 @@
         }
         catch (Exception ex)
         {
-            MostrarToast("❌", "Error al cargar socios: " + ex.Message);
+            ToastService.ShowError("Error al cargar socios: " + ex.Message);
         }
         finally
         {
@@ -349,32 +341,13 @@
 
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
-            MostrarToast("✅", $"Socio {(nuevoEstado ? "activado" : "desactivado")} correctamente.");
+            ToastService.ShowSuccess($"Socio {(nuevoEstado ? "activado" : "desactivado")} correctamente.");
         }
         else
         {
-            MostrarToast("❌", resultado);
+            ToastService.ShowError(resultado);
             socio.Activo = !nuevoEstado; // Revertir visualmente si falló
         }
-    }
-
-    // ── Toast ──
-    private bool mostrarToast = false;
-    private string mensajeToast = "";
-    private string iconoToast = "✅";
-
-    private async void MostrarToast(string icono, string msg)
-    {
-        iconoToast = icono;
-        mensajeToast = msg;
-        mostrarToast = true;
-
-        StateHasChanged();
-
-        await Task.Delay(2800);
-
-        mostrarToast = false;
-        StateHasChanged();
     }
 
     // ── Helpers ──

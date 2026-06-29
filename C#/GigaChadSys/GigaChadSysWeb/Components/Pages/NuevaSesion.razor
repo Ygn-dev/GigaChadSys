@@ -7,6 +7,7 @@
 @inject EntrenadorServicio EntrenadorService
 @inject SalonServicio SalonService
 @inject NavigationManager Navigation
+@inject ToastService ToastService
 @layout AdminLayout
 @rendermode InteractiveServer
 
@@ -22,13 +23,6 @@
 
     <h1 class="admin-form-title">Registrar Nueva Sesión</h1>
     <p class="admin-form-subtitle">Programe una sesión de clase para los socios del gimnasio</p>
-
-    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
-    {
-        <div class="@ClaseMensajeFormulario">
-            @MensajeFormulario
-        </div>
-    }
 
     @if (Cargando)
     {
@@ -49,7 +43,7 @@
                     <div class="form-card-body">
                         <div class="form-group">
                             <label class="form-label">Clase grupal <span class="required">*</span></label>
-                            <select class="form-select" @bind="ClaseId">
+                            <select class="form-select @(IntentoGuardar && ClaseId <= 0 ? "input-error" : "")" @bind="ClaseId">
                                 <option value="0">Seleccione una clase grupal</option>
                                 @foreach (var c in ClasesDisponibles)
                                 {
@@ -70,7 +64,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Entrenador <span class="required">*</span></label>
-                                <select class="form-select" @bind="EntrenadorId">
+                                <select class="form-select @(IntentoGuardar && EntrenadorId <= 0 ? "input-error" : "")" @bind="EntrenadorId">
                                     <option value="0">Seleccione un entrenador</option>
                                     @foreach (var e in EntrenadoresDisponibles)
                                     {
@@ -81,7 +75,7 @@
 
                             <div class="form-group">
                                 <label class="form-label">Salón <span class="required">*</span></label>
-                                <select class="form-select" @bind="SalonId">
+                                <select class="form-select @(IntentoGuardar && SalonId <= 0 ? "input-error" : "")" @bind="SalonId">
                                     <option value="0">Seleccione un salón</option>
                                     @foreach (var s in SalonesDisponibles)
                                     {
@@ -103,7 +97,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Fecha <span class="required">*</span></label>
-                                <input class="form-input"
+                                <input class="form-input @(IntentoGuardar && FechaSesion == null ? "input-error" : "")"
                                        type="date"
                                        value="@FechaInput"
                                        @onchange="CambiarFecha" />
@@ -111,7 +105,7 @@
 
                             <div class="form-group">
                                 <label class="form-label">Cupos disponibles <span class="required">*</span></label>
-                                <input class="form-input"
+                                <input class="form-input @(IntentoGuardar && CapacidadMaxima.HasValue && CapacidadMaxima <= 0 ? "input-error" : "")"
                                        type="number"
                                        placeholder="Opcional, se usará aforo del salón"
                                        value="@CapacidadMaximaInput"
@@ -123,7 +117,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Hora de inicio <span class="required">*</span></label>
-                                <input class="form-input"
+                                <input class="form-input @(IntentoGuardar && HoraInicio == null ? "input-error" : "")"
                                        type="time"
                                        value="@HoraInicioInput"
                                        @onchange="CambiarHoraInicio" />
@@ -131,7 +125,7 @@
 
                             <div class="form-group">
                                 <label class="form-label">Hora de fin <span class="required">*</span></label>
-                                <input class="form-input"
+                                <input class="form-input @(IntentoGuardar && HoraFin == null ? "input-error" : "")"
                                        type="time"
                                        value="@HoraFinInput"
                                        @onchange="CambiarHoraFin" />
@@ -198,8 +192,10 @@
         </div>
 
         <div class="form-actions">
-            <button class="btn-primary" @onclick="Registrar">✔ Registrar Sesión</button>
-            <button class="btn-secondary" @onclick="Cancelar">✕ Cancelar</button>
+            <button class="btn-primary" @onclick="Registrar" disabled="@Guardando">
+                @(Guardando ? "Registrando..." : "✔ Registrar Sesión")
+            </button>
+            <button class="btn-secondary" @onclick="Cancelar" disabled="@Guardando">✕ Cancelar</button>
             <a class="btn-ghost" href="/admin/sesiones">← Volver al listado</a>
         </div>
     }
@@ -221,9 +217,8 @@
     private List<SalonDTO> SalonesDisponibles = new();
 
     private bool Cargando = true;
-
-    private string MensajeFormulario = "";
-    private string ClaseMensajeFormulario = "";
+    private bool Guardando = false;
+    private bool IntentoGuardar = false;
 
     private string FechaInput => FechaSesion.HasValue
         ? FechaSesion.Value.ToString("yyyy-MM-dd")
@@ -333,25 +328,23 @@
 
     private async Task Registrar()
     {
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
-
+        IntentoGuardar = true;
 
         if (FormularioIncompleto)
         {
-            MostrarError("Completa todos los campos obligatorios.");
+            ToastService.ShowError("Completa todos los campos obligatorios.");
             return;
         }
 
         if (FechaSesion!.Value.Date < DateTime.Today)
         {
-            MostrarError("No puedes registrar una sesión con fecha pasada.");
+            ToastService.ShowError("No puedes registrar una sesión con fecha pasada.");
             return;
         }
 
         if (HoraFin <= HoraInicio)
         {
-            MostrarError("La hora de fin debe ser mayor a la hora de inicio.");
+            ToastService.ShowError("La hora de fin debe ser mayor a la hora de inicio.");
             return;
         }
 
@@ -361,7 +354,7 @@
 
         if (selectedSalon == null || selectedClase == null || selectedEntrenador == null)
         {
-            MostrarError("La clase, entrenador o salón seleccionado no es válido.");
+            ToastService.ShowError("La clase, entrenador o salón seleccionado no es válido.");
             return;
         }
 
@@ -369,34 +362,44 @@
 
         if (cuposDisp <= 0)
         {
-            MostrarError("Los cupos disponibles deben ser mayores a cero.");
+            ToastService.ShowError("Los cupos disponibles deben ser mayores a cero.");
             return;
         }
 
-        var fechaInicio = FechaSesion.Value.Date.Add(HoraInicio!.Value.ToTimeSpan());
-        var fechaFin = FechaSesion.Value.Date.Add(HoraFin!.Value.ToTimeSpan());
-
-        var nuevaSesion = new SesionClaseDTO
+        try
         {
-            FechaSesion = FechaSesion.Value.Date,
-            HoraInicio = fechaInicio,
-            HoraFin = fechaFin,
-            CuposDisponibles = cuposDisp,
-            Activo = true,
-            ClaseGrupal = new ClaseGrupalDTO { IdClase = ClaseId },
-            Entrenador = new EntrenadorDTO { IdUsuario = EntrenadorId },
-            Salon = new SalonDTO { IdSalon = SalonId }
-        };
+            Guardando = true;
 
-        var resultado = await SesionService.RegistrarAsync(nuevaSesion);
+            var fechaInicio = FechaSesion.Value.Date.Add(HoraInicio!.Value.ToTimeSpan());
+            var fechaFin = FechaSesion.Value.Date.Add(HoraFin!.Value.ToTimeSpan());
 
-        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
-        {
-            Navigation.NavigateTo("/admin/sesiones", forceLoad: true);
+            var nuevaSesion = new SesionClaseDTO
+            {
+                FechaSesion = FechaSesion.Value.Date,
+                HoraInicio = fechaInicio,
+                HoraFin = fechaFin,
+                CuposDisponibles = cuposDisp,
+                Activo = true,
+                ClaseGrupal = new ClaseGrupalDTO { IdClase = ClaseId },
+                Entrenador = new EntrenadorDTO { IdUsuario = EntrenadorId },
+                Salon = new SalonDTO { IdSalon = SalonId }
+            };
+
+            var resultado = await SesionService.RegistrarAsync(nuevaSesion);
+
+            if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Sesión registrada correctamente.");
+                Navigation.NavigateTo("/admin/sesiones", forceLoad: true);
+            }
+            else
+            {
+                ToastService.ShowError(resultado);
+            }
         }
-        else
+        finally
         {
-            MostrarError(resultado);
+            Guardando = false;
         }
     }
 
@@ -415,9 +418,4 @@
         Navigation.NavigateTo("/admin/sesiones");
     }
 
-    private void MostrarError(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
-    }
 }

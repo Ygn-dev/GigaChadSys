@@ -7,6 +7,7 @@
 @using GigaChadSys.Servicios.DTO
 @inject MembresiaBlackServicio BlackService
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <section class="membership-edit-page">
 
@@ -24,13 +25,6 @@
         <h1>Editar Membresía Black</h1>
         <p>Actualiza la información administrativa del plan Black.</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(Mensaje))
-    {
-        <div class="@ClaseMensaje">
-            @Mensaje
-        </div>
-    }
 
     @if (Cargando)
     {
@@ -52,7 +46,8 @@
                             <label>Nombre del plan <span>*</span></label>
                             <input type="text"
                                    value="@NombrePlan"
-                                   @oninput="CambiarNombrePlan" />
+                                   @oninput="CambiarNombrePlan"
+                                   class="@(IntentoGuardar && string.IsNullOrWhiteSpace(NombrePlan) ? "input-error" : "")" />
                         </div>
 
                         <div class="membership-field">
@@ -61,7 +56,8 @@
                                    min="0"
                                    step="0.01"
                                    value="@PrecioMensualTexto"
-                                   @oninput="CambiarPrecioMensual" />
+                                   @oninput="CambiarPrecioMensual"
+                                   class="@(IntentoGuardar && PrecioMensual <= 0 ? "input-error" : "")" />
                         </div>
                     </div>
                 </div>
@@ -127,11 +123,12 @@
                 <div class="membership-actions">
                     <button type="button"
                             class="membership-save"
-                            @onclick="GuardarCambios">
-                        💾 Guardar Cambios
+                            @onclick="GuardarCambios"
+                            disabled="@Guardando">
+                        @(Guardando ? "Guardando..." : "💾 Guardar Cambios")
                     </button>
 
-                    <a class="membership-cancel" href="/admin/membresias">
+                    <a class="membership-cancel" href="/admin/membresias" disabled="@Guardando">
                         Cancelar
                     </a>
 
@@ -569,8 +566,9 @@
     private bool Activo = true;
 
     private bool Cargando = true;
-    private string Mensaje = "";
-    private string ClaseMensaje = "";
+
+    private bool IntentoGuardar = false;
+    private bool Guardando = false;
 
     private string PrecioMensualTexto => PrecioMensual.ToString("0.00", CultureInfo.InvariantCulture);
 
@@ -582,14 +580,13 @@
     private async Task CargarMembresia()
     {
         Cargando = true;
-        Mensaje = "";
 
         try
         {
             var dto = await BlackService.ObtenerPorIdAsync(IdParam);
             if (dto == null)
             {
-                MostrarError("No se encontró el plan especificado.");
+                ToastService.ShowError("No se encontró el plan especificado.");
             }
             else
             {
@@ -602,7 +599,7 @@
         }
         catch (Exception ex)
         {
-            MostrarError("Error al cargar la membresía: " + ex.Message);
+            ToastService.ShowError("Error al cargar la membresía: " + ex.Message);
         }
         finally
         {
@@ -643,22 +640,24 @@
 
     private async Task GuardarCambios()
     {
-        Mensaje = "";
+        IntentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(NombrePlan))
         {
-            MostrarError("El nombre del plan es obligatorio.");
+            ToastService.ShowError("El nombre del plan es obligatorio.");
             return;
         }
 
         if (PrecioMensual <= 0)
         {
-            MostrarError("El precio mensual debe ser mayor a cero.");
+            ToastService.ShowError("El precio mensual debe ser mayor a cero.");
             return;
         }
 
         try
         {
+            Guardando = true;
+
             var dto = new MembresiaBlackDTO
             {
                 IdMembresia = IdParam,
@@ -672,30 +671,22 @@
 
             if (!respuesta.StartsWith("Error") && !respuesta.ToLower().Contains("error"))
             {
-                MostrarExito("Membresía Black actualizada correctamente.");
-                await Task.Delay(1500);
+                ToastService.ShowSuccess("Membresía Black actualizada correctamente.");
                 Nav.NavigateTo("/admin/membresias");
             }
             else
             {
-                MostrarError(respuesta);
+                ToastService.ShowError(respuesta);
             }
         }
         catch (Exception ex)
         {
-            MostrarError("Error al guardar cambios: " + ex.Message);
+            ToastService.ShowError("Error al guardar cambios: " + ex.Message);
+        }
+        finally
+        {
+            Guardando = false;
         }
     }
 
-    private void MostrarError(string mensaje)
-    {
-        Mensaje = mensaje;
-        ClaseMensaje = "membership-message error";
-    }
-
-    private void MostrarExito(string mensaje)
-    {
-        Mensaje = mensaje;
-        ClaseMensaje = "membership-message success";
-    }
 }

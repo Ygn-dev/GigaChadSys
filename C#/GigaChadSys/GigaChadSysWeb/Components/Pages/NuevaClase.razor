@@ -5,6 +5,7 @@
 @using GigaChadSys.Servicios.DTO
 @inject ClaseGrupalServicio ClaseService
 @inject NavigationManager Navigation
+@inject ToastService ToastService
 
 <section class="admin-form-page">
 
@@ -41,7 +42,7 @@
                             <label class="form-label">
                                 Nombre de la clase <span class="required">*</span>
                             </label>
-                            <input class="form-input"
+                            <input class="form-input @(IntentoGuardar && string.IsNullOrWhiteSpace(Nombre) ? "input-error" : "")"
                                    type="text"
                                    placeholder="Ej: CrossFit Intenso"
                                    @bind="Nombre"
@@ -55,7 +56,7 @@
                             <label class="form-label">
                                 Disciplina <span class="required">*</span>
                             </label>
-                            <select class="form-select" @bind="Disciplina">
+                            <select class="form-select @(IntentoGuardar && string.IsNullOrWhiteSpace(Disciplina) ? "input-error" : "")" @bind="Disciplina">
                                 <option value="">Seleccione una disciplina</option>
                                 <option>CrossFit</option>
                                 <option>Yoga</option>
@@ -71,7 +72,7 @@
                             <label class="form-label">
                                 Nivel <span class="required">*</span>
                             </label>
-                            <select class="form-select" @bind="Nivel">
+                            <select class="form-select @(IntentoGuardar && string.IsNullOrWhiteSpace(Nivel) ? "input-error" : "")" @bind="Nivel">
                                 <option value="">Seleccione un nivel</option>
                                 <option>Principiante</option>
                                 <option>Intermedio</option>
@@ -86,7 +87,7 @@
                             <label class="form-label">
                                 Duración (minutos) <span class="required">*</span>
                             </label>
-                            <input class="form-input"
+                            <input class="form-input @(IntentoGuardar && DuracionMin <= 0 ? "input-error" : "")"
                                    type="number"
                                    min="10" max="180"
                                    placeholder="Ej: 60"
@@ -101,7 +102,7 @@
                             <label class="form-label">
                                 Descripción <span class="required">*</span>
                             </label>
-                            <textarea class="form-input gc-textarea"
+                            <textarea class="form-input gc-textarea @(IntentoGuardar && string.IsNullOrWhiteSpace(Descripcion) ? "input-error" : "")"
                                       placeholder="Describa brevemente el contenido de la clase..."
                                       maxlength="500"
                                       @bind="Descripcion"
@@ -139,10 +140,10 @@
 
             <!-- Botones -->
             <div class="form-actions">
-                <button class="btn-primary" @onclick="RegistrarClase">
-                    ✔ Registrar Clase
+                <button class="btn-primary" @onclick="RegistrarClase" disabled="@Guardando">
+                    @(Guardando ? "Registrando..." : "✔ Registrar Clase")
                 </button>
-                <button class="btn-secondary" @onclick="LimpiarFormulario">
+                <button class="btn-secondary" @onclick="LimpiarFormulario" disabled="@Guardando">
                     ✕ Cancelar
                 </button>
                 <a class="btn-ghost" href="/admin/clases">
@@ -227,13 +228,6 @@
 
 </section>
 
-@if (MostrarToast)
-{
-    <div class="socios-toast socios-toast-show">
-        <span>✅</span> Clase registrada correctamente
-    </div>
-}
-
 @code {
     private string Nombre      = "";
     private string Disciplina  = "";
@@ -241,32 +235,49 @@
     private int    DuracionMin = 0;
     private string Descripcion = "";
     private bool   Activa      = true;
-    private bool   MostrarToast = false;
+    private bool   IntentoGuardar = false;
+    private bool   Guardando = false;
 
     private async Task RegistrarClase()
     {
+        IntentoGuardar = true;
+
         if (string.IsNullOrWhiteSpace(Nombre) ||
             string.IsNullOrWhiteSpace(Disciplina) ||
             string.IsNullOrWhiteSpace(Nivel) ||
-            DuracionMin <= 0)
+            DuracionMin <= 0 ||
+            string.IsNullOrWhiteSpace(Descripcion))
             return;
 
-        var nuevaClase = new ClaseGrupalDTO
+        try
         {
-            NombreDisciplina = $"{Disciplina} - {Nombre.Trim()}",
-            Nivel = Nivel,
-            DuracionMinutos = DuracionMin,
-            Descripcion = Descripcion.Trim(),
-            Activo = Activa
-        };
+            Guardando = true;
 
-        var msj = await ClaseService.RegistrarAsync(nuevaClase);
+            var nuevaClase = new ClaseGrupalDTO
+            {
+                NombreDisciplina = $"{Disciplina} - {Nombre.Trim()}",
+                Nivel = Nivel,
+                DuracionMinutos = DuracionMin,
+                Descripcion = Descripcion.Trim(),
+                Activo = Activa
+            };
 
-        MostrarToast = true;
-        StateHasChanged();
-        await Task.Delay(1500);
-        MostrarToast = false;
-        Navigation.NavigateTo("/admin/clases");
+            var msj = await ClaseService.RegistrarAsync(nuevaClase);
+
+            if (!msj.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Clase registrada correctamente");
+                Navigation.NavigateTo("/admin/clases");
+            }
+            else
+            {
+                ToastService.ShowError(msj);
+            }
+        }
+        finally
+        {
+            Guardando = false;
+        }
     }
 
     private void LimpiarFormulario()

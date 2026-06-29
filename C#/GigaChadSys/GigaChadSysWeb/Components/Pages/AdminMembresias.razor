@@ -5,6 +5,7 @@
 @rendermode InteractiveServer
 @inject MembresiaBasicServicio BasicService
 @inject MembresiaBlackServicio BlackService
+@inject ToastService ToastService
 
 <section class="membership-page">
 
@@ -23,13 +24,6 @@
         <div class="membership-card" style="padding: 32px;">
             <h2>Cargando membresías...</h2>
             <p>Obteniendo datos actualizados desde la base de datos.</p>
-        </div>
-    }
-    else if (!string.IsNullOrWhiteSpace(MensajeError))
-    {
-        <div class="membership-card" style="padding: 32px;">
-            <h2>Error al cargar membresías</h2>
-            <p>@MensajeError</p>
         </div>
     }
     else
@@ -156,7 +150,6 @@
 
 @code {
     private bool Cargando { get; set; } = true;
-    private string MensajeError { get; set; } = "";
 
     private List<MembresiaBasicDTO> MembresiasBasic { get; set; } = new();
     private List<MembresiaBlackDTO> MembresiasBlack { get; set; } = new();
@@ -179,7 +172,6 @@
         try
         {
             Cargando = true;
-            MensajeError = "";
 
             var basics = await BasicService.ListarMembresiasBasicAsync();
             var blacks = await BlackService.ListarMembresiasBlackAsync();
@@ -189,7 +181,7 @@
         }
         catch (Exception ex)
         {
-            MensajeError = "No se pudieron cargar las membresías: " + ex.Message;
+            ToastService.ShowError("No se pudieron cargar las membresías: " + ex.Message);
         }
         finally
         {

@@ -7,6 +7,7 @@
 @inject GigaChadSys.Servicios.SesionClaseServicio SesionClaseService
 @inject GigaChadSys.Servicios.ReservaServicio ReservaService
 @inject NavigationManager NavManager
+@inject ToastService ToastService
 
 <section class="admin-list-page">
 
@@ -43,7 +44,7 @@
                 </div>
                 <div class="sf-form-group">
                     <label class="sf-label">Socio <span style="color:#E53935">*</span></label>
-                    <select class="sf-select" @bind="SocioSeleccionado">
+                    <select class="sf-select @(IntentoGuardar && SocioSeleccionado <= 0 ? "input-error" : "")" @bind="SocioSeleccionado">
                         <option value="0">Seleccione un socio</option>
                         @foreach (var s in Socios)
                         {
@@ -61,7 +62,7 @@
                 </div>
                 <div class="sf-form-group">
                     <label class="sf-label">Sesión disponible <span style="color:#E53935">*</span></label>
-                    <select class="sf-select" @bind="SesionSeleccionada">
+                    <select class="sf-select @(IntentoGuardar && SesionSeleccionada <= 0 ? "input-error" : "")" @bind="SesionSeleccionada">
                         <option value="0">Seleccione una sesión</option>
                         @foreach (var s in Sesiones)
                         {
@@ -100,10 +101,10 @@
 
             <!-- Action Buttons -->
             <div class="sf-form-actions">
-                <button class="sf-btn-primary" @onclick="RegistrarReserva">
-                    ✔ Registrar Reserva
+                <button class="sf-btn-primary" @onclick="RegistrarReserva" disabled="@Guardando">
+                    @(Guardando ? "Registrando..." : "✔ Registrar Reserva")
                 </button>
-                <button class="sf-btn-secondary" @onclick="LimpiarFormulario">
+                <button class="sf-btn-secondary" @onclick="LimpiarFormulario" disabled="@Guardando">
                     ✕ Cancelar
                 </button>
                 <div class="sf-back-link">
@@ -183,19 +184,12 @@
 
 </section>
 
-@if (MostrarToast)
-{
-    <div class="socios-toast socios-toast-show">
-        <span>✅</span> @MensajeToast
-    </div>
-}
-
 @code {
     private int SocioSeleccionado { get; set; } = 0;
     private int SesionSeleccionada { get; set; } = 0;
     private string EstadoReserva { get; set; } = "Confirmada";
-    private bool MostrarToast { get; set; } = false;
-    private string MensajeToast { get; set; } = "Reserva registrada correctamente";
+    private bool IntentoGuardar { get; set; } = false;
+    private bool Guardando { get; set; } = false;
 
     private List<SocioDTO> Socios = new();
     private List<SesionClaseDTO> Sesiones = new();
@@ -213,27 +207,39 @@
 
     private async Task RegistrarReserva()
     {
+        IntentoGuardar = true;
+
         if (SocioSeleccionado <= 0 || SesionSeleccionada <= 0)
             return;
 
-        var reserva = new ReservaDTO
+        try
         {
-            FechaHoraReserva = DateTime.Now,
-            Asistio = false,
-            IdUsuario = SocioSeleccionado,
-            SesionClase = new SesionClaseDTO { IdSesion = SesionSeleccionada }
-        };
+            Guardando = true;
 
-        var responseMsg = await ReservaService.RegistrarAsync(reserva);
-        
-        MensajeToast = responseMsg;
-        MostrarToast = true;
-        StateHasChanged();
-        await Task.Delay(2800);
-        MostrarToast = false;
-        
-        // Return to reservations list or just clear form
-        NavManager.NavigateTo("/admin/reservas");
+            var reserva = new ReservaDTO
+            {
+                FechaHoraReserva = DateTime.Now,
+                Asistio = false,
+                IdUsuario = SocioSeleccionado,
+                SesionClase = new SesionClaseDTO { IdSesion = SesionSeleccionada }
+            };
+
+            var responseMsg = await ReservaService.RegistrarAsync(reserva);
+
+            if (!responseMsg.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Reserva registrada correctamente.");
+                NavManager.NavigateTo("/admin/reservas");
+            }
+            else
+            {
+                ToastService.ShowError(responseMsg);
+            }
+        }
+        finally
+        {
+            Guardando = false;
+        }
     }
 
     private void LimpiarFormulario()

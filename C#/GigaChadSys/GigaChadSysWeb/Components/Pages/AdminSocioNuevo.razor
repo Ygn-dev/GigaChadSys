@@ -6,6 +6,7 @@
 @using GigaChadSys.Servicios.DTO
 @inject SocioServicio SocioService
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <section class="socio-form-page">
 
@@ -251,8 +252,8 @@
 
             <!-- Acciones -->
             <div class="sf-form-actions">
-                <button class="sf-btn-primary" @onclick="Registrar">
-                    <span>👤</span> Registrar Socio
+                <button class="sf-btn-primary" disabled="@Guardando" @onclick="Registrar">
+                    <span>👤</span> @(Guardando ? "Registrando..." : "Registrar Socio")
                 </button>
                 <a class="sf-btn-secondary" href="/admin/socios">Cancelar</a>
                 <span class="sf-back-link">
@@ -265,20 +266,10 @@
 
 </section>
 
-<!-- Toast -->
-@if (mostrarToast)
-{
-    <div class="socios-toast socios-toast-show">
-        <span>✅</span>
-        <span>@mensajeToast</span>
-    </div>
-}
-
 @code {
     private bool verPass = false;
     private bool verConfirm = false;
-    private bool mostrarToast = false;
-    private string mensajeToast = "";
+    private bool Guardando = false;
     private Dictionary<string, string> errores = new();
 
     private FormNuevoSocio form = new();
@@ -341,23 +332,26 @@
             EstadoMembresia = form.PlanSeleccionado == "black" || form.PlanSeleccionado == "basic"
         };
 
-        var resultado = await SocioService.RegistrarAsync(nuevoSocio);
-
-        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        Guardando = true;
+        try
         {
-            mensajeToast = "Socio registrado correctamente.";
-            mostrarToast = true;
-            StateHasChanged();
+            var resultado = await SocioService.RegistrarAsync(nuevoSocio);
 
-            await Task.Delay(1500);
-
-            mostrarToast = false;
-            Nav.NavigateTo("/admin/socios");
+            if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Socio registrado correctamente.");
+                Nav.NavigateTo("/admin/socios");
+            }
+            else
+            {
+                ToastService.ShowError(resultado);
+                errores["dni"] = resultado;
+                StateHasChanged();
+            }
         }
-        else
+        finally
         {
-            errores["dni"] = resultado;
-            StateHasChanged();
+            Guardando = false;
         }
     }
 
