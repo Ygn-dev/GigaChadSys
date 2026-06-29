@@ -1,6 +1,7 @@
-@implements IDisposable
+@implements IAsyncDisposable
 @inject AsistenteSocioServicio Asistente
 @inject GigaChadSys.Servicios.SessionServicio Session
+@inject IJSRuntime JS
 
 <div class="socio-assistant-shell" aria-live="polite">
     @if (Abierto)
@@ -11,7 +12,6 @@
                     <span class="socio-assistant-kicker">Asistente de socio</span>
                     <h3>@Titulo</h3>
                 </div>
-
                 <button type="button" class="socio-assistant-close" @onclick="TogglePanel" aria-label="Cerrar asistente">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -19,46 +19,58 @@
 
             <div class="socio-assistant-body">
                 <div class="socio-assistant-hint">
-                    <span>Sesion: @Asistente.NombreUsuario</span>
-                    <button type="button" class="socio-assistant-reset" @onclick="Reiniciar">
+                    <span>Sesión: @(string.IsNullOrWhiteSpace(Asistente.NombreUsuario) ? "Invitado" : Asistente.NombreUsuario)</span>
+                    <button type="button" class="socio-assistant-reset" @onclick="ReiniciarAsync" disabled="@Procesando">
                         Reiniciar charla
                     </button>
                 </div>
 
-                <div class="socio-assistant-chat">
-                    @foreach (var mensaje in Asistente.Conversacion)
-                    {
-                        <article class="socio-assistant-message @mensaje.Rol">
-                            <div class="message-badge">@(mensaje.Rol == "usuario" ? "Tu" : "GC")</div>
-                            <p class="socio-assistant-text">@mensaje.Texto</p>
-                        </article>
-                    }
-
+                <div class="socio-assistant-chat" @ref="ChatContainer">
                     @if (Asistente.Conversacion.Count == 0)
                     {
                         <article class="socio-assistant-message asistente">
                             <div class="message-badge">GC</div>
-                            <p class="socio-assistant-text">Hola. Preguntame por tu membresia, tus pagos o tus reservas.</p>
+                            <p class="socio-assistant-text">Hola. Pregúntame por tu membresía, tus pagos o tus reservas.</p>
+                        </article>
+                    }
+                    else
+                    {
+                        @foreach (var mensaje in Asistente.Conversacion)
+                        {
+                            <article class="socio-assistant-message @mensaje.Rol">
+                                <div class="message-badge">@(mensaje.Rol == "usuario" ? "Tú" : "GC")</div>
+                                <p class="socio-assistant-text">@mensaje.Texto</p>
+                            </article>
+                        }
+                    }
+
+                    @if (Procesando)
+                    {
+                        <article class="socio-assistant-message asistente">
+                            <div class="message-badge">GC</div>
+                            <p class="socio-assistant-text"><em>Procesando...</em></p>
                         </article>
                     }
                 </div>
 
                 <div class="socio-assistant-shortcuts">
-                    <button type="button" @onclick="AtajoMembresia">Mi membresia</button>
-                    <button type="button" @onclick="AtajoPagos">Pagos</button>
-                    <button type="button" @onclick="AtajoReservas">Reservas</button>
+                    <button type="button" @onclick="AtajoMembresia" disabled="@Procesando">Mi membresía</button>
+                    <button type="button" @onclick="AtajoPagos" disabled="@Procesando">Pagos</button>
+                    <button type="button" @onclick="AtajoReservas" disabled="@Procesando">Reservas</button>
                 </div>
 
-                <form class="socio-assistant-form" @onsubmit="EnviarAsync" @onsubmit:preventDefault>
+                <form class="socio-assistant-form" @onsubmit="EnviarAsync">
                     <input class="socio-assistant-input"
                            type="text"
                            placeholder="Escribe tu pregunta..."
                            @bind="Consulta"
-                           @bind:event="oninput" />
+                           @bind:event="oninput"
+                           disabled="@Procesando"
+                           autocomplete="off" />
 
-                    <button type="submit" class="socio-assistant-send" disabled="@Procesando">
+                    <button type="submit" class="socio-assistant-send" disabled="@(Procesando || string.IsNullOrWhiteSpace(Consulta))">
                         <i class="bi bi-send"></i>
-                        <span>@(Procesando ? "..." : "Enviar")</span>
+                        <span>Enviar</span>
                     </button>
                 </form>
             </div>
@@ -75,6 +87,7 @@
     private string Consulta { get; set; } = string.Empty;
     private bool Abierto { get; set; }
     private bool Procesando { get; set; }
+    private ElementReference ChatContainer;
 
     private string Titulo => string.IsNullOrWhiteSpace(Asistente.NombreUsuario)
         ? "Bot de ayuda"
@@ -92,32 +105,32 @@
 
     private async void HandleSessionChange()
     {
-        await InvokeAsync(async () =>
-        {
-            await Asistente.CargarContextoAsync();
-            StateHasChanged();
-        });
+        await Asistente.CargarContextoAsync();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task EnviarAsync()
     {
-        if (Procesando)
-            return;
-
         string texto = Consulta.Trim();
-        if (string.IsNullOrWhiteSpace(texto))
+        if (string.IsNullOrWhiteSpace(texto) || Procesando)
             return;
 
+        Consulta = string.Empty;
         Procesando = true;
+        Abierto = true;
+
+        StateHasChanged();
+        await ScrollToBottomAsync();
+
         try
         {
-            Consulta = string.Empty;
-            Abierto = true;
             await Asistente.ResponderAsync(texto);
         }
         finally
         {
             Procesando = false;
+            StateHasChanged();
+            await ScrollToBottomAsync();
         }
     }
 
@@ -127,25 +140,42 @@
         await EnviarAsync();
     }
 
-    private Task AtajoMembresia() => UsarAtajoAsync("Resumeme mi membresia");
-
-    private Task AtajoPagos() => UsarAtajoAsync("Cuales son mis pagos");
-
-    private Task AtajoReservas() => UsarAtajoAsync("Ayudame con reservas");
+    private Task AtajoMembresia() => UsarAtajoAsync("Resúmeme mi membresía");
+    private Task AtajoPagos() => UsarAtajoAsync("Cuáles son mis pagos");
+    private Task AtajoReservas() => UsarAtajoAsync("Ayúdame con reservas");
 
     private void TogglePanel()
     {
         Abierto = !Abierto;
+        if (Abierto)
+        {
+            _ = ScrollToBottomAsync();
+        }
     }
 
-    private async Task Reiniciar()
+    private async Task ReiniciarAsync()
     {
         Asistente.ReiniciarConversacion();
         await Asistente.CargarContextoAsync();
-        Abierto = true;
+        StateHasChanged();
     }
 
-    public void Dispose()
+    private async Task ScrollToBottomAsync()
+    {
+        try
+        {
+            if (Abierto)
+            {
+                await JS.InvokeVoidAsync("eval", @"
+                    var chat = document.querySelector('.socio-assistant-chat');
+                    if(chat) chat.scrollTop = chat.scrollHeight;
+                ");
+            }
+        }
+        catch { /* Ignorar errores durante el renderizado inicial */ }
+    }
+
+    public async ValueTask DisposeAsync()
     {
         Session.OnCambio -= HandleSessionChange;
     }
