@@ -14,5 +14,11 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Servicios\Servicios.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="GigaChad.Componentes">
+			<HintPath>libs\GigaChad.Componentes.dll</HintPath>
+		</Reference>
+		<ProjectReference Include="..\Servicios\Servicios.csproj" />
+	</ItemGroup>
 
 </Project>
