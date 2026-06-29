@@ -23,6 +23,7 @@ public class AsistenteSocioServicio
 
     private int _usuarioIdContextoCargado;
     private bool _esperandoSeleccionReserva;
+    private bool _esperandoSeleccionCancelacion;
 
     public AsistenteSocioServicio(
         HttpClient httpClient,
@@ -106,6 +107,8 @@ public class AsistenteSocioServicio
 
         if (EsConsultaMisReservas(texto))
         {
+            _esperandoSeleccionReserva = false;
+            _esperandoSeleccionCancelacion = true;
             string respuestaReservas = FormatoMisReservas();
             AgregarMensajeUsuario(texto);
             AgregarMensajeSistema(respuestaReservas);
@@ -114,10 +117,36 @@ public class AsistenteSocioServicio
 
         if (EsConsultaClasesDisponibles(texto))
         {
+            _esperandoSeleccionCancelacion = false;
+            _esperandoSeleccionReserva = true;
             string respuestaClases = FormatoClasesDisponibles();
             AgregarMensajeUsuario(texto);
             AgregarMensajeSistema(respuestaClases);
             return respuestaClases;
+        }
+
+        if (Contiene(texto, "pago", "pagos", "cobro", "monto", "cuota", "factura", "metodo de pago", "método de pago"))
+        {
+            _esperandoSeleccionCancelacion = false;
+            _esperandoSeleccionReserva = false;
+            string respuestaPagos = FormatoPagosActuales();
+            AgregarMensajeUsuario(texto);
+            AgregarMensajeSistema(respuestaPagos);
+            return respuestaPagos;
+        }
+
+        if (Contiene(texto, "hola", "buenas", "saludos", "ayuda", "nombre", "quien soy", "quién soy", "perfil", "membres", "plan", "estado", "suscrip", "renovar"))
+        {
+            _esperandoSeleccionCancelacion = false;
+            _esperandoSeleccionReserva = false;
+        }
+
+        if (_esperandoSeleccionCancelacion || EsSolicitudCancelacion(texto))
+        {
+            string respuestaCancelacion = await IntentarCancelarReservaAsync(texto);
+            AgregarMensajeUsuario(texto);
+            AgregarMensajeSistema(respuestaCancelacion);
+            return respuestaCancelacion;
         }
 
         if (_esperandoSeleccionReserva || EsSolicitudReservaNueva(texto))
@@ -126,14 +155,6 @@ public class AsistenteSocioServicio
             AgregarMensajeUsuario(texto);
             AgregarMensajeSistema(respuestaReserva);
             return respuestaReserva;
-        }
-
-        if (Contiene(texto, "pago", "pagos", "cobro", "monto", "cuota", "factura", "metodo de pago", "método de pago"))
-        {
-            string respuestaPagos = FormatoPagosActuales();
-            AgregarMensajeUsuario(texto);
-            AgregarMensajeSistema(respuestaPagos);
-            return respuestaPagos;
         }
 
         AgregarMensajeUsuario(texto);
@@ -149,6 +170,7 @@ public class AsistenteSocioServicio
         Conversacion.Clear();
         _usuarioIdContextoCargado = 0;
         _esperandoSeleccionReserva = false;
+        _esperandoSeleccionCancelacion = false;
     }
 
     private async Task CargarSocioActualAsync()
@@ -357,6 +379,9 @@ public class AsistenteSocioServicio
         if (EsSolicitudReservaNueva(texto))
             return FormatoClasesDisponibles();
 
+        if (EsSolicitudCancelacion(texto))
+            return FormatoMisReservas();
+
         if (Contiene(texto, "basic", "black"))
             return FormatoPlanesDisponibles();
 
@@ -376,7 +401,7 @@ public class AsistenteSocioServicio
 
     private string ObtenerSystemPrompt() =>
         _configuration["Gemini:SystemPrompt"]?.Trim()
-        ?? "Eres un asistente breve, claro y convincente para un gimnasio. Solo ayudas con membresias, pagos, reservas, perfil y dudas del socio. Usa el contexto dado. Si falta un dato, dilo con honestidad. Nunca inventes pagos, fechas ni planes.";
+        ?? "Eres un asistente breve, claro y convincente para un gimnasio. Solo ayudas con membresias, pagos, reservas, perfil y dudas del socio. Usa el contexto dado. Si falta un dato, dilo con honestidad. NUNCA confirmes reservas ni cancelaciones por tu cuenta. Tu rol es informar. Si el usuario quiere reservar o cancelar, dile que debe pedirlo claramente al sistema (ej. 'reservar clase' o 'cancelar reserva').";
 
     private string ConstruirContextoParaIA()
     {
@@ -599,6 +624,82 @@ public class AsistenteSocioServicio
         return $"Reserva creada correctamente:\nClase: {nombreClase}\nSesion: #{sesionSeleccionada.IdSesion}\nFecha: {sesionSeleccionada.FechaTexto}\nHorario: {sesionSeleccionada.HorarioTexto}\nSalon: {sesionSeleccionada.Salon?.NombreSalon ?? "Sin salon"}";
     }
 
+    private async Task<string> IntentarCancelarReservaAsync(string texto)
+    {
+        if (!_session.EstaAutenticado || !_session.EsSocio)
+            return "Debes iniciar sesion como socio para cancelar reservas.";
+
+        var activas = ReservasActuales
+            .Where(r => r.Activo && r.SesionClase != null && r.SesionClase.FechaHoraFin != default && r.SesionClase.FechaHoraFin >= DateTime.Now)
+            .ToList();
+
+        if (activas.Count == 0)
+        {
+            _esperandoSeleccionCancelacion = false;
+            return "No tienes reservas activas para cancelar.";
+        }
+
+        var reservaSeleccionada = ResolverReservaParaCancelacion(texto, activas);
+
+        if (reservaSeleccionada is null)
+        {
+            _esperandoSeleccionCancelacion = true;
+            string opciones = string.Join("\n", activas.Take(5).Select((r, i) =>
+            {
+                string nombreClase = r.SesionClase?.ClaseGrupal?.Nombre ?? r.SesionClase?.ClaseGrupal?.NombreDisciplina ?? "Clase";
+                return $"{i + 1}. #{r.IdReserva} {nombreClase} ({r.SesionClase?.FechaTexto} {r.SesionClase?.HorarioTexto})";
+            }));
+
+            return $"No pude identificar qué reserva deseas cancelar. Responde con el ID de la reserva (ej. {activas.First().IdReserva}) o el nombre de la clase:\n{opciones}";
+        }
+
+        var resultado = await _reservaServicio.EliminarAsync(reservaSeleccionada.IdReserva);
+
+        if (resultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase) || resultado.Contains("error", StringComparison.OrdinalIgnoreCase))
+        {
+            return resultado;
+        }
+
+        await CargarContextoAsync(true);
+        _esperandoSeleccionCancelacion = false;
+
+        string nombre = reservaSeleccionada.SesionClase?.ClaseGrupal?.Nombre ?? reservaSeleccionada.SesionClase?.ClaseGrupal?.NombreDisciplina ?? "Clase";
+        return $"He cancelado tu reserva para la clase de {nombre} (Reserva #{reservaSeleccionada.IdReserva}).\n¿Deseas reservar alguna otra clase o necesitas ayuda con algo más?";
+    }
+
+    private ReservaDTO? ResolverReservaParaCancelacion(string texto, List<ReservaDTO> activas)
+    {
+        var numero = Regex.Match(texto, @"\b\d+\b");
+        if (numero.Success && int.TryParse(numero.Value, out int idReserva))
+        {
+            var porId = activas.FirstOrDefault(r => r.IdReserva == idReserva);
+            if (porId is not null)
+                return porId;
+        }
+
+        string textoNormalizado = NormalizarTexto(texto);
+        var coincidencias = activas
+            .Select(r => new
+            {
+                Reserva = r,
+                Puntaje = r.SesionClase == null ? 0 : CalcularPuntajeSesion(textoNormalizado, r.SesionClase)
+            })
+            .Where(x => x.Puntaje > 0)
+            .OrderByDescending(x => x.Puntaje)
+            .ToList();
+
+        if (coincidencias.Count == 0)
+            return null;
+
+        int mejorPuntaje = coincidencias[0].Puntaje;
+        var mejores = coincidencias
+            .Where(x => x.Puntaje == mejorPuntaje)
+            .Select(x => x.Reserva)
+            .ToList();
+
+        return mejores.FirstOrDefault();
+    }
+
     private SesionClaseDTO? ResolverSesionParaReserva(string texto)
     {
         var numero = Regex.Match(texto, @"\b\d+\b");
@@ -661,6 +762,13 @@ public class AsistenteSocioServicio
     private static bool EsSolicitudReservaNueva(string texto)
     {
         return Regex.IsMatch(texto, @"\breservar\b|\breservame\b|\breserva la\b|\breserva el\b|\bapartar\b|\binscrib")
+               && !EsConsultaMisReservas(texto)
+               && !EsConsultaClasesDisponibles(texto);
+    }
+
+    private static bool EsSolicitudCancelacion(string texto)
+    {
+        return Regex.IsMatch(texto, @"\bcancelar\b|\bcancela\b|\banular\b|\banula\b|\bdesinscrib")
                && !EsConsultaMisReservas(texto)
                && !EsConsultaClasesDisponibles(texto);
     }
