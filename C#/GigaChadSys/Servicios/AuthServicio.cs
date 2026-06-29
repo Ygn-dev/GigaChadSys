@@ -38,7 +38,7 @@ public class AuthServicio
             {
                 var admin = admins.FirstOrDefault(a =>
                     a.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
-                    a.Contrasenia == contrasenia &&
+                    ValidarPassword(contrasenia, a.Contrasenia) &&
                     a.Activo);
 
                 if (admin != null)
@@ -51,7 +51,7 @@ public class AuthServicio
             {
                 var entrenador = entrenadores.FirstOrDefault(e =>
                     e.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
-                    e.Contrasenia == contrasenia &&
+                    ValidarPassword(contrasenia, e.Contrasenia) &&
                     e.Activo);
 
                 if (entrenador != null)
@@ -64,7 +64,7 @@ public class AuthServicio
             {
                 var socio = socios.FirstOrDefault(s =>
                     s.Email.Equals(email, StringComparison.OrdinalIgnoreCase) &&
-                    s.Contrasenia == contrasenia &&
+                    ValidarPassword(contrasenia, s.Contrasenia) &&
                     s.Activo);
 
                 if (socio != null)
@@ -97,4 +97,24 @@ public class AuthServicio
         Exito = false,
         Mensaje = mensaje
     };
+
+    private static bool ValidarPassword(string inputPassword, string dbPassword)
+    {
+        if (string.IsNullOrWhiteSpace(dbPassword)) return false;
+        
+        if (dbPassword.StartsWith("$2a$") || dbPassword.StartsWith("$2b$") || dbPassword.StartsWith("$2x$") || dbPassword.StartsWith("$2y$"))
+        {
+            try
+            {
+                return BCrypt.Net.BCrypt.Verify(inputPassword, dbPassword);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        
+        // Fallback a texto plano
+        return inputPassword == dbPassword;
+    }
 }

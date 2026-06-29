@@ -44,6 +44,7 @@ public class SocioServicio
     /// </summary>
     public async Task<string> RegistrarAsync(SocioDTO socio)
     {
+        EncriptarPassword(socio);
         var response = await _httpClient.PostAsJsonAsync(Endpoint, socio);
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar socio.");
     }
@@ -53,6 +54,7 @@ public class SocioServicio
     /// </summary>
     public async Task<string> ActualizarAsync(int idUsuario, SocioDTO socio)
     {
+        EncriptarPassword(socio);
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", socio);
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar socio.");
     }
@@ -64,5 +66,17 @@ public class SocioServicio
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idUsuario}");
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar socio.");
+    }
+
+    private static void EncriptarPassword(UsuarioDTO usuario)
+    {
+        if (!string.IsNullOrWhiteSpace(usuario.Contrasenia) &&
+            !usuario.Contrasenia.StartsWith("$2a$") &&
+            !usuario.Contrasenia.StartsWith("$2b$") &&
+            !usuario.Contrasenia.StartsWith("$2x$") &&
+            !usuario.Contrasenia.StartsWith("$2y$"))
+        {
+            usuario.Contrasenia = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasenia);
+        }
     }
 }

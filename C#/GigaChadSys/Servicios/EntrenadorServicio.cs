@@ -42,6 +42,7 @@ public class EntrenadorServicio
     /// </summary>
     public async Task<string> RegistrarAsync(EntrenadorDTO entrenador)
     {
+        EncriptarPassword(entrenador);
         var response = await _httpClient.PostAsJsonAsync(Endpoint, entrenador);
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar entrenador.");
     }
@@ -51,6 +52,7 @@ public class EntrenadorServicio
     /// </summary>
     public async Task<string> ActualizarAsync(int idUsuario, EntrenadorDTO entrenador)
     {
+        EncriptarPassword(entrenador);
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", entrenador);
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar entrenador.");
     }
@@ -62,5 +64,17 @@ public class EntrenadorServicio
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idUsuario}");
         return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar entrenador.");
+    }
+
+    private static void EncriptarPassword(UsuarioDTO usuario)
+    {
+        if (!string.IsNullOrWhiteSpace(usuario.Contrasenia) &&
+            !usuario.Contrasenia.StartsWith("$2a$") &&
+            !usuario.Contrasenia.StartsWith("$2b$") &&
+            !usuario.Contrasenia.StartsWith("$2x$") &&
+            !usuario.Contrasenia.StartsWith("$2y$"))
+        {
+            usuario.Contrasenia = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasenia);
+        }
     }
 }
