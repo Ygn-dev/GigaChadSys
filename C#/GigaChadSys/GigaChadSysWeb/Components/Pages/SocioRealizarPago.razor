@@ -8,6 +8,7 @@
 @inject SuscripcionServicio SuscripcionService
 @inject SocioServicio SocioService
 @inject NavigationManager Navigation
+@inject ToastService ToastService
 
 <section class="socio-pay-process-page">
 
@@ -21,13 +22,6 @@
         <h1>Realizar Pago</h1>
         <p>Completa el pago pendiente de tu membresía.</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(Mensaje))
-    {
-        <div class="@ClaseMensaje">
-            @Mensaje
-        </div>
-    }
 
     @if (Cargando)
     {
@@ -235,8 +229,6 @@
     public string CodigoPago { get; set; } = "";
 
     private string MetodoSeleccionado { get; set; } = "Debito";
-    private string Mensaje { get; set; } = "";
-    private string ClaseMensaje { get; set; } = "";
 
     private bool Cargando { get; set; } = true;
     private bool Guardando { get; set; } = false;
@@ -280,14 +272,12 @@
 
                 if (pagoActual == null)
                 {
-                    Mensaje = "No se encontró el pago especificado.";
-                    ClaseMensaje = "pay-process-message error";
+                    ToastService.ShowError("No se encontró el pago especificado.");
                 }
             }
             else
             {
-                Mensaje = "El código del pago no es válido.";
-                ClaseMensaje = "pay-process-message error";
+                ToastService.ShowError("El código del pago no es válido.");
             }
         }
         finally
@@ -310,23 +300,19 @@
     {
         if (pagoActual == null)
         {
-            Mensaje = "No se encontró el pago a confirmar.";
-            ClaseMensaje = "pay-process-message error";
+            ToastService.ShowError("No se encontró el pago a confirmar.");
             return;
         }
 
         if (Activo)
         {
-            Mensaje = "Este pago ya fue realizado.";
-            ClaseMensaje = "pay-process-message warning";
+            ToastService.ShowWarning("Este pago ya fue realizado.");
             return;
         }
 
         try
         {
             Guardando = true;
-            Mensaje = "";
-            ClaseMensaje = "";
 
             pagoActual.MetodoPago = MetodoSeleccionado == "Debito" ? 2 : 3;
             pagoActual.Activo = true;
@@ -356,23 +342,18 @@
                     }
                 }
 
-                Mensaje = $"Pago confirmado correctamente con tarjeta {MetodoSeleccionado}.";
-                ClaseMensaje = "pay-process-message success";
-
-                await Task.Delay(1200);
+                ToastService.ShowSuccess($"Pago confirmado correctamente con tarjeta {MetodoSeleccionado}.");
 
                 Navigation.NavigateTo("/socio/pagos");
             }
             else
             {
-                Mensaje = resultado;
-                ClaseMensaje = "pay-process-message error";
+                ToastService.ShowError(resultado);
             }
         }
         catch (Exception ex)
         {
-            Mensaje = "Error al confirmar el pago: " + ex.Message;
-            ClaseMensaje = "pay-process-message error";
+            ToastService.ShowError("Error al confirmar el pago: " + ex.Message);
         }
         finally
         {

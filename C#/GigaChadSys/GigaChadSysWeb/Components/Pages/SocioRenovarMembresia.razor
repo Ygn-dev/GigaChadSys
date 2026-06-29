@@ -11,6 +11,7 @@
 @inject PagoServicio PagoService
 @inject SocioServicio SocioService
 @inject NavigationManager Navigation
+@inject ToastService ToastService
 
 <section class="renew-membership-page">
 
@@ -18,13 +19,6 @@
         <h1>Renovar Membresía</h1>
         <p>Elige tu plan y confirma la renovación de tu membresía.</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(Mensaje))
-    {
-        <div class="@ClaseMensaje">
-            @Mensaje
-        </div>
-    }
 
     <div class="renew-current-card">
         <div class="renew-current-plan">
@@ -160,7 +154,8 @@
             <input type="date"
                    value="@FechaInicio"
                    @oninput="CambiarFechaInicio"
-                   @onchange="CambiarFechaInicio" />
+                   @onchange="CambiarFechaInicio"
+                   class="@(IntentoGuardar && !DateTime.TryParseExact(FechaInicio, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _) ? "input-error" : "")" />
         </div>
 
         <div class="renew-detail-card">
@@ -222,12 +217,10 @@
     private string MetodoPago { get; set; } = "Tarjeta";
     private bool RenovacionAutomatica { get; set; } = false;
     private bool Procesando { get; set; } = false;
+    private bool IntentoGuardar { get; set; } = false;
 
     private string FechaInicio { get; set; } = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     private string NuevaFechaVencimiento { get; set; } = DateTime.Today.AddMonths(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
-    private string Mensaje { get; set; } = "";
-    private string ClaseMensaje { get; set; } = "";
 
     private int IdBasic = 1;
     private int IdBlack = 1;
@@ -373,15 +366,14 @@
 
     private async Task ConfirmarRenovacion()
     {
-        Mensaje = "";
-        ClaseMensaje = "";
+        IntentoGuardar = true;
 
         if (Procesando)
             return;
 
         if (!Session.EstaAutenticado)
         {
-            MostrarError("Debes iniciar sesión para renovar.");
+            ToastService.ShowError("Debes iniciar sesión para renovar.");
             return;
         }
 
@@ -393,7 +385,7 @@
                 out DateTime dtInicio
             ))
         {
-            MostrarError("Debes seleccionar una fecha de inicio válida.");
+            ToastService.ShowError("Debes seleccionar una fecha de inicio válida.");
             return;
         }
 
@@ -420,7 +412,7 @@
 
             if (mensajePago.StartsWith("Error") || mensajePago.ToLower().Contains("error"))
             {
-                MostrarError("Error al registrar el pago: " + mensajePago);
+                ToastService.ShowError("Error al registrar el pago: " + mensajePago);
                 return;
             }
 
@@ -433,7 +425,7 @@
 
             if (idPagoGenerado <= 0)
             {
-                MostrarError("No se pudo obtener el ID del pago generado.");
+                ToastService.ShowError("No se pudo obtener el ID del pago generado.");
                 return;
             }
 
@@ -464,7 +456,7 @@
 
             if (resultadoSub.StartsWith("Error") || resultadoSub.ToLower().Contains("error"))
             {
-                MostrarError("Error al registrar la suscripción: " + resultadoSub);
+                ToastService.ShowError("Error al registrar la suscripción: " + resultadoSub);
                 return;
             }
 
@@ -478,10 +470,7 @@
                 await SocioService.ActualizarAsync(socioActual.IdUsuario, socioActual);
             }
 
-            Mensaje = $"¡Renovación confirmada para {NombrePlanSeleccionado}!";
-            ClaseMensaje = "renew-message success";
-
-            await Task.Delay(1000);
+            ToastService.ShowSuccess($"¡Renovación confirmada para {NombrePlanSeleccionado}!");
 
             Navigation.NavigateTo("/socio/membresia");
         }
@@ -547,9 +536,4 @@
         return pagoEncontrado?.IdPago ?? 0;
     }
 
-    private void MostrarError(string mensaje)
-    {
-        Mensaje = mensaje;
-        ClaseMensaje = "renew-message error";
-    }
 }

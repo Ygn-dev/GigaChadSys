@@ -5,6 +5,7 @@
 @rendermode InteractiveServer
 @inject SessionServicio Session
 @inject EntrenadorServicio EntrenadorService
+@inject ToastService ToastService
 
 <section class="ep-page">
 
@@ -12,14 +13,6 @@
         <h1>Mi Perfil</h1>
         <p>Tu información personal y profesional</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(mensaje))
-    {
-        <div class="@claseMensaje">
-            <i class="@iconoMensaje"></i>
-            <span>@mensaje</span>
-        </div>
-    }
 
     @if (cargando)
     {
@@ -126,7 +119,7 @@
 
                         @if (editando)
                         {
-                            <input class="ep-input"
+                            <input class="ep-input @(intentoGuardar && string.IsNullOrWhiteSpace(editNombres) ? "input-error" : "")"
                                    type="text"
                                    @bind="editNombres"
                                    placeholder="Nombres" />
@@ -145,7 +138,7 @@
 
                         @if (editando)
                         {
-                            <input class="ep-input"
+                            <input class="ep-input @(intentoGuardar && string.IsNullOrWhiteSpace(editApellidoPaterno) ? "input-error" : "")"
                                    type="text"
                                    @bind="editApellidoPaterno"
                                    placeholder="Apellido paterno" />
@@ -164,7 +157,7 @@
 
                         @if (editando)
                         {
-                            <input class="ep-input"
+                            <input class="ep-input @(intentoGuardar && string.IsNullOrWhiteSpace(editApellidoMaterno) ? "input-error" : "")"
                                    type="text"
                                    @bind="editApellidoMaterno"
                                    placeholder="Apellido materno" />
@@ -183,7 +176,7 @@
 
                         @if (editando)
                         {
-                            <input class="ep-input"
+                            <input class="ep-input @(intentoGuardar && (string.IsNullOrWhiteSpace(editTelefono) || editTelefono.Length != 9) ? "input-error" : "")"
                                    type="text"
                                    maxlength="9"
                                    @bind="editTelefono"
@@ -203,7 +196,7 @@
 
                         @if (editando)
                         {
-                            <input class="ep-input"
+                            <input class="ep-input @(intentoGuardar && (string.IsNullOrWhiteSpace(editEmail) || !editEmail.Contains("@")) ? "input-error" : "")"
                                    type="email"
                                    @bind="editEmail"
                                    placeholder="Correo electrónico" />
@@ -265,7 +258,7 @@
 
                         @if (editando)
                         {
-                            <input class="ep-input"
+                            <input class="ep-input @(intentoGuardar && string.IsNullOrWhiteSpace(editEspecialidad) ? "input-error" : "")"
                                    type="text"
                                    @bind="editEspecialidad"
                                    placeholder="Especialidad" />
@@ -337,7 +330,7 @@
                 <div class="ep-password-grid">
                     <div class="ep-form-group">
                         <label>Nueva contraseña</label>
-                        <input class="ep-input"
+                        <input class="ep-input @(intentoGuardar && (string.IsNullOrWhiteSpace(nuevaContrasenia) || nuevaContrasenia.Length < 6) ? "input-error" : "")"
                                type="password"
                                @bind="nuevaContrasenia"
                                placeholder="Nueva contraseña" />
@@ -345,7 +338,7 @@
 
                     <div class="ep-form-group">
                         <label>Confirmar contraseña</label>
-                        <input class="ep-input"
+                        <input class="ep-input @(intentoGuardar && nuevaContrasenia != confirmarContrasenia ? "input-error" : "")"
                                type="password"
                                @bind="confirmarContrasenia"
                                placeholder="Confirmar contraseña" />
@@ -868,9 +861,7 @@
     private string nuevaContrasenia = "";
     private string confirmarContrasenia = "";
 
-    private string mensaje = "";
-    private string claseMensaje = "";
-    private string iconoMensaje = "";
+    private bool intentoGuardar = false;
 
     private string InicialesPerfil
     {
@@ -980,7 +971,7 @@
         if (entrenadorActual == null)
             return;
 
-        LimpiarMensaje();
+        intentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(editNombres))
         {
@@ -1061,7 +1052,7 @@
         if (entrenadorActual == null)
             return;
 
-        LimpiarMensaje();
+        intentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(nuevaContrasenia))
         {
@@ -1130,23 +1121,17 @@
 
     private void MostrarExito(string texto)
     {
-        mensaje = texto;
-        claseMensaje = "ep-message success";
-        iconoMensaje = "bi bi-check-circle";
+        ToastService.ShowSuccess(texto);
     }
 
     private void MostrarError(string texto)
     {
-        mensaje = texto;
-        claseMensaje = "ep-message error";
-        iconoMensaje = "bi bi-exclamation-triangle";
+        ToastService.ShowError(texto);
     }
 
     private void LimpiarMensaje()
     {
-        mensaje = "";
-        claseMensaje = "";
-        iconoMensaje = "";
+        // No-op
     }
 
     private class PerfilEntrenador

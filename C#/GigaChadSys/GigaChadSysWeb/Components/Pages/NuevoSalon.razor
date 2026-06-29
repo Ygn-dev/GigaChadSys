@@ -6,6 +6,8 @@
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject SalonServicio SalonService
+@inject ToastService ToastService
+
 <section class="salon-form-page">
 
     <nav class="salon-form-breadcrumb">
@@ -39,7 +41,7 @@
             <div class="salon-form-group">
                 <label>Nombre del salón <span>*</span></label>
 
-                <input class="form-input"
+                <input class="form-input @(intentoGuardar && string.IsNullOrWhiteSpace(nombreSalon) ? "input-error" : "")"
                        type="text"
                        placeholder="Ej: Sala Principal, Sala Yoga, Sala Ciclo..."
                        @bind="nombreSalon"
@@ -51,7 +53,7 @@
             <div class="salon-form-group">
                 <label>Capacidad máxima <span>*</span></label>
 
-                <input class="form-input"
+                <input class="form-input @(intentoGuardar && (capacidad is null || capacidad <= 0) ? "input-error" : "")"
                        type="number"
                        min="1"
                        placeholder="Ej: 30"
@@ -139,15 +141,17 @@
         <div class="salon-action-right">
             <button type="button"
                     class="salon-cancel-btn"
-                    @onclick="Cancelar">
+                    @onclick="Cancelar"
+                    disabled="@guardando">
                 Cancelar
             </button>
 
             <button type="button"
                     class="salon-save-btn"
-                    @onclick="RegistrarSalon">
+                    @onclick="RegistrarSalon"
+                    disabled="@guardando">
                 <span>▣</span>
-                Registrar Salón
+                @(guardando ? "Registrando..." : "Registrar Salón")
             </button>
         </div>
     </div>
@@ -158,6 +162,8 @@
     private string nombreSalon = string.Empty;
     private int? capacidad;
     private string estado = "Activo";
+    private bool intentoGuardar = false;
+    private bool guardando = false;
 
     private string NombrePreview =>
         string.IsNullOrWhiteSpace(nombreSalon)
@@ -176,21 +182,39 @@
 
     private async Task RegistrarSalon()
     {
+        intentoGuardar = true;
+
         if (string.IsNullOrWhiteSpace(nombreSalon) || capacidad is null or <= 0)
         {
             return;
         }
 
-        var nuevoSalon = new SalonDTO
+        try
         {
-            NombreSalon = nombreSalon.Trim(),
-            AforoMaximo = capacidad.Value,
-            Estado = estado == "Activo"
-        };
+            guardando = true;
 
-        var msj = await SalonService.RegistrarAsync(nuevoSalon);
-        
-        // TODO: Could display a toast with msj, but for now just go back
-        Navigation.NavigateTo("/admin/salones");
+            var nuevoSalon = new SalonDTO
+            {
+                NombreSalon = nombreSalon.Trim(),
+                AforoMaximo = capacidad.Value,
+                Estado = estado == "Activo"
+            };
+
+            var msj = await SalonService.RegistrarAsync(nuevoSalon);
+
+            if (!msj.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Salón registrado correctamente.");
+                Navigation.NavigateTo("/admin/salones");
+            }
+            else
+            {
+                ToastService.ShowError(msj);
+            }
+        }
+        finally
+        {
+            guardando = false;
+        }
     }
 }

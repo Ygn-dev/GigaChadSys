@@ -7,6 +7,7 @@
 @inject SocioServicio SocioService
 @inject SesionClaseServicio SesionClaseService
 @inject NavigationManager Navigation
+@inject ToastService ToastService
 
 <div class="socio-form-page">
 
@@ -21,11 +22,6 @@
     <div class="sf-page-header">
         <h1>Editar Reserva</h1>
         <p class="sf-page-subtitle">Modifica los datos y el estado de la reserva</p>
-    </div>
-
-    <!-- Toast -->
-    <div class="socios-toast @(toastVisible ? "socios-toast-show" : "") @(toastIsError ? "socios-toast-err" : "socios-toast-ok")">
-        @toastMessage
     </div>
 
     @if (cargando)
@@ -95,7 +91,7 @@
 
                             <select value="@idSesionSeleccionada"
                                     @onchange="OnSesionSeleccionada"
-                                    class="@(errores.ContainsKey("claseNombre") ? "sf-input-error" : "")">
+                                    class="@(intentoGuardar && idSesionSeleccionada <= 0 ? "input-error" : "")">
                                 <option value="0">Seleccionar sesión...</option>
 
                                 @foreach (var s in sesionesDisponibles)
@@ -105,11 +101,6 @@
                                     </option>
                                 }
                             </select>
-
-                            @if (errores.ContainsKey("claseNombre"))
-                            {
-                                <span class="sf-error-msg">@errores["claseNombre"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -218,7 +209,7 @@
                         }
                     </button>
 
-                    <a href="/admin/reservas" class="sf-btn-secondary">
+                    <a href="/admin/reservas" class="sf-btn-secondary" disabled="@guardando">
                         Cancelar
                     </a>
 
@@ -308,11 +299,7 @@
     private string errorCarga = "";
 
     private bool guardando = false;
-    private bool toastVisible = false;
-    private bool toastIsError = false;
-    private string toastMessage = "";
-
-    private Dictionary<string, string> errores = new();
+    private bool intentoGuardar = false;
     private List<SesionClaseDTO> sesionesDisponibles = new();
 
     private string FechaTexto =>
@@ -438,20 +425,19 @@
 
     private bool Validar()
     {
-        errores.Clear();
-
-        if (idSesionSeleccionada == 0)
-        {
-            errores["claseNombre"] = "Selecciona una sesión.";
-        }
-
-        return errores.Count == 0;
+        return idSesionSeleccionada != 0;
     }
 
     private async Task GuardarCambios()
     {
+        intentoGuardar = true;
+
         if (!Validar() || reservaActual == null)
         {
+            if (idSesionSeleccionada == 0)
+            {
+                ToastService.ShowError("Selecciona una sesión.");
+            }
             return;
         }
 
@@ -470,9 +456,7 @@
             if (result.StartsWith("Error", StringComparison.OrdinalIgnoreCase) ||
                 result.ToLower().Contains("error"))
             {
-                toastIsError = true;
-                toastMessage = result;
-                MostrarToast();
+                ToastService.ShowError(result);
                 return;
             }
 
@@ -483,44 +467,27 @@
                 if (resultadoEliminar.StartsWith("Error", StringComparison.OrdinalIgnoreCase) ||
                     resultadoEliminar.ToLower().Contains("error"))
                 {
-                    toastIsError = true;
-                    toastMessage = resultadoEliminar;
-                    MostrarToast();
+                    ToastService.ShowError(resultadoEliminar);
                     return;
                 }
             }
 
-            toastIsError = false;
-            toastMessage = estado == "Canceladas"
+            var mensaje = estado == "Canceladas"
                 ? "Reserva cancelada correctamente."
                 : "Reserva actualizada correctamente.";
 
-            MostrarToast();
+            ToastService.ShowSuccess(mensaje);
 
-            await Task.Delay(700);
             Navigation.NavigateTo("/admin/reservas", forceLoad: true);
         }
         catch (Exception ex)
         {
-            toastIsError = true;
-            toastMessage = "Error al guardar la reserva: " + ex.Message;
-            MostrarToast();
+            ToastService.ShowError("Error al guardar la reserva: " + ex.Message);
         }
         finally
         {
             guardando = false;
         }
-    }
-
-    private async void MostrarToast()
-    {
-        toastVisible = true;
-        StateHasChanged();
-
-        await Task.Delay(2200);
-
-        toastVisible = false;
-        StateHasChanged();
     }
 
     private static string ObtenerTextoSesion(SesionClaseDTO sesion)

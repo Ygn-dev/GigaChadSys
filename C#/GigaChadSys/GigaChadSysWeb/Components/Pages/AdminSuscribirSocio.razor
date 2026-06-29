@@ -9,6 +9,7 @@
 @inject MembresiaBasicServicio MembresiaBasicService
 @inject MembresiaBlackServicio MembresiaBlackService
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <section class="subscribe-page">
 
@@ -24,13 +25,6 @@
         <h1>Suscribir Socio a @NombrePlan</h1>
         <p>Selecciona un socio y registra su suscripción al plan.</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
-    {
-        <div class="@ClaseMensajeFormulario">
-            @MensajeFormulario
-        </div>
-    }
 
     <div class="subscribe-layout">
 
@@ -141,11 +135,12 @@
             <div class="subscribe-actions">
                 <button type="button"
                         class="subscribe-save-button"
-                        @onclick="RegistrarSuscripcion">
-                    Registrar Suscripción
+                        @onclick="RegistrarSuscripcion"
+                        disabled="@Guardando">
+                    @(Guardando ? "Registrando..." : "Registrar Suscripción")
                 </button>
 
-                <a class="subscribe-cancel-button" href="/admin/membresias">
+                <a class="subscribe-cancel-button" href="/admin/membresias" disabled="@Guardando">
                     Cancelar
                 </a>
 
@@ -227,8 +222,8 @@
     private string FechaInicioTexto => FechaInicio.ToString("yyyy-MM-dd");
     private string FechaVencimientoTexto => FechaVencimiento.ToString("yyyy-MM-dd");
 
-    private string MensajeFormulario { get; set; } = "";
-    private string ClaseMensajeFormulario { get; set; } = "";
+    private bool IntentoGuardar { get; set; } = false;
+    private bool Guardando { get; set; } = false;
 
     private SocioVista? SocioSeleccionado { get; set; }
 
@@ -379,8 +374,6 @@
     private void SeleccionarSocio(SocioVista socio)
     {
         SocioSeleccionado = socio;
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
     }
 
     private string ObtenerClaseSocio(string dni)
@@ -405,61 +398,59 @@
 
     private async Task RegistrarSuscripcion()
     {
+        IntentoGuardar = true;
+
         if (SocioSeleccionado == null)
         {
-            MostrarError("Debes seleccionar un socio.");
+            ToastService.ShowError("Debes seleccionar un socio.");
             return;
         }
 
         if (FechaVencimiento <= FechaInicio)
         {
-            MostrarError("La fecha de vencimiento debe ser posterior a la fecha de inicio.");
+            ToastService.ShowError("La fecha de vencimiento debe ser posterior a la fecha de inicio.");
             return;
         }
 
-        var nuevaSuscripcion = new SuscripcionDTO
+        try
         {
-            IdUsuario = SocioSeleccionado.IdUsuario,
-            EstadoMembresia = SuscripcionActiva ? "activa" : "inactiva",
-            FechaIngreso = FechaInicio,
-            FechaFinMembresia = FechaVencimiento,
-            Activo = SuscripcionActiva,
-            IdPago = 1
-        };
+            Guardando = true;
 
-        if (PlanTipo.ToLower() == "black")
-        {
-            nuevaSuscripcion.IdMembresiaBlack = IdPlanSeleccionado;
+            var nuevaSuscripcion = new SuscripcionDTO
+            {
+                IdUsuario = SocioSeleccionado.IdUsuario,
+                EstadoMembresia = SuscripcionActiva ? "activa" : "inactiva",
+                FechaIngreso = FechaInicio,
+                FechaFinMembresia = FechaVencimiento,
+                Activo = SuscripcionActiva,
+                IdPago = 1
+            };
+
+            if (PlanTipo.ToLower() == "black")
+            {
+                nuevaSuscripcion.IdMembresiaBlack = IdPlanSeleccionado;
+            }
+            else
+            {
+                nuevaSuscripcion.IdMembresiaBasic = IdPlanSeleccionado;
+            }
+
+            var resultado = await SuscripcionService.RegistrarAsync(nuevaSuscripcion);
+
+            if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Suscripción registrada correctamente.");
+                Nav.NavigateTo("/admin/membresias");
+            }
+            else
+            {
+                ToastService.ShowError(resultado);
+            }
         }
-        else
+        finally
         {
-            nuevaSuscripcion.IdMembresiaBasic = IdPlanSeleccionado;
+            Guardando = false;
         }
-
-        var resultado = await SuscripcionService.RegistrarAsync(nuevaSuscripcion);
-
-        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
-        {
-            MostrarExito("Suscripción registrada correctamente.");
-            await Task.Delay(1500);
-            Nav.NavigateTo("/admin/membresias");
-        }
-        else
-        {
-            MostrarError(resultado);
-        }
-    }
-
-    private void MostrarError(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "subscribe-message error";
-    }
-
-    private void MostrarExito(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "subscribe-message success";
     }
 
     private class SocioVista

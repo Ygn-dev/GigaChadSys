@@ -5,6 +5,7 @@
 @using GigaChadSys.Servicios.DTO
 @inject EntrenadorServicio EntrenadorService
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <section class="trainer-form-page">
 
@@ -21,13 +22,6 @@
         <p>Completa la información del entrenador del gimnasio.</p>
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
-    {
-        <div class="@ClaseMensajeFormulario">
-            @MensajeFormulario
-        </div>
-    }
-
     <div class="trainer-section">
         <h2>Información Personal</h2>
 
@@ -35,6 +29,7 @@
             <div class="trainer-field">
                 <label>DNI <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(DniValor) ? "input-error" : "")"
                        maxlength="8"
                        autocomplete="off"
                        placeholder="40567234"
@@ -45,6 +40,7 @@
             <div class="trainer-field">
                 <label>Fecha de nacimiento <span>*</span></label>
                 <input type="date"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(FechaNacimientoValor) ? "input-error" : "")"
                        autocomplete="off"
                        value="@FechaNacimientoValor"
                        @onchange="CambiarFechaNacimiento" />
@@ -53,6 +49,7 @@
             <div class="trainer-field">
                 <label>Nombres <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(NombresValor) ? "input-error" : "")"
                        autocomplete="off"
                        placeholder="Pedro"
                        value="@NombresValor"
@@ -62,6 +59,7 @@
             <div class="trainer-field">
                 <label>Apellido paterno <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(ApellidoPaternoValor) ? "input-error" : "")"
                        autocomplete="off"
                        placeholder="Sánchez"
                        value="@ApellidoPaternoValor"
@@ -71,6 +69,7 @@
             <div class="trainer-field">
                 <label>Apellido materno <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(ApellidoMaternoValor) ? "input-error" : "")"
                        autocomplete="off"
                        placeholder="Ramos"
                        value="@ApellidoMaternoValor"
@@ -80,6 +79,7 @@
             <div class="trainer-field">
                 <label>Teléfono <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(TelefonoValor) ? "input-error" : "")"
                        maxlength="9"
                        autocomplete="off"
                        placeholder="998877666"
@@ -90,6 +90,7 @@
             <div class="trainer-field">
                 <label>Correo electrónico <span>*</span></label>
                 <input type="email"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(CorreoValor) ? "input-error" : "")"
                        autocomplete="off"
                        placeholder="entrenador@email.com"
                        value="@CorreoValor"
@@ -104,7 +105,7 @@
         <div class="trainer-grid">
             <div class="trainer-field">
                 <label>Especialidad <span>*</span></label>
-                <select value="@EspecialidadValor" @onchange="CambiarEspecialidad">
+                <select class="@(IntentoGuardar && string.IsNullOrWhiteSpace(EspecialidadValor) ? "input-error" : "")" value="@EspecialidadValor" @onchange="CambiarEspecialidad">
                     <option value="">Seleccione una especialidad</option>
                     <option value="CrossFit y Musculación">CrossFit y Musculación</option>
                     <option value="Yoga y Pilates">Yoga y Pilates</option>
@@ -117,6 +118,7 @@
             <div class="trainer-field">
                 <label>Sueldo mensual <span>*</span></label>
                 <input type="number"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(SueldoMensualValor) ? "input-error" : "")"
                        min="0"
                        step="0.01"
                        autocomplete="off"
@@ -127,7 +129,7 @@
 
             <div class="trainer-field">
                 <label>Tiempo de trabajo <span>*</span></label>
-                <select value="@TiempoTrabajoValor" @onchange="CambiarTiempoTrabajo">
+                <select class="@(IntentoGuardar && string.IsNullOrWhiteSpace(TiempoTrabajoValor) ? "input-error" : "")" value="@TiempoTrabajoValor" @onchange="CambiarTiempoTrabajo">
                     <option value="">Seleccione tiempo de trabajo</option>
                     <option value="08:00:00">Tiempo completo - 8 horas</option>
                     <option value="04:00:00">Medio tiempo - 4 horas</option>
@@ -144,6 +146,7 @@
             <div class="trainer-field">
                 <label>Contraseña <span>*</span></label>
                 <input type="password"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(ContraseniaValor) ? "input-error" : "")"
                        autocomplete="new-password"
                        placeholder="Mínimo 6 caracteres"
                        value="@ContraseniaValor"
@@ -153,6 +156,7 @@
             <div class="trainer-field">
                 <label>Confirmar contraseña <span>*</span></label>
                 <input type="password"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(ConfirmarContraseniaValor) ? "input-error" : "")"
                        autocomplete="new-password"
                        placeholder="Repite la contraseña"
                        value="@ConfirmarContraseniaValor"
@@ -186,12 +190,14 @@
     <div class="trainer-actions">
         <button type="button"
                 class="trainer-save-button"
+                disabled="@Guardando"
                 @onclick="RegistrarEntrenador">
-            ✓ Registrar Entrenador
+            @(Guardando ? "Registrando..." : "✓ Registrar Entrenador")
         </button>
 
         <button type="button"
                 class="trainer-cancel-button"
+                disabled="@Guardando"
                 @onclick="LimpiarFormulario">
             × Cancelar
         </button>
@@ -220,239 +226,84 @@
     private string ConfirmarContraseniaValor { get; set; } = "";
     private bool EntrenadorActivo { get; set; } = true;
 
-    private string MensajeFormulario { get; set; } = "";
-    private string ClaseMensajeFormulario { get; set; } = "";
+    private bool Guardando { get; set; } = false;
+    private bool IntentoGuardar { get; set; } = false;
 
-    private void CambiarDni(ChangeEventArgs e)
-    {
-        DniValor = e.Value?.ToString() ?? "";
-    }
+    private void CambiarDni(ChangeEventArgs e) => DniValor = e.Value?.ToString() ?? "";
+    private void CambiarFechaNacimiento(ChangeEventArgs e) => FechaNacimientoValor = e.Value?.ToString() ?? "";
+    private void CambiarNombres(ChangeEventArgs e) => NombresValor = e.Value?.ToString() ?? "";
+    private void CambiarApellidoPaterno(ChangeEventArgs e) => ApellidoPaternoValor = e.Value?.ToString() ?? "";
+    private void CambiarApellidoMaterno(ChangeEventArgs e) => ApellidoMaternoValor = e.Value?.ToString() ?? "";
+    private void CambiarTelefono(ChangeEventArgs e) => TelefonoValor = e.Value?.ToString() ?? "";
+    private void CambiarCorreo(ChangeEventArgs e) => CorreoValor = e.Value?.ToString() ?? "";
+    private void CambiarEspecialidad(ChangeEventArgs e) => EspecialidadValor = e.Value?.ToString() ?? "";
+    private void CambiarSueldoMensual(ChangeEventArgs e) => SueldoMensualValor = e.Value?.ToString() ?? "";
+    private void CambiarTiempoTrabajo(ChangeEventArgs e) => TiempoTrabajoValor = e.Value?.ToString() ?? "";
+    private void CambiarContrasenia(ChangeEventArgs e) => ContraseniaValor = e.Value?.ToString() ?? "";
+    private void CambiarConfirmarContrasenia(ChangeEventArgs e) => ConfirmarContraseniaValor = e.Value?.ToString() ?? "";
 
-    private void CambiarFechaNacimiento(ChangeEventArgs e)
-    {
-        FechaNacimientoValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarNombres(ChangeEventArgs e)
-    {
-        NombresValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarApellidoPaterno(ChangeEventArgs e)
-    {
-        ApellidoPaternoValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarApellidoMaterno(ChangeEventArgs e)
-    {
-        ApellidoMaternoValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarTelefono(ChangeEventArgs e)
-    {
-        TelefonoValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarCorreo(ChangeEventArgs e)
-    {
-        CorreoValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarEspecialidad(ChangeEventArgs e)
-    {
-        EspecialidadValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarSueldoMensual(ChangeEventArgs e)
-    {
-        SueldoMensualValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarTiempoTrabajo(ChangeEventArgs e)
-    {
-        TiempoTrabajoValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarContrasenia(ChangeEventArgs e)
-    {
-        ContraseniaValor = e.Value?.ToString() ?? "";
-    }
-
-    private void CambiarConfirmarContrasenia(ChangeEventArgs e)
-    {
-        ConfirmarContraseniaValor = e.Value?.ToString() ?? "";
-    }
-
-    private void ActivarEntrenador()
-    {
-        EntrenadorActivo = true;
-    }
-
-    private void DesactivarEntrenador()
-    {
-        EntrenadorActivo = false;
-    }
+    private void ActivarEntrenador() => EntrenadorActivo = true;
+    private void DesactivarEntrenador() => EntrenadorActivo = false;
 
     private async Task RegistrarEntrenador()
     {
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
+        IntentoGuardar = true;
 
-        if (string.IsNullOrWhiteSpace(DniValor))
+        if (string.IsNullOrWhiteSpace(DniValor)) { ToastService.ShowError("El DNI es obligatorio."); return; }
+        if (DniValor.Length != 8 || !int.TryParse(DniValor, out int dniConvertido)) { ToastService.ShowError("El DNI debe tener 8 dígitos numéricos."); return; }
+        if (string.IsNullOrWhiteSpace(FechaNacimientoValor)) { ToastService.ShowError("La fecha de nacimiento es obligatoria."); return; }
+        if (!DateTime.TryParse(FechaNacimientoValor, out DateTime fechaNacimientoConvertida)) { ToastService.ShowError("La fecha de nacimiento no es válida."); return; }
+        if (string.IsNullOrWhiteSpace(NombresValor)) { ToastService.ShowError("Los nombres son obligatorios."); return; }
+        if (string.IsNullOrWhiteSpace(ApellidoPaternoValor)) { ToastService.ShowError("El apellido paterno es obligatorio."); return; }
+        if (string.IsNullOrWhiteSpace(ApellidoMaternoValor)) { ToastService.ShowError("El apellido materno es obligatorio."); return; }
+        if (string.IsNullOrWhiteSpace(TelefonoValor)) { ToastService.ShowError("El teléfono es obligatorio."); return; }
+        if (TelefonoValor.Length != 9 || !int.TryParse(TelefonoValor, out int telefonoConvertido)) { ToastService.ShowError("El teléfono debe tener 9 dígitos numéricos."); return; }
+        if (string.IsNullOrWhiteSpace(CorreoValor)) { ToastService.ShowError("El correo electrónico es obligatorio."); return; }
+        if (!CorreoValor.Contains("@") || !CorreoValor.Contains(".")) { ToastService.ShowError("Ingrese un correo electrónico válido."); return; }
+        if (string.IsNullOrWhiteSpace(EspecialidadValor)) { ToastService.ShowError("Debe seleccionar una especialidad."); return; }
+        if (string.IsNullOrWhiteSpace(SueldoMensualValor)) { ToastService.ShowError("El sueldo mensual es obligatorio."); return; }
+        if (!decimal.TryParse(SueldoMensualValor, out decimal sueldoConvertido) || sueldoConvertido <= 0) { ToastService.ShowError("El sueldo mensual debe ser mayor a cero."); return; }
+        if (string.IsNullOrWhiteSpace(TiempoTrabajoValor)) { ToastService.ShowError("Debe seleccionar el tiempo de trabajo."); return; }
+        if (string.IsNullOrWhiteSpace(ContraseniaValor)) { ToastService.ShowError("La contraseña es obligatoria."); return; }
+        if (ContraseniaValor.Length < 6) { ToastService.ShowError("La contraseña debe tener mínimo 6 caracteres."); return; }
+        if (ContraseniaValor != ConfirmarContraseniaValor) { ToastService.ShowError("Las contraseñas no coinciden."); return; }
+
+        Guardando = true;
+        try
         {
-            MostrarError("El DNI es obligatorio.");
-            return;
+            var nuevoEntrenador = new EntrenadorDTO
+            {
+                Dni = dniConvertido,
+                Nombres = NombresValor.Trim(),
+                ApellidoPaterno = ApellidoPaternoValor.Trim(),
+                ApellidoMaterno = ApellidoMaternoValor.Trim(),
+                Edad = CalcularEdad(fechaNacimientoConvertida),
+                Telefono = telefonoConvertido,
+                Email = CorreoValor.Trim(),
+                Contrasenia = ContraseniaValor.Trim(),
+                Rol = "Entrenador",
+                Especialidad = EspecialidadValor,
+                Sueldo = (double)sueldoConvertido,
+                TiempoTrabajado = TiempoTrabajoValor,
+                Activo = EntrenadorActivo
+            };
+
+            var resultado = await EntrenadorService.RegistrarAsync(nuevoEntrenador);
+
+            if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Entrenador registrado correctamente.");
+                Nav.NavigateTo("/admin/entrenadores");
+            }
+            else
+            {
+                ToastService.ShowError(resultado);
+            }
         }
-
-        if (DniValor.Length != 8 || !int.TryParse(DniValor, out int dniConvertido))
+        finally
         {
-            MostrarError("El DNI debe tener 8 dígitos numéricos.");
-            return;
+            Guardando = false;
         }
-
-        if (string.IsNullOrWhiteSpace(FechaNacimientoValor))
-        {
-            MostrarError("La fecha de nacimiento es obligatoria.");
-            return;
-        }
-
-        if (!DateTime.TryParse(FechaNacimientoValor, out DateTime fechaNacimientoConvertida))
-        {
-            MostrarError("La fecha de nacimiento no es válida.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(NombresValor))
-        {
-            MostrarError("Los nombres son obligatorios.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(ApellidoPaternoValor))
-        {
-            MostrarError("El apellido paterno es obligatorio.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(ApellidoMaternoValor))
-        {
-            MostrarError("El apellido materno es obligatorio.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(TelefonoValor))
-        {
-            MostrarError("El teléfono es obligatorio.");
-            return;
-        }
-
-        if (TelefonoValor.Length != 9 || !int.TryParse(TelefonoValor, out int telefonoConvertido))
-        {
-            MostrarError("El teléfono debe tener 9 dígitos numéricos.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(CorreoValor))
-        {
-            MostrarError("El correo electrónico es obligatorio.");
-            return;
-        }
-
-        if (!CorreoValor.Contains("@") || !CorreoValor.Contains("."))
-        {
-            MostrarError("Ingrese un correo electrónico válido.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(EspecialidadValor))
-        {
-            MostrarError("Debe seleccionar una especialidad.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(SueldoMensualValor))
-        {
-            MostrarError("El sueldo mensual es obligatorio.");
-            return;
-        }
-
-        if (!decimal.TryParse(SueldoMensualValor, out decimal sueldoConvertido))
-        {
-            MostrarError("El sueldo mensual debe ser un número válido.");
-            return;
-        }
-
-        if (sueldoConvertido <= 0)
-        {
-            MostrarError("El sueldo mensual debe ser mayor a cero.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(TiempoTrabajoValor))
-        {
-            MostrarError("Debe seleccionar el tiempo de trabajo.");
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(ContraseniaValor))
-        {
-            MostrarError("La contraseña es obligatoria.");
-            return;
-        }
-
-        if (ContraseniaValor.Length < 6)
-        {
-            MostrarError("La contraseña debe tener mínimo 6 caracteres.");
-            return;
-        }
-
-        if (ContraseniaValor != ConfirmarContraseniaValor)
-        {
-            MostrarError("Las contraseñas no coinciden.");
-            return;
-        }
-
-        var nuevoEntrenador = new EntrenadorDTO
-        {
-            Dni = dniConvertido,
-            Nombres = NombresValor.Trim(),
-            ApellidoPaterno = ApellidoPaternoValor.Trim(),
-            ApellidoMaterno = ApellidoMaternoValor.Trim(),
-            Edad = CalcularEdad(fechaNacimientoConvertida),
-            Telefono = telefonoConvertido,
-            Email = CorreoValor.Trim(),
-            Contrasenia = ContraseniaValor.Trim(),
-            Rol = "Entrenador",
-            Especialidad = EspecialidadValor,
-            Sueldo = (double)sueldoConvertido,
-            TiempoTrabajado = TiempoTrabajoValor,
-            Activo = EntrenadorActivo
-        };
-
-        var resultado = await EntrenadorService.RegistrarAsync(nuevoEntrenador);
-
-        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
-        {
-            MostrarExito("Entrenador registrado correctamente.");
-            await Task.Delay(1500);
-            Nav.NavigateTo("/admin/entrenadores");
-        }
-        else
-        {
-            MostrarError(resultado);
-        }
-    }
-
-    private void MostrarError(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
-    }
-
-    private void MostrarExito(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message success";
     }
 
     private void LimpiarFormulario()
@@ -473,8 +324,7 @@
         ConfirmarContraseniaValor = "";
         EntrenadorActivo = true;
 
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
+        IntentoGuardar = false;
     }
 
     private static int CalcularEdad(DateTime fechaNacimiento)

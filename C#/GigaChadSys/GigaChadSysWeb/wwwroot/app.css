@@ -13588,3 +13588,6 @@ h1:focus {
     font-weight: 800;
     font-size: 1.2rem;
 }
+
+.input-error { border: 2px solid #EF3131 !important; background-color: #fff5f5 !important; transition: all 0.2s ease; }
+

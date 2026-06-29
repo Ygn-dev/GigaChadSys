@@ -5,6 +5,7 @@
 @using GigaChadSys.Servicios.DTO
 @inject ClaseGrupalServicio ClaseService
 @inject NavigationManager Navigation
+@inject ToastService ToastService
 
 <div class="socio-form-page">
 
@@ -17,10 +18,6 @@
     <div class="sf-page-header">
         <h1>Editar Clase</h1>
         <p class="sf-page-subtitle">Actualiza los datos de la clase grupal</p>
-    </div>
-
-    <div class="socios-toast @(toastVisible ? "socios-toast-show" : "") @(toastIsError ? "socios-toast-err" : "socios-toast-ok")">
-        @toastMessage
     </div>
 
     @if (cargando)
@@ -51,17 +48,12 @@
                                    @bind="nombre"
                                    @bind:event="oninput"
                                    placeholder="Ej. CrossFit Intenso"
-                                   class="@(errores.ContainsKey("nombre") ? "sf-input-error" : "")" />
-
-                            @if (errores.ContainsKey("nombre"))
-                            {
-                                <span class="sf-error-msg">@errores["nombre"]</span>
-                            }
+                                   class="@(intentoGuardar && string.IsNullOrWhiteSpace(nombre) ? "input-error" : "")" />
                         </div>
 
                         <div class="sf-form-group">
                             <label>DISCIPLINA <span class="sf-req">*</span></label>
-                            <select @bind="disciplina">
+                            <select @bind="disciplina" class="@(intentoGuardar && string.IsNullOrWhiteSpace(disciplina) ? "input-error" : "")">
                                 <option value="">Seleccionar disciplina...</option>
                                 <option value="CrossFit">CrossFit</option>
                                 <option value="Yoga">Yoga</option>
@@ -73,11 +65,6 @@
                                 <option value="HIIT">HIIT</option>
                                 <option value="Otro">Otro</option>
                             </select>
-
-                            @if (errores.ContainsKey("disciplina"))
-                            {
-                                <span class="sf-error-msg">@errores["disciplina"]</span>
-                            }
                         </div>
 
                         <div class="sf-form-group">
@@ -87,12 +74,7 @@
                                    min="10"
                                    max="240"
                                    placeholder="60"
-                                   class="@(errores.ContainsKey("duracion") ? "sf-input-error" : "")" />
-
-                            @if (errores.ContainsKey("duracion"))
-                            {
-                                <span class="sf-error-msg">@errores["duracion"]</span>
-                            }
+                                   class="@(intentoGuardar && duracion < 10 ? "input-error" : "")" />
                         </div>
 
                         <div class="sf-form-group">
@@ -215,11 +197,7 @@
 
     private bool cargando = true;
     private bool guardando = false;
-    private bool toastVisible = false;
-    private bool toastIsError = false;
-    private string toastMessage = "";
-
-    private Dictionary<string, string> errores = new();
+    private bool intentoGuardar = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -258,25 +236,13 @@
         cargando = false;
     }
 
-    private bool Validar()
-    {
-        errores.Clear();
-
-        if (string.IsNullOrWhiteSpace(nombre))
-            errores["nombre"] = "El nombre es obligatorio.";
-
-        if (string.IsNullOrWhiteSpace(disciplina))
-            errores["disciplina"] = "Selecciona una disciplina.";
-
-        if (duracion < 10)
-            errores["duracion"] = "La duración mínima es 10 minutos.";
-
-        return errores.Count == 0;
-    }
-
     private async Task GuardarCambios()
     {
-        if (!Validar())
+        intentoGuardar = true;
+
+        if (string.IsNullOrWhiteSpace(nombre) ||
+            string.IsNullOrWhiteSpace(disciplina) ||
+            duracion < 10)
             return;
 
         guardando = true;
@@ -297,37 +263,12 @@
 
         if (!msj.StartsWith("Error") && !msj.ToLower().Contains("error"))
         {
-            toastIsError = false;
-            toastMessage = "✅ Clase actualizada correctamente.";
-            await MostrarToastYVolver();
+            ToastService.ShowSuccess("Clase actualizada correctamente.");
+            Navigation.NavigateTo("/admin/clases");
         }
         else
         {
-            toastIsError = true;
-            toastMessage = msj;
-            await MostrarToastSinVolver();
+            ToastService.ShowError(msj);
         }
-    }
-
-    private async Task MostrarToastYVolver()
-    {
-        toastVisible = true;
-        StateHasChanged();
-
-        await Task.Delay(1200);
-
-        toastVisible = false;
-        Navigation.NavigateTo("/admin/clases", forceLoad: true);
-    }
-
-    private async Task MostrarToastSinVolver()
-    {
-        toastVisible = true;
-        StateHasChanged();
-
-        await Task.Delay(1800);
-
-        toastVisible = false;
-        StateHasChanged();
     }
 }

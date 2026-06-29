@@ -6,6 +6,7 @@
 @inject MembresiaBasicServicio BasicService
 @inject MembresiaBlackServicio BlackService
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <section class="trainer-form-page">
 
@@ -21,13 +22,6 @@
         <h1>Registrar Nuevo Plan de Membresía</h1>
         <p>Crea un nuevo plan Basic o Black para el gimnasio.</p>
     </div>
-
-    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
-    {
-        <div class="@ClaseMensajeFormulario">
-            @MensajeFormulario
-        </div>
-    }
 
     <div class="trainer-section">
         <h2>Tipo de Membresía</h2>
@@ -53,7 +47,8 @@
                        autocomplete="off"
                        placeholder="Ej: Plan Estudiante"
                        value="@NombreValor"
-                       @oninput="CambiarNombre" />
+                       @oninput="CambiarNombre"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(NombreValor) ? "input-error" : "")" />
             </div>
         </div>
     </div>
@@ -72,7 +67,8 @@
                            autocomplete="off"
                            placeholder="80.00"
                            value="@CostoMensualValor"
-                           @oninput="CambiarCostoMensual" />
+                           @oninput="CambiarCostoMensual"
+                           class="@(IntentoGuardar && (string.IsNullOrWhiteSpace(CostoMensualValor) || !decimal.TryParse(CostoMensualValor, out decimal cm) || cm < 0) ? "input-error" : "")" />
                 </div>
             }
             else
@@ -85,7 +81,8 @@
                            autocomplete="off"
                            placeholder="1200.00"
                            value="@CostoAnualValor"
-                           @oninput="CambiarCostoAnual" />
+                           @oninput="CambiarCostoAnual"
+                           class="@(IntentoGuardar && (string.IsNullOrWhiteSpace(CostoAnualValor) || !decimal.TryParse(CostoAnualValor, out decimal ca) || ca < 0) ? "input-error" : "")" />
                 </div>
 
                 <div class="trainer-field">
@@ -95,7 +92,8 @@
                            autocomplete="off"
                            placeholder="2"
                            value="@InvitadosValor"
-                           @oninput="CambiarInvitados" />
+                           @oninput="CambiarInvitados"
+                           class="@(IntentoGuardar && (string.IsNullOrWhiteSpace(InvitadosValor) || !int.TryParse(InvitadosValor, out int inv) || inv < 0) ? "input-error" : "")" />
                 </div>
             }
         </div>
@@ -126,13 +124,15 @@
     <div class="trainer-actions">
         <button type="button"
                 class="trainer-save-button"
-                @onclick="RegistrarMembresia">
-            ✓ Registrar Membresía
+                @onclick="RegistrarMembresia"
+                disabled="@Guardando">
+            @(Guardando ? "Registrando..." : "✓ Registrar Membresía")
         </button>
 
         <button type="button"
                 class="trainer-cancel-button"
-                @onclick="LimpiarFormulario">
+                @onclick="LimpiarFormulario"
+                disabled="@Guardando">
             × Cancelar
         </button>
 
@@ -143,7 +143,6 @@
 
 </section>
 
-@code {
     private string TipoPlanValor { get; set; } = "Basic";
     private string NombreValor { get; set; } = "";
     private string CostoMensualValor { get; set; } = "";
@@ -151,8 +150,8 @@
     private string InvitadosValor { get; set; } = "2";
     private bool MembresiaActiva { get; set; } = true;
 
-    private string MensajeFormulario { get; set; } = "";
-    private string ClaseMensajeFormulario { get; set; } = "";
+    private bool IntentoGuardar { get; set; } = false;
+    private bool Guardando { get; set; } = false;
 
     private void CambiarTipoPlan(ChangeEventArgs e)
     {
@@ -169,12 +168,11 @@
 
     private async Task RegistrarMembresia()
     {
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
+        IntentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(NombreValor))
         {
-            MostrarError("El nombre del plan es obligatorio.");
+            ToastService.ShowError("El nombre del plan es obligatorio.");
             return;
         }
 
@@ -184,78 +182,81 @@
         {
             if (string.IsNullOrWhiteSpace(CostoMensualValor))
             {
-                MostrarError("El costo mensual es obligatorio.");
+                ToastService.ShowError("El costo mensual es obligatorio.");
                 return;
             }
 
             if (!decimal.TryParse(CostoMensualValor, out decimal costoM) || costoM < 0)
             {
-                MostrarError("El costo mensual debe ser un número válido mayor o igual a cero.");
+                ToastService.ShowError("El costo mensual debe ser un número válido mayor o igual a cero.");
                 return;
             }
 
-            var nuevaBasic = new MembresiaBasicDTO
+            try
             {
-                Nombre = NombreValor.Trim(),
-                Activa = MembresiaActiva,
-                CostoMantenimientoMensual = (double)costoM
-            };
+                Guardando = true;
+                var nuevaBasic = new MembresiaBasicDTO
+                {
+                    Nombre = NombreValor.Trim(),
+                    Activa = MembresiaActiva,
+                    CostoMantenimientoMensual = (double)costoM
+                };
 
-            resultado = await BasicService.RegistrarAsync(nuevaBasic);
+                resultado = await BasicService.RegistrarAsync(nuevaBasic);
+            }
+            finally
+            {
+                Guardando = false;
+            }
         }
         else
         {
             if (string.IsNullOrWhiteSpace(CostoAnualValor))
             {
-                MostrarError("El costo anual es obligatorio.");
+                ToastService.ShowError("El costo anual es obligatorio.");
                 return;
             }
 
             if (!decimal.TryParse(CostoAnualValor, out decimal costoA) || costoA < 0)
             {
-                MostrarError("El costo anual debe ser un número válido mayor o igual a cero.");
+                ToastService.ShowError("El costo anual debe ser un número válido mayor o igual a cero.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(InvitadosValor) || !int.TryParse(InvitadosValor, out int invitados) || invitados < 0)
             {
-                MostrarError("La cantidad de invitados debe ser un número válido mayor o igual a cero.");
+                ToastService.ShowError("La cantidad de invitados debe ser un número válido mayor o igual a cero.");
                 return;
             }
 
-            var nuevaBlack = new MembresiaBlackDTO
+            try
             {
-                Nombre = NombreValor.Trim(),
-                Activa = MembresiaActiva,
-                CostoMantenimientoAnual = (double)costoA,
-                CantidadInvitadosPorMes = invitados
-            };
+                Guardando = true;
+                var nuevaBlack = new MembresiaBlackDTO
+                {
+                    Nombre = NombreValor.Trim(),
+                    Activa = MembresiaActiva,
+                    CostoMantenimientoAnual = (double)costoA,
+                    CantidadInvitadosPorMes = invitados
+                };
 
-            resultado = await BlackService.RegistrarAsync(nuevaBlack);
+                resultado = await BlackService.RegistrarAsync(nuevaBlack);
+            }
+            finally
+            {
+                Guardando = false;
+            }
         }
 
         if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
         {
-            MostrarExito("Membresía registrada correctamente.");
-            await Task.Delay(1500);
+            ToastService.ShowSuccess("Membresía registrada correctamente.");
             Nav.NavigateTo("/admin/membresias");
         }
         else
         {
-            MostrarError(resultado);
+            ToastService.ShowError(resultado);
         }
-    }
-
-    private void MostrarError(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
-    }
-
-    private void MostrarExito(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message success";
     }
 
     private void LimpiarFormulario()
@@ -265,8 +266,6 @@
         CostoAnualValor = "";
         InvitadosValor = "2";
         MembresiaActiva = true;
-
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
+        IntentoGuardar = false;
     }
 }

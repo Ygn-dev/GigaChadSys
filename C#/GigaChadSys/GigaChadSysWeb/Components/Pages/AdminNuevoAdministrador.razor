@@ -5,6 +5,7 @@
 @using GigaChadSys.Servicios.DTO
 @inject AdministradorServicio AdministradorService
 @inject NavigationManager Nav
+@inject ToastService ToastService
 
 <section class="trainer-form-page">
 
@@ -21,13 +22,6 @@
         <p>Completa la información del personal administrativo del sistema.</p>
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
-    {
-        <div class="@ClaseMensajeFormulario">
-            @MensajeFormulario
-        </div>
-    }
-
     <div class="trainer-section">
         <h2>Información Personal</h2>
 
@@ -35,6 +29,7 @@
             <div class="trainer-field">
                 <label>DNI <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(DniValor) ? "input-error" : "")"
                        maxlength="8"
                        autocomplete="off"
                        placeholder="40567234"
@@ -45,6 +40,7 @@
             <div class="trainer-field">
                 <label>Fecha de nacimiento <span>*</span></label>
                 <input type="date"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(FechaNacimientoValor) ? "input-error" : "")"
                        autocomplete="off"
                        value="@FechaNacimientoValor"
                        @onchange="CambiarFechaNacimiento" />
@@ -53,6 +49,7 @@
             <div class="trainer-field">
                 <label>Nombres <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(NombresValor) ? "input-error" : "")"
                        autocomplete="off"
                        placeholder="Pedro"
                        value="@NombresValor"
@@ -62,6 +59,7 @@
             <div class="trainer-field">
                 <label>Apellido paterno <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(ApellidoPaternoValor) ? "input-error" : "")"
                        autocomplete="off"
                        placeholder="Sánchez"
                        value="@ApellidoPaternoValor"
@@ -71,6 +69,7 @@
             <div class="trainer-field">
                 <label>Apellido materno <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(ApellidoMaternoValor) ? "input-error" : "")"
                        autocomplete="off"
                        placeholder="Ramos"
                        value="@ApellidoMaternoValor"
@@ -80,6 +79,7 @@
             <div class="trainer-field">
                 <label>Teléfono <span>*</span></label>
                 <input type="text"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(TelefonoValor) ? "input-error" : "")"
                        maxlength="9"
                        autocomplete="off"
                        placeholder="998877666"
@@ -90,6 +90,7 @@
             <div class="trainer-field">
                 <label>Correo electrónico <span>*</span></label>
                 <input type="email"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(CorreoValor) ? "input-error" : "")"
                        autocomplete="off"
                        placeholder="admin@email.com"
                        value="@CorreoValor"
@@ -104,7 +105,7 @@
         <div class="trainer-grid">
             <div class="trainer-field">
                 <label>Sede <span>*</span></label>
-                <select value="@SedeValor" @onchange="CambiarSede">
+                <select class="@(IntentoGuardar && string.IsNullOrWhiteSpace(SedeValor) ? "input-error" : "")" value="@SedeValor" @onchange="CambiarSede">
                     <option value="">Seleccione una sede</option>
                     <option value="Sede Central">Sede Central</option>
                     <option value="Sede Norte">Sede Norte</option>
@@ -114,7 +115,7 @@
 
             <div class="trainer-field">
                 <label>Cargo <span>*</span></label>
-                <select value="@CargoValor" @onchange="CambiarCargo">
+                <select class="@(IntentoGuardar && string.IsNullOrWhiteSpace(CargoValor) ? "input-error" : "")" value="@CargoValor" @onchange="CambiarCargo">
                     <option value="">Seleccione un cargo</option>
                     <option value="Gerente">Gerente</option>
                     <option value="Coordinador">Coordinador</option>
@@ -126,6 +127,7 @@
             <div class="trainer-field">
                 <label>Sueldo mensual <span>*</span></label>
                 <input type="number"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(SueldoMensualValor) ? "input-error" : "")"
                        min="0"
                        step="0.01"
                        autocomplete="off"
@@ -143,6 +145,7 @@
             <div class="trainer-field">
                 <label>Contraseña <span>*</span></label>
                 <input type="password"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(ContraseniaValor) ? "input-error" : "")"
                        autocomplete="new-password"
                        placeholder="Mínimo 6 caracteres"
                        value="@ContraseniaValor"
@@ -152,6 +155,7 @@
             <div class="trainer-field">
                 <label>Confirmar contraseña <span>*</span></label>
                 <input type="password"
+                       class="@(IntentoGuardar && string.IsNullOrWhiteSpace(ConfirmarContraseniaValor) ? "input-error" : "")"
                        autocomplete="new-password"
                        placeholder="Repite la contraseña"
                        value="@ConfirmarContraseniaValor"
@@ -185,12 +189,14 @@
     <div class="trainer-actions">
         <button type="button"
                 class="trainer-save-button"
+                disabled="@Guardando"
                 @onclick="RegistrarAdministrador">
-            ✓ Registrar Administrador
+            @(Guardando ? "Registrando..." : "✓ Registrar Administrador")
         </button>
 
         <button type="button"
                 class="trainer-cancel-button"
+                disabled="@Guardando"
                 @onclick="LimpiarFormulario">
             × Cancelar
         </button>
@@ -219,8 +225,8 @@
     private string ConfirmarContraseniaValor { get; set; } = "";
     private bool AdminActivo { get; set; } = true;
 
-    private string MensajeFormulario { get; set; } = "";
-    private string ClaseMensajeFormulario { get; set; } = "";
+    private bool Guardando { get; set; } = false;
+    private bool IntentoGuardar { get; set; } = false;
 
     private void CambiarDni(ChangeEventArgs e) => DniValor = e.Value?.ToString() ?? "";
     private void CambiarFechaNacimiento(ChangeEventArgs e) => FechaNacimientoValor = e.Value?.ToString() ?? "";
@@ -242,69 +248,63 @@
 
     private async Task RegistrarAdministrador()
     {
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
+        IntentoGuardar = true;
 
-        if (string.IsNullOrWhiteSpace(DniValor)) { MostrarError("El DNI es obligatorio."); return; }
-        if (DniValor.Length != 8 || !int.TryParse(DniValor, out int dniConvertido)) { MostrarError("El DNI debe tener 8 dígitos numéricos."); return; }
-        if (string.IsNullOrWhiteSpace(FechaNacimientoValor)) { MostrarError("La fecha de nacimiento es obligatoria."); return; }
-        if (!DateTime.TryParse(FechaNacimientoValor, out DateTime fechaNacimientoConvertida)) { MostrarError("La fecha de nacimiento no es válida."); return; }
-        if (string.IsNullOrWhiteSpace(NombresValor)) { MostrarError("Los nombres son obligatorios."); return; }
-        if (string.IsNullOrWhiteSpace(ApellidoPaternoValor)) { MostrarError("El apellido paterno es obligatorio."); return; }
-        if (string.IsNullOrWhiteSpace(ApellidoMaternoValor)) { MostrarError("El apellido materno es obligatorio."); return; }
-        if (string.IsNullOrWhiteSpace(TelefonoValor)) { MostrarError("El teléfono es obligatorio."); return; }
-        if (TelefonoValor.Length != 9 || !int.TryParse(TelefonoValor, out int telefonoConvertido)) { MostrarError("El teléfono debe tener 9 dígitos numéricos."); return; }
-        if (string.IsNullOrWhiteSpace(CorreoValor)) { MostrarError("El correo electrónico es obligatorio."); return; }
-        if (!CorreoValor.Contains("@") || !CorreoValor.Contains(".")) { MostrarError("Ingrese un correo electrónico válido."); return; }
-        if (string.IsNullOrWhiteSpace(SedeValor)) { MostrarError("Debe seleccionar una sede."); return; }
-        if (string.IsNullOrWhiteSpace(CargoValor)) { MostrarError("Debe seleccionar un cargo."); return; }
-        if (string.IsNullOrWhiteSpace(SueldoMensualValor)) { MostrarError("El sueldo mensual es obligatorio."); return; }
-        if (!decimal.TryParse(SueldoMensualValor, out decimal sueldoConvertido) || sueldoConvertido <= 0) { MostrarError("El sueldo mensual debe ser mayor a cero."); return; }
-        if (string.IsNullOrWhiteSpace(ContraseniaValor)) { MostrarError("La contraseña es obligatoria."); return; }
-        if (ContraseniaValor.Length < 6) { MostrarError("La contraseña debe tener mínimo 6 caracteres."); return; }
-        if (ContraseniaValor != ConfirmarContraseniaValor) { MostrarError("Las contraseñas no coinciden."); return; }
+        if (string.IsNullOrWhiteSpace(DniValor)) { ToastService.ShowError("El DNI es obligatorio."); return; }
+        if (DniValor.Length != 8 || !int.TryParse(DniValor, out int dniConvertido)) { ToastService.ShowError("El DNI debe tener 8 dígitos numéricos."); return; }
+        if (string.IsNullOrWhiteSpace(FechaNacimientoValor)) { ToastService.ShowError("La fecha de nacimiento es obligatoria."); return; }
+        if (!DateTime.TryParse(FechaNacimientoValor, out DateTime fechaNacimientoConvertida)) { ToastService.ShowError("La fecha de nacimiento no es válida."); return; }
+        if (string.IsNullOrWhiteSpace(NombresValor)) { ToastService.ShowError("Los nombres son obligatorios."); return; }
+        if (string.IsNullOrWhiteSpace(ApellidoPaternoValor)) { ToastService.ShowError("El apellido paterno es obligatorio."); return; }
+        if (string.IsNullOrWhiteSpace(ApellidoMaternoValor)) { ToastService.ShowError("El apellido materno es obligatorio."); return; }
+        if (string.IsNullOrWhiteSpace(TelefonoValor)) { ToastService.ShowError("El teléfono es obligatorio."); return; }
+        if (TelefonoValor.Length != 9 || !int.TryParse(TelefonoValor, out int telefonoConvertido)) { ToastService.ShowError("El teléfono debe tener 9 dígitos numéricos."); return; }
+        if (string.IsNullOrWhiteSpace(CorreoValor)) { ToastService.ShowError("El correo electrónico es obligatorio."); return; }
+        if (!CorreoValor.Contains("@") || !CorreoValor.Contains(".")) { ToastService.ShowError("Ingrese un correo electrónico válido."); return; }
+        if (string.IsNullOrWhiteSpace(SedeValor)) { ToastService.ShowError("Debe seleccionar una sede."); return; }
+        if (string.IsNullOrWhiteSpace(CargoValor)) { ToastService.ShowError("Debe seleccionar un cargo."); return; }
+        if (string.IsNullOrWhiteSpace(SueldoMensualValor)) { ToastService.ShowError("El sueldo mensual es obligatorio."); return; }
+        if (!decimal.TryParse(SueldoMensualValor, out decimal sueldoConvertido) || sueldoConvertido <= 0) { ToastService.ShowError("El sueldo mensual debe ser mayor a cero."); return; }
+        if (string.IsNullOrWhiteSpace(ContraseniaValor)) { ToastService.ShowError("La contraseña es obligatoria."); return; }
+        if (ContraseniaValor.Length < 6) { ToastService.ShowError("La contraseña debe tener mínimo 6 caracteres."); return; }
+        if (ContraseniaValor != ConfirmarContraseniaValor) { ToastService.ShowError("Las contraseñas no coinciden."); return; }
 
-        var nuevoAdmin = new AdministradorDTO
+        Guardando = true;
+        try
         {
-            Dni = dniConvertido,
-            Nombres = NombresValor.Trim(),
-            ApellidoPaterno = ApellidoPaternoValor.Trim(),
-            ApellidoMaterno = ApellidoMaternoValor.Trim(),
-            Edad = CalcularEdad(fechaNacimientoConvertida),
-            Telefono = telefonoConvertido,
-            Email = CorreoValor.Trim(),
-            Contrasenia = ContraseniaValor.Trim(),
-            Rol = "Administrador",
-            Sede = SedeValor,
-            Cargo = CargoValor,
-            Sueldo = (double)sueldoConvertido,
-            Activo = AdminActivo
-        };
+            var nuevoAdmin = new AdministradorDTO
+            {
+                Dni = dniConvertido,
+                Nombres = NombresValor.Trim(),
+                ApellidoPaterno = ApellidoPaternoValor.Trim(),
+                ApellidoMaterno = ApellidoMaternoValor.Trim(),
+                Edad = CalcularEdad(fechaNacimientoConvertida),
+                Telefono = telefonoConvertido,
+                Email = CorreoValor.Trim(),
+                Contrasenia = ContraseniaValor.Trim(),
+                Rol = "Administrador",
+                Sede = SedeValor,
+                Cargo = CargoValor,
+                Sueldo = (double)sueldoConvertido,
+                Activo = AdminActivo
+            };
 
-        var resultado = await AdministradorService.RegistrarAsync(nuevoAdmin);
+            var resultado = await AdministradorService.RegistrarAsync(nuevoAdmin);
 
-        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
-        {
-            MostrarExito("Administrador registrado correctamente.");
-            await Task.Delay(1500);
-            Nav.NavigateTo("/admin/administradores");
+            if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+            {
+                ToastService.ShowSuccess("Administrador registrado correctamente.");
+                Nav.NavigateTo("/admin/administradores");
+            }
+            else
+            {
+                ToastService.ShowError(resultado);
+            }
         }
-        else
+        finally
         {
-            MostrarError(resultado);
+            Guardando = false;
         }
-    }
-
-    private void MostrarError(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message error";
-    }
-
-    private void MostrarExito(string mensaje)
-    {
-        MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "trainer-message success";
     }
 
     private void LimpiarFormulario()
@@ -324,9 +324,8 @@
         ContraseniaValor = "";
         ConfirmarContraseniaValor = "";
         AdminActivo = true;
-
-        MensajeFormulario = "";
-        ClaseMensajeFormulario = "";
+        
+        IntentoGuardar = false;
     }
 
     private static int CalcularEdad(DateTime fechaNacimiento)
