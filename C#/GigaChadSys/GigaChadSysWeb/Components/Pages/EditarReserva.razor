@@ -143,13 +143,7 @@
                             Confirmada
                         </button>
 
-                        <button type="button"
-                                class="sf-estado-btn"
-                                style="@(estado == "Pendientes" ? "border-color:rgba(255,193,7,0.5);background:rgba(255,193,7,0.10);color:#FFC107;" : "")"
-                                @onclick='() => estado = "Pendientes"'>
-                            <span class="sf-estado-dot" style="background:#FFC107;"></span>
-                            Pendiente
-                        </button>
+
 
                         <button type="button"
                                 class="sf-estado-btn"
@@ -446,6 +440,7 @@
             guardando = true;
 
             reservaActual.Asistio = estado == "Asistió";
+            reservaActual.Activo = estado != "Canceladas";
             reservaActual.SesionClase = new SesionClaseDTO
             {
                 IdSesion = idSesionSeleccionada
@@ -477,7 +472,6 @@
                 : "Reserva actualizada correctamente.";
 
             ToastService.ShowSuccess(mensaje);
-
             Navigation.NavigateTo("/admin/reservas", forceLoad: true);
         }
         catch (Exception ex)
