@@ -1409,6 +1409,7 @@
     {
         var pagosIngresos = PagosPeriodoLista
             .Where(p => p.Activo && !EsPagoEgreso(p))
+            .Where(p => !EsCapitalInicial(p))
             .ToList();
 
         decimal totalBasic = 0;
@@ -1488,14 +1489,30 @@
     private MovimientoReporteItem CrearMovimiento(PagoDTO pago)
     {
         bool esEgreso = EsPagoEgreso(pago);
+        bool esCapitalInicial = EsCapitalInicial(pago);
 
-        string usuario = esEgreso
-            ? ObtenerNombreEntrenadorDesdePago(pago)
-            : ObtenerNombreSocioDesdePago(pago);
+        string usuario;
+        string detalle;
+        string rol;
 
-        string detalle = esEgreso
-            ? "Staff"
-            : ObtenerMembresiaDesdePago(pago);
+        if (esCapitalInicial)
+        {
+            usuario = "GigaChadSys";
+            detalle = "Movimiento administrativo";
+            rol = "Administración";
+        }
+        else if (esEgreso)
+        {
+            usuario = ObtenerNombreEntrenadorDesdePago(pago);
+            detalle = "Staff";
+            rol = "Entrenador";
+        }
+        else
+        {
+            usuario = ObtenerNombreSocioDesdePago(pago);
+            detalle = ObtenerMembresiaDesdePago(pago);
+            rol = "Socio";
+        }
 
         decimal monto = (decimal)pago.Monto;
 
@@ -1504,7 +1521,7 @@
             Usuario = usuario,
             DetalleUsuario = detalle,
             Iniciales = ObtenerInicialesTexto(usuario),
-            Rol = esEgreso ? "Entrenador" : "Socio",
+            Rol = rol,
             Concepto = string.IsNullOrWhiteSpace(pago.Tipo) ? "Pago registrado" : pago.Tipo,
             TipoMovimiento = esEgreso ? "Egreso" : "Ingreso",
             TipoCss = esEgreso ? "egreso" : "ingreso",
@@ -1720,6 +1737,20 @@
         return tipo.Contains("sueldo") ||
                tipo.Contains("bono") ||
                tipo.Contains("entrenador");
+    }
+
+    private static bool EsCapitalInicial(PagoDTO pago)
+    {
+        if (string.IsNullOrWhiteSpace(pago.Tipo))
+        {
+            return false;
+        }
+
+        string tipo = NormalizarTexto(pago.Tipo);
+
+        return tipo.Contains("capital inicial") ||
+               tipo.Contains("aporte inicial") ||
+               tipo.Contains("capital del gimnasio");
     }
 
     private string MetodoPagoDonutStyle

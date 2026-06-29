@@ -455,6 +455,9 @@ public class ReporteRS {
                     if (egreso) {
                         usuario = obtenerNombreEntrenadorCompletoDesdePago(pago, entrenadores);
                         rolUsuario = "Entrenador";
+                    } else if (esCapitalInicial(pago)) {
+                        usuario = "GigaChadSys";
+                        rolUsuario = "Administración";
                     } else {
                         Suscripcion suscripcion = suscripcionPorPago.get(pago.getIdPago());
 
@@ -508,6 +511,7 @@ public class ReporteRS {
 
         pagosRango.stream()
                 .filter(p -> p.isActivo() && !esPagoEgreso(p))
+                .filter(p -> !esCapitalInicial(p))
                 .forEach(pago -> {
                     Suscripcion suscripcion = suscripcionPorPago.get(pago.getIdPago());
                     BigDecimal monto = BigDecimal.valueOf(pago.getMonto());
@@ -707,6 +711,18 @@ public class ReporteRS {
         return tipo.contains("sueldo") ||
                 tipo.contains("bono") ||
                 tipo.contains("entrenador");
+    }
+
+    private boolean esCapitalInicial(Pago pago) {
+        if (pago.getTipo() == null || pago.getTipo().isBlank()) {
+            return false;
+        }
+
+        String tipo = normalizar(pago.getTipo());
+
+        return tipo.contains("capital inicial") ||
+                tipo.contains("aporte inicial") ||
+                tipo.contains("capital del gimnasio");
     }
 
     private String obtenerConcepto(Pago pago) {
