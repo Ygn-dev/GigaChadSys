@@ -85,10 +85,53 @@
                 </div>
 
                 <div class="topbar-actions">
-                    <button class="topbar-btn topbar-notif">
-                        <i class="bi bi-bell"></i>
-                        <span class="badge">1</span>
-                    </button>
+                    <div style="position: relative;">
+                        <button class="topbar-btn topbar-notif" @onclick="ToggleNotificacionesSocio">
+                            <i class="bi bi-bell"></i>
+                            @if (mostrarBadgeNotificacionSocio)
+                            {
+                                <span class="badge">1</span>
+                            }
+                        </button>
+
+                        @if (mostrarNotificacionesSocio)
+                        {
+                            <div style="position: absolute; right: 0; top: 100%; width: 320px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 1000; margin-top: 8px; text-align: left;">
+                                <div style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
+                                    Notificaciones
+                                    <button style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;" @onclick="() => mostrarNotificacionesSocio = false">&times;</button>
+                                </div>
+                                <div style="max-height: 300px; overflow-y: auto;">
+                                    @if (mostrarBadgeNotificacionSocio)
+                                    {
+                                        <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 12px; cursor: pointer;">
+                                            <div style="background: #e0f2fe; color: #0284c7; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <i class="bi bi-info-circle"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.9rem; font-weight: 500; color: #334155; margin-bottom: 4px;">Bienvenido a GigaChadSys</div>
+                                                <div style="font-size: 0.8rem; color: #64748b;">Tu cuenta ha sido configurada correctamente. ¡Disfruta de la experiencia!</div>
+                                                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Hace 1 hora</div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div style="padding: 24px 16px; text-align: center; color: #94a3b8;">
+                                            <i class="bi bi-bell-slash" style="font-size: 2rem; margin-bottom: 8px; display: block;"></i>
+                                            No tienes notificaciones nuevas
+                                        </div>
+                                    }
+                                </div>
+                                @if (mostrarBadgeNotificacionSocio)
+                                {
+                                    <div style="padding: 8px; text-align: center; border-top: 1px solid #e2e8f0;">
+                                        <button style="background: none; border: none; color: #0f172a; font-size: 0.85rem; font-weight: 500; cursor: pointer;" @onclick="MarcarNotificacionesLeidasSocio">Marcar como leídas</button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
 
                     <button class="topbar-btn topbar-logout" title="Salir" @onclick="CerrarSesion">
                         <i class="bi bi-box-arrow-right"></i>
@@ -123,6 +166,19 @@ else
 }
 
 @code {
+    private bool mostrarNotificacionesSocio = false;
+    private bool mostrarBadgeNotificacionSocio = true;
+
+    private void ToggleNotificacionesSocio()
+    {
+        mostrarNotificacionesSocio = !mostrarNotificacionesSocio;
+    }
+
+    private void MarcarNotificacionesLeidasSocio()
+    {
+        mostrarBadgeNotificacionSocio = false;
+    }
+
     protected override void OnInitialized()
     {
         ToggleSvc.OnChange += HandleToggleChange;
