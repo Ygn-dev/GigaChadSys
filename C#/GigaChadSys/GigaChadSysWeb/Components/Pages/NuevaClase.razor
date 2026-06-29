@@ -1,4 +1,4 @@
-﻿@page "/admin/clases/nueva"
+@page "/admin/clases/nueva"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using GigaChadSys.Servicios
@@ -6,7 +6,7 @@
 @inject ClaseGrupalServicio ClaseService
 @inject NavigationManager Navigation
 
-<section class="container-fluid py-4">
+<section class="admin-form-page">
 
     <!-- Breadcrumb -->
     <div class="admin-breadcrumb">
@@ -22,13 +22,13 @@
     <p class="admin-form-subtitle">Complete la información de la clase que estará disponible para los socios</p>
 
     <!-- Layout: form izquierda, preview derecha -->
-    <div class="row g-4">
+    <div class="sesion-form-layout">
 
         <!-- COLUMNA IZQUIERDA -->
         <div class="sesion-form-left">
 
             <!-- Card: Información de la Clase -->
-            <div class="card bg-dark border-secondary p-4 shadow-lg text-white mx-auto" style="max-width: 800px;">
+            <div class="form-card">
                 <div class="form-card-header">
                     <span class="form-card-icon">📋</span>
                     <h2>Información de la Clase</h2>
@@ -37,7 +37,7 @@
 
                     <!-- Nombre -->
                     <div class="form-row">
-                        <div class="mb-3">
+                        <div class="form-group">
                             <label class="form-label">
                                 Nombre de la clase <span class="required">*</span>
                             </label>
@@ -51,11 +51,11 @@
 
                     <!-- Disciplina + Nivel -->
                     <div class="form-row">
-                        <div class="mb-3">
+                        <div class="form-group">
                             <label class="form-label">
                                 Disciplina <span class="required">*</span>
                             </label>
-                            <select class="form-select bg-black text-white border-secondary" @bind="Disciplina">
+                            <select class="form-select" @bind="Disciplina">
                                 <option value="">Seleccione una disciplina</option>
                                 <option>CrossFit</option>
                                 <option>Yoga</option>
@@ -67,11 +67,11 @@
                                 <option>HIIT</option>
                             </select>
                         </div>
-                        <div class="mb-3">
+                        <div class="form-group">
                             <label class="form-label">
                                 Nivel <span class="required">*</span>
                             </label>
-                            <select class="form-select bg-black text-white border-secondary" @bind="Nivel">
+                            <select class="form-select" @bind="Nivel">
                                 <option value="">Seleccione un nivel</option>
                                 <option>Principiante</option>
                                 <option>Intermedio</option>
@@ -82,7 +82,7 @@
 
                     <!-- Duración -->
                     <div class="form-row">
-                        <div class="mb-3" style="max-width:220px;">
+                        <div class="form-group" style="max-width:220px;">
                             <label class="form-label">
                                 Duración (minutos) <span class="required">*</span>
                             </label>
@@ -97,7 +97,7 @@
 
                     <!-- Descripción -->
                     <div class="form-row">
-                        <div class="mb-3">
+                        <div class="form-group">
                             <label class="form-label">
                                 Descripción <span class="required">*</span>
                             </label>
@@ -114,7 +114,7 @@
             </div>
 
             <!-- Card: Estado -->
-            <div class="card bg-dark border-secondary p-4 shadow-lg text-white mx-auto" style="max-width: 800px;">
+            <div class="form-card">
                 <div class="form-card-header">
                     <span class="form-card-icon">👁</span>
                     <h2>Estado de la Clase</h2>

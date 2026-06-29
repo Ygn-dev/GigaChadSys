@@ -1,4 +1,4 @@
-﻿@page "/admin/socios/editar/{Id:int}"
+@page "/admin/socios/editar/{Id:int}"
 @using GigaChadSysWeb.Components.Layout
 @layout AdminLayout
 @rendermode InteractiveServer
@@ -7,7 +7,7 @@
 @inject SocioServicio SocioService
 @inject NavigationManager Nav
 
-<section class="container-fluid py-4">
+<section class="socio-form-page">
 
     <nav class="sf-breadcrumb">
         <a href="/admin/socios">Socios</a>
@@ -37,7 +37,7 @@
     }
     else
     {
-        <div class="row g-4">
+        <div class="sf-edit-layout">
             <div class="sf-form-col">
 
                 <div class="sf-section-card">

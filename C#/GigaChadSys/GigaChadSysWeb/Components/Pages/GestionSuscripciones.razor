@@ -1,4 +1,4 @@
-﻿@page "/admin/suscripciones"
+@page "/admin/suscripciones"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using GigaChadSys.Servicios
@@ -6,22 +6,22 @@
 @inject SuscripcionServicio SuscripcionService
 @inject SocioServicio SocioService
 
-<section class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<section class="admin-list-page">
+    <div class="admin-list-header">
         <div>
             <h1>Suscripciones Activas</h1>
             <p>Monitorea todas las suscripciones de los socios del gimnasio.</p>
         </div>
     </div>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-dark p-3 rounded border border-secondary">
-        <input class="form-control bg-black text-white border-secondary"
+    <div class="admin-list-toolbar">
+        <input class="admin-search"
                type="text"
                placeholder="Buscar por ID Socio..."
                @bind="TextoBusqueda"
                @bind:event="oninput" />
 
-        <div class="btn-group">
+        <div class="admin-filter-group">
             <button class="@FiltroClaseTodos" @onclick="MostrarTodos">Todas</button>
             <button class="@FiltroClaseActivos" @onclick="MostrarActivas">Activas</button>
             <button class="@FiltroClaseInactivos" @onclick="MostrarInactivas">Inactivas</button>
@@ -32,8 +32,8 @@
         var suscripciones = SuscripcionesPaginadas.ToList();
     }
 
-    <div class="table-responsive bg-dark border border-secondary rounded shadow">
-        <table class="table table-dark table-hover table-striped align-middle mb-0 table-dark table-hover table-striped align-middle mb-0">
+    <div class="admin-table-card">
+        <table class="admin-table">
             <thead>
                 <tr>
                     <th>ID Susc.</th>
@@ -94,22 +94,22 @@
                             <td>
                                 @if (suscripcion.EsActiva)
                                 {
-                                    <span class="badge bg-success rounded-pill px-3 py-2">Activa</span>
+                                    <span class="status-badge active">Activa</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary rounded-pill px-3 py-2">Inactiva</span>
+                                    <span class="status-badge inactive">Inactiva</span>
                                 }
                             </td>
                             
                             <td>
                                 @if (suscripcion.Activo)
                                 {
-                                    <span class="badge bg-success rounded-pill px-3 py-2">Registro Activo</span>
+                                    <span class="status-badge active">Registro Activo</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary rounded-pill px-3 py-2">Registro Inactivo</span>
+                                    <span class="status-badge inactive">Registro Inactivo</span>
                                 }
                             </td>
                         </tr>
@@ -119,18 +119,18 @@
         </table>
     </div>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 bg-dark p-3 rounded border border-secondary">
-        <span class="text-muted small">
+    <div class="socios-pagination">
+        <span class="pagination-s-info">
             Mostrando @(((PaginaActual - 1) * ElementosPorPagina) + 1) - @Math.Min(PaginaActual * ElementosPorPagina, SuscripcionesFiltradas.Count()) de @SuscripcionesFiltradas.Count()
         </span>
-        <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary" disabled="@(PaginaActual == 1)" @onclick="PaginaAnterior">‹</button>
+        <div class="pagination-s-btns">
+            <button class="pgbtn" disabled="@(PaginaActual == 1)" @onclick="PaginaAnterior">‹</button>
             @for (int i = 1; i <= TotalPaginas; i++)
             {
                 int pagina = i;
-                <button class="pgbtn @(PaginaActual == pagina ? "btn-danger" : "")" @onclick="() => IrAPagina(pagina)">@pagina</button>
+                <button class="pgbtn @(PaginaActual == pagina ? "pgbtn-active" : "")" @onclick="() => IrAPagina(pagina)">@pagina</button>
             }
-            <button class="btn btn-sm btn-outline-secondary" disabled="@(PaginaActual == TotalPaginas)" @onclick="PaginaSiguiente">›</button>
+            <button class="pgbtn" disabled="@(PaginaActual == TotalPaginas)" @onclick="PaginaSiguiente">›</button>
         </div>
     </div>
 </section>
@@ -172,9 +172,9 @@
     private int PaginaActual = 1;
     private int ElementosPorPagina = 10;
 
-    private string FiltroClaseTodos => FiltroEstado == "Todos" ? "btn btn-danger" : "btn btn-outline-secondary";
-    private string FiltroClaseActivos => FiltroEstado == "Activas" ? "btn btn-danger" : "btn btn-outline-secondary";
-    private string FiltroClaseInactivos => FiltroEstado == "Inactivas" ? "btn btn-danger" : "btn btn-outline-secondary";
+    private string FiltroClaseTodos => FiltroEstado == "Todos" ? "filter-button active" : "filter-button";
+    private string FiltroClaseActivos => FiltroEstado == "Activas" ? "filter-button active" : "filter-button";
+    private string FiltroClaseInactivos => FiltroEstado == "Inactivas" ? "filter-button active" : "filter-button";
 
     protected override async Task OnInitializedAsync()
     {

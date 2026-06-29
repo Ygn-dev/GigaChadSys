@@ -1,4 +1,4 @@
-﻿@page "/admin/clases/editar/{Id:int}"
+@page "/admin/clases/editar/{Id:int}"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using GigaChadSys.Servicios
@@ -6,7 +6,7 @@
 @inject ClaseGrupalServicio ClaseService
 @inject NavigationManager Navigation
 
-<div class="container-fluid py-4">
+<div class="socio-form-page">
 
     <nav class="sf-breadcrumb">
         <a href="/admin/clases">Clases</a>
@@ -31,7 +31,7 @@
     }
     else
     {
-        <div class="row g-4">
+        <div class="sf-edit-layout">
 
             <div>
 

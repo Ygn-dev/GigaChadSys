@@ -3,116 +3,116 @@
 @layout AdminLayout
 @rendermode InteractiveServer
 
-<section class="container-fluid py-4">
+<section class="admin-home">
 
-    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
-        <div class="text-uppercase text-danger fw-bold mb-2 small">Panel de Administración</div>
+    <div class="welcome-card">
+        <div class="welcome-label">Panel de Administración</div>
 
         <h1>Bienvenido, Administrador</h1>
 
-        <div class="bg-danger my-3" style="width: 60px; height: 4px; border-radius: 2px;"></div>
+        <div class="welcome-red-line"></div>
 
         <p>
             Desde este panel puedes gestionar las operaciones principales del gimnasio GigaChad.
         </p>
     </div>
 
-    <div class="row g-4">
+    <div class="admin-grid">
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/socios">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/socios">
+            <div class="admin-card-icon">
                 <i class="bi bi-people"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Gestionar Socios</h3>
                 <p>Consulta, registra y administra a los socios del gimnasio.</p>
             </div>
         </a>
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/entrenadores">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/entrenadores">
+            <div class="admin-card-icon">
                 <i class="bi bi-person-check"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Gestionar Entrenadores</h3>
                 <p>Consulta, registra y administra a los entrenadores.</p>
             </div>
         </a>
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/membresias">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/membresias">
+            <div class="admin-card-icon">
                 <i class="bi bi-gem"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Gestionar Membresías</h3>
                 <p>Administra los planes y tipos de membresías disponibles.</p>
             </div>
         </a>
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/clases">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/clases">
+            <div class="admin-card-icon">
                 <i class="bi bi-fire"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Gestionar Clases</h3>
                 <p>Gestiona las disciplinas y clases grupales del gimnasio.</p>
             </div>
         </a>
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/sesiones">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/sesiones">
+            <div class="admin-card-icon">
                 <i class="bi bi-calendar-check"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Gestionar Sesiones</h3>
                 <p>Programa y administra las sesiones de clases.</p>
             </div>
         </a>
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/reservas">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/reservas">
+            <div class="admin-card-icon">
                 <i class="bi bi-calendar2-check"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Gestionar Reservas</h3>
                 <p>Consulta y administra las reservas de los socios.</p>
             </div>
         </a>
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/pagos">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/pagos">
+            <div class="admin-card-icon">
                 <i class="bi bi-currency-dollar"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Gestionar Pagos</h3>
                 <p>Administra los pagos, métodos y transacciones.</p>
             </div>
         </a>
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/salones">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/salones">
+            <div class="admin-card-icon">
                 <i class="bi bi-building"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Gestionar Salones</h3>
                 <p>Administra los salones, aforo y disponibilidad.</p>
             </div>
         </a>
 
-        <a class="card bg-black border-secondary text-white text-decoration-none h-100 shadow-sm p-4 d-flex flex-row align-items-center gap-3" href="/admin/reportes">
-            <div class="bg-danger text-white rounded d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+        <a class="admin-option-card admin-card-with-icon" href="/admin/reportes">
+            <div class="admin-card-icon">
                 <i class="bi bi-bar-chart-line"></i>
             </div>
 
-            <div class="d-flex flex-column">
+            <div class="admin-card-body">
                 <h3>Ver Reportes</h3>
                 <p>Consulta indicadores generales del gimnasio.</p>
             </div>

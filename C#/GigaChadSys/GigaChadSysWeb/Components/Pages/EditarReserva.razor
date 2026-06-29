@@ -1,4 +1,4 @@
-﻿@page "/admin/reservas/editar/{Id:int}"
+@page "/admin/reservas/editar/{Id:int}"
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @layout AdminLayout
@@ -8,7 +8,7 @@
 @inject SesionClaseServicio SesionClaseService
 @inject NavigationManager Navigation
 
-<div class="container-fluid py-4">
+<div class="socio-form-page">
 
     <!-- Breadcrumb -->
     <nav class="sf-breadcrumb">
@@ -62,7 +62,7 @@
     }
     else
     {
-        <div class="row g-4">
+        <div class="sf-edit-layout">
 
             <!-- ── Left column ── -->
             <div>

@@ -1,4 +1,4 @@
-﻿@page "/admin/entrenadores/editar/{IdUsuarioParametro:int}"
+@page "/admin/entrenadores/editar/{IdUsuarioParametro:int}"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using System.Globalization
@@ -7,9 +7,9 @@
 @inject EntrenadorServicio EntrenadorService
 @inject NavigationManager Nav
 
-<section class="container-fluid py-4">
+<section class="trainer-edit-page">
 
-    <div class="mb-4 text-muted small">
+    <div class="trainer-breadcrumb">
         <a href="/admin/inicio">Inicio</a>
         <span>/</span>
         <a href="/admin/entrenadores">Entrenadores</a>
@@ -17,7 +17,7 @@
         <strong>Editar</strong>
     </div>
 
-    <div class="mb-4">
+    <div class="trainer-form-title">
         <h1>Editar Entrenador</h1>
         <p>Actualiza los datos personales y profesionales del entrenador.</p>
     </div>
@@ -31,21 +31,21 @@
 
     @if (Cargando)
     {
-        <div class="alert alert-info">
+        <div class="trainer-message">
             Cargando datos del entrenador...
         </div>
     }
     else
     {
-        <div class="row g-4">
+        <div class="trainer-edit-layout">
 
-            <div class="col-lg-8">
+            <div class="trainer-edit-main">
 
-                <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
+                <div class="trainer-section">
                     <h2>Información Personal</h2>
 
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
+                    <div class="trainer-grid">
+                        <div class="trainer-field">
                             <label>DNI <span>*</span></label>
                             <input type="text"
                                    maxlength="8"
@@ -54,7 +54,7 @@
                                    @oninput="CambiarDni" />
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Edad <span>*</span></label>
                             <input type="number"
                                    min="1"
@@ -64,7 +64,7 @@
                                    @oninput="CambiarEdad" />
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Nombres <span>*</span></label>
                             <input type="text"
                                    autocomplete="off"
@@ -72,7 +72,7 @@
                                    @oninput="CambiarNombres" />
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Apellido paterno <span>*</span></label>
                             <input type="text"
                                    autocomplete="off"
@@ -80,7 +80,7 @@
                                    @oninput="CambiarApellidoPaterno" />
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Apellido materno <span>*</span></label>
                             <input type="text"
                                    autocomplete="off"
@@ -88,7 +88,7 @@
                                    @oninput="CambiarApellidoMaterno" />
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Teléfono <span>*</span></label>
                             <input type="text"
                                    maxlength="9"
@@ -97,7 +97,7 @@
                                    @oninput="CambiarTelefono" />
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Correo electrónico <span>*</span></label>
                             <input type="email"
                                    autocomplete="off"
@@ -107,11 +107,11 @@
                     </div>
                 </div>
 
-                <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
+                <div class="trainer-section">
                     <h2>Información Profesional</h2>
 
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
+                    <div class="trainer-grid">
+                        <div class="trainer-field">
                             <label>Especialidad <span>*</span></label>
                             <select value="@EspecialidadValor" @onchange="CambiarEspecialidad">
                                 <option value="">Seleccione una especialidad</option>
@@ -123,7 +123,7 @@
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Sueldo mensual <span>*</span></label>
                             <input type="number"
                                    min="0"
@@ -133,7 +133,7 @@
                                    @oninput="CambiarSueldoMensual" />
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Tiempo de trabajo <span>*</span></label>
                             <select value="@TiempoTrabajoValor" @onchange="CambiarTiempoTrabajo">
                                 <option value="">Seleccione tiempo de trabajo</option>
@@ -145,11 +145,11 @@
                     </div>
                 </div>
 
-                <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
+                <div class="trainer-section">
                     <h2>Cuenta de Acceso</h2>
 
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
+                    <div class="trainer-grid">
+                        <div class="trainer-field">
                             <label>Correo de acceso <span>*</span></label>
                             <input type="email"
                                    autocomplete="off"
@@ -157,7 +157,7 @@
                                    @oninput="CambiarCorreo" />
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="trainer-field">
                             <label>Nueva contraseña</label>
                             <input type="password"
                                    autocomplete="new-password"
@@ -168,10 +168,10 @@
                     </div>
                 </div>
 
-                <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
+                <div class="trainer-section">
                     <h2>Estado</h2>
 
-                    <div class="d-flex gap-4 mt-2">
+                    <div class="trainer-radio-row">
                         <label>
                             <input type="radio"
                                    name="estadoEntrenadorEditar"
@@ -190,64 +190,64 @@
                     </div>
                 </div>
 
-                <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+                <div class="trainer-actions">
                     <button type="button"
-                            class="btn btn-danger fw-bold text-uppercase px-4"
+                            class="trainer-save-button"
                             @onclick="GuardarCambios">
                         ✓ Guardar cambios
                     </button>
 
-                    <a class="btn btn-secondary fw-bold text-uppercase px-4" href="/admin/entrenadores">
+                    <a class="trainer-cancel-button" href="/admin/entrenadores">
                         Cancelar
                     </a>
 
-                    <a class="text-muted text-decoration-none ms-auto" href="/admin/entrenadores">
+                    <a class="trainer-return-link" href="/admin/entrenadores">
                         ← Volver al listado
                     </a>
                 </div>
             </div>
 
-            <aside class="col-lg-4 card bg-black border-secondary p-4 shadow-sm text-white h-100">
+            <aside class="trainer-summary-card">
                 <h2>Resumen</h2>
 
-                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
+                <div class="summary-row">
                     <span>Entrenador:</span>
                     <strong>@NombresValor @ApellidoPaternoValor @ApellidoMaternoValor</strong>
                 </div>
 
-                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
+                <div class="summary-row">
                     <span>DNI:</span>
                     <strong>@DniValor</strong>
                 </div>
 
-                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
+                <div class="summary-row">
                     <span>Edad:</span>
                     <strong>@EdadValor</strong>
                 </div>
 
-                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
+                <div class="summary-row">
                     <span>Especialidad:</span>
                     <strong>@MostrarTexto(EspecialidadValor)</strong>
                 </div>
 
-                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
+                <div class="summary-row">
                     <span>Tiempo:</span>
                     <strong>@DescripcionTiempoTrabajo</strong>
                 </div>
 
-                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom border-secondary">
+                <div class="summary-row">
                     <span>Estado nuevo:</span>
                     @if (EntrenadorActivo)
                     {
-                        <strong class="text-success fw-bold">Activo</strong>
+                        <strong class="summary-status active">Activo</strong>
                     }
                     else
                     {
-                        <strong class="text-danger fw-bold">Inactivo</strong>
+                        <strong class="summary-status inactive">Inactivo</strong>
                     }
                 </div>
 
-                <div class="alert alert-warning mt-4 small text-dark">
+                <div class="summary-warning">
                     Desde aquí puedes modificar los datos del entrenador por motivos administrativos.
                 </div>
             </aside>
@@ -501,13 +501,13 @@
     private void MostrarError(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "alert alert-danger";
+        ClaseMensajeFormulario = "trainer-message error";
     }
 
     private void MostrarExito(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "alert alert-success";
+        ClaseMensajeFormulario = "trainer-message success";
     }
 
     private static string MostrarTexto(string? texto)

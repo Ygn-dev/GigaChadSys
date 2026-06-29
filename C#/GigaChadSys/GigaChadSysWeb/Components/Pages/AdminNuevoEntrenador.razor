@@ -1,4 +1,4 @@
-﻿@page "/admin/entrenadores/nuevo"
+@page "/admin/entrenadores/nuevo"
 @layout AdminLayout
 @rendermode InteractiveServer
 @using GigaChadSys.Servicios
@@ -6,9 +6,9 @@
 @inject EntrenadorServicio EntrenadorService
 @inject NavigationManager Nav
 
-<section class="container-fluid py-4">
+<section class="trainer-form-page">
 
-    <div class="mb-4 text-muted small">
+    <div class="trainer-breadcrumb">
         <a href="/admin/inicio">Inicio</a>
         <span>/</span>
         <a href="/admin/entrenadores">Entrenadores</a>
@@ -16,7 +16,7 @@
         <strong>Nuevo Entrenador</strong>
     </div>
 
-    <div class="mb-4">
+    <div class="trainer-form-title">
         <h1>Registrar Nuevo Entrenador</h1>
         <p>Completa la información del entrenador del gimnasio.</p>
     </div>
@@ -28,11 +28,11 @@
         </div>
     }
 
-    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
+    <div class="trainer-section">
         <h2>Información Personal</h2>
 
-        <div class="row g-3">
-            <div class="col-md-6 mb-3">
+        <div class="trainer-grid">
+            <div class="trainer-field">
                 <label>DNI <span>*</span></label>
                 <input type="text"
                        maxlength="8"
@@ -42,7 +42,7 @@
                        @oninput="CambiarDni" />
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Fecha de nacimiento <span>*</span></label>
                 <input type="date"
                        autocomplete="off"
@@ -50,7 +50,7 @@
                        @onchange="CambiarFechaNacimiento" />
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Nombres <span>*</span></label>
                 <input type="text"
                        autocomplete="off"
@@ -59,7 +59,7 @@
                        @oninput="CambiarNombres" />
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Apellido paterno <span>*</span></label>
                 <input type="text"
                        autocomplete="off"
@@ -68,7 +68,7 @@
                        @oninput="CambiarApellidoPaterno" />
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Apellido materno <span>*</span></label>
                 <input type="text"
                        autocomplete="off"
@@ -77,7 +77,7 @@
                        @oninput="CambiarApellidoMaterno" />
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Teléfono <span>*</span></label>
                 <input type="text"
                        maxlength="9"
@@ -87,7 +87,7 @@
                        @oninput="CambiarTelefono" />
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Correo electrónico <span>*</span></label>
                 <input type="email"
                        autocomplete="off"
@@ -98,11 +98,11 @@
         </div>
     </div>
 
-    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
+    <div class="trainer-section">
         <h2>Información Profesional</h2>
 
-        <div class="row g-3">
-            <div class="col-md-6 mb-3">
+        <div class="trainer-grid">
+            <div class="trainer-field">
                 <label>Especialidad <span>*</span></label>
                 <select value="@EspecialidadValor" @onchange="CambiarEspecialidad">
                     <option value="">Seleccione una especialidad</option>
@@ -114,7 +114,7 @@
                 </select>
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Sueldo mensual <span>*</span></label>
                 <input type="number"
                        min="0"
@@ -125,7 +125,7 @@
                        @oninput="CambiarSueldoMensual" />
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Tiempo de trabajo <span>*</span></label>
                 <select value="@TiempoTrabajoValor" @onchange="CambiarTiempoTrabajo">
                     <option value="">Seleccione tiempo de trabajo</option>
@@ -137,11 +137,11 @@
         </div>
     </div>
 
-    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
+    <div class="trainer-section">
         <h2>Cuenta de Acceso</h2>
 
-        <div class="row g-3">
-            <div class="col-md-6 mb-3">
+        <div class="trainer-grid">
+            <div class="trainer-field">
                 <label>Contraseña <span>*</span></label>
                 <input type="password"
                        autocomplete="new-password"
@@ -150,7 +150,7 @@
                        @oninput="CambiarContrasenia" />
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="trainer-field">
                 <label>Confirmar contraseña <span>*</span></label>
                 <input type="password"
                        autocomplete="new-password"
@@ -161,10 +161,10 @@
         </div>
     </div>
 
-    <div class="card bg-dark border-secondary p-4 mb-4 shadow text-white">
+    <div class="trainer-section">
         <h2>Estado</h2>
 
-        <div class="d-flex gap-4 mt-2">
+        <div class="trainer-radio-row">
             <label>
                 <input type="radio"
                        name="estadoEntrenador"
@@ -183,20 +183,20 @@
         </div>
     </div>
 
-    <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+    <div class="trainer-actions">
         <button type="button"
-                class="btn btn-danger fw-bold text-uppercase px-4"
+                class="trainer-save-button"
                 @onclick="RegistrarEntrenador">
             ✓ Registrar Entrenador
         </button>
 
         <button type="button"
-                class="btn btn-secondary fw-bold text-uppercase px-4"
+                class="trainer-cancel-button"
                 @onclick="LimpiarFormulario">
             × Cancelar
         </button>
 
-        <a class="text-muted text-decoration-none ms-auto" href="/admin/entrenadores">
+        <a class="trainer-return-link" href="/admin/entrenadores">
             ← Volver al listado
         </a>
     </div>
@@ -446,13 +446,13 @@
     private void MostrarError(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "alert alert-danger";
+        ClaseMensajeFormulario = "trainer-message error";
     }
 
     private void MostrarExito(string mensaje)
     {
         MensajeFormulario = mensaje;
-        ClaseMensajeFormulario = "alert alert-success";
+        ClaseMensajeFormulario = "trainer-message success";
     }
 
     private void LimpiarFormulario()

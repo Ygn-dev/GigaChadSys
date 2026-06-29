@@ -1,4 +1,4 @@
-﻿@page "/admin/socios"
+@page "/admin/socios"
 @using GigaChadSysWeb.Components.Layout
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
@@ -7,7 +7,7 @@
 @inject NavigationManager Nav
 @inject SocioServicio SocioService
 
-<section class="container-fluid py-4">
+<section class="socios-page">
 
     <!-- Page Header -->
     <div class="socios-page-header">
@@ -191,8 +191,8 @@
             }
         </div>
 
-        <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 bg-dark p-3 rounded border border-secondary">
-            <span class="text-muted small">
+        <div class="socios-pagination">
+            <span class="pagination-s-info">
                 Mostrando
                 @(((paginaActual - 1) * elementosPorPagina) + 1)
                 -
@@ -200,9 +200,9 @@
                 de @SociosFiltrados.Count() socios
             </span>
 
-            <div class="d-flex gap-2">
+            <div class="pagination-s-btns">
 
-                <button class="btn btn-sm btn-outline-secondary"
+                <button class="pgbtn"
                         disabled="@(paginaActual == 1)"
                         @onclick="PaginaAnterior">
                     ‹
@@ -212,13 +212,13 @@
                 {
                     int pagina = i;
 
-                    <button class="pgbtn @(paginaActual == pagina ? "btn-danger" : "")"
+                    <button class="pgbtn @(paginaActual == pagina ? "pgbtn-active" : "")"
                             @onclick="() => IrAPagina(pagina)">
                         @pagina
                     </button>
                 }
 
-                <button class="btn btn-sm btn-outline-secondary"
+                <button class="pgbtn"
                         disabled="@(paginaActual == TotalPaginas)"
                         @onclick="PaginaSiguiente">
                     ›

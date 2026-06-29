@@ -1,4 +1,4 @@
-﻿@page "/socio/pagos/realizar/{CodigoPago}"
+@page "/socio/pagos/realizar/{CodigoPago}"
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @layout SocioLayout
@@ -9,7 +9,7 @@
 @inject SocioServicio SocioService
 @inject NavigationManager Navigation
 
-<section class="container-fluid py-4">
+<section class="socio-pay-process-page">
 
     <div class="pay-breadcrumb">
         <a href="/socio/pagos">Mis Pagos</a>
@@ -43,7 +43,7 @@
     }
     else
     {
-        <div class="row g-4">
+        <div class="pay-process-layout">
 
             <div class="pay-process-main">
 
