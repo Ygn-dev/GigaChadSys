@@ -43,8 +43,7 @@ public class ReservaServicio
     public async Task<string> RegistrarAsync(ReservaDTO reserva)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, reserva);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar reserva.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar reserva.");
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class ReservaServicio
     public async Task<string> ActualizarAsync(int idReserva, ReservaDTO reserva)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idReserva}", reserva);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar reserva.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar reserva.");
     }
 
     /// <summary>
@@ -63,7 +61,6 @@ public class ReservaServicio
     public async Task<string> EliminarAsync(int idReserva)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idReserva}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar reserva.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar reserva.");
     }
 }

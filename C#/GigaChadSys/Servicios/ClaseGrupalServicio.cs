@@ -43,8 +43,7 @@ public class ClaseGrupalServicio
     public async Task<string> RegistrarAsync(ClaseGrupalDTO claseGrupal)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, claseGrupal);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar clase grupal.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar clase grupal.");
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class ClaseGrupalServicio
     public async Task<string> ActualizarAsync(int idClase, ClaseGrupalDTO claseGrupal)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idClase}", claseGrupal);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar clase grupal.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar clase grupal.");
     }
 
     /// <summary>
@@ -63,7 +61,6 @@ public class ClaseGrupalServicio
     public async Task<string> EliminarAsync(int idClase)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idClase}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar clase grupal.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar clase grupal.");
     }
 }

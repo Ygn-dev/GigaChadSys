@@ -43,8 +43,7 @@ public class SesionClaseServicio
     public async Task<string> RegistrarAsync(SesionClaseDTO sesionClase)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, sesionClase);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar sesión de clase.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar sesión de clase.");
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class SesionClaseServicio
     public async Task<string> ActualizarAsync(int idSesion, SesionClaseDTO sesionClase)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idSesion}", sesionClase);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar sesión de clase.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar sesión de clase.");
     }
 
     /// <summary>
@@ -63,7 +61,6 @@ public class SesionClaseServicio
     public async Task<string> EliminarAsync(int idSesion)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idSesion}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar sesión de clase.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar sesión de clase.");
     }
 }

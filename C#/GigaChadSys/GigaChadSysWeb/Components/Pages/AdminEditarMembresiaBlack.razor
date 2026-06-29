@@ -702,40 +702,4 @@
         Mensaje = mensaje;
         ClaseMensaje = "membership-message success";
     }
-        return defecto;
-    }
-
-    private static decimal LeerDecimal(JsonElement root, decimal defecto, params string[] nombres)
-    {
-        if (TryGetAny(root, out JsonElement value, nombres))
-        {
-            if (value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out decimal numero))
-                return numero;
-
-            if (decimal.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal convertido))
-                return convertido;
-
-            if (decimal.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.CurrentCulture, out decimal convertidoLocal))
-                return convertidoLocal;
-        }
-
-        return defecto;
-    }
-
-    private static bool LeerBooleano(JsonElement root, bool defecto, params string[] nombres)
-    {
-        if (TryGetAny(root, out JsonElement value, nombres))
-        {
-            if (value.ValueKind == JsonValueKind.True)
-                return true;
-
-            if (value.ValueKind == JsonValueKind.False)
-                return false;
-
-            string texto = value.ToString();
-
-            if (bool.TryParse(texto, out bool b))
-                return b;
-
-
 }

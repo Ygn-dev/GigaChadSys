@@ -43,8 +43,7 @@ public class SalonServicio
     public async Task<string> RegistrarAsync(SalonDTO salon)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, salon);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar salón.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar salón.");
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class SalonServicio
     public async Task<string> ActualizarAsync(int idSalon, SalonDTO salon)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idSalon}", salon);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar salón.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar salón.");
     }
 
     /// <summary>
@@ -63,7 +61,6 @@ public class SalonServicio
     public async Task<string> EliminarAsync(int idSalon)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idSalon}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar salón.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar salón.");
     }
 }

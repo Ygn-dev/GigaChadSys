@@ -61,8 +61,7 @@ public class PagoServicio
     public async Task<string> ActualizarAsync(int idPago, PagoDTO pago)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idPago}", pago);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar pago.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar pago.");
     }
 
     /// <summary>
@@ -71,7 +70,6 @@ public class PagoServicio
     public async Task<string> EliminarAsync(int idPago)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idPago}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar pago.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar pago.");
     }
 }

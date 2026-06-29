@@ -43,8 +43,7 @@ public class MetodoPagoServicio
     public async Task<string> RegistrarAsync(MetodoPagoDTO metodoPago)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, metodoPago);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar método de pago.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar método de pago.");
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class MetodoPagoServicio
     public async Task<string> ActualizarAsync(int idMetodoPago, MetodoPagoDTO metodoPago)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idMetodoPago}", metodoPago);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar método de pago.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar método de pago.");
     }
 
     /// <summary>
@@ -63,7 +61,6 @@ public class MetodoPagoServicio
     public async Task<string> EliminarAsync(int idMetodoPago)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idMetodoPago}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar método de pago.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar método de pago.");
     }
 }
