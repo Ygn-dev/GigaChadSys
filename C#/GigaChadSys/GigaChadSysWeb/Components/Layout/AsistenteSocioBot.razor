@@ -1,5 +1,6 @@
 @implements IDisposable
 @inject AsistenteSocioServicio Asistente
+@inject GigaChadSys.Servicios.SessionServicio Session
 
 <div class="socio-assistant-shell" aria-live="polite">
     @if (Abierto)
@@ -29,7 +30,7 @@
                     {
                         <article class="socio-assistant-message @mensaje.Rol">
                             <div class="message-badge">@(mensaje.Rol == "usuario" ? "Tu" : "GC")</div>
-                            <p>@mensaje.Texto</p>
+                            <p class="socio-assistant-text">@mensaje.Texto</p>
                         </article>
                     }
 
@@ -37,7 +38,7 @@
                     {
                         <article class="socio-assistant-message asistente">
                             <div class="message-badge">GC</div>
-                            <p>Hola. Preguntame por tu membresia, tus pagos o tus reservas.</p>
+                            <p class="socio-assistant-text">Hola. Preguntame por tu membresia, tus pagos o tus reservas.</p>
                         </article>
                     }
                 </div>
@@ -79,9 +80,23 @@
         ? "Bot de ayuda"
         : $"Hola, {Asistente.NombreUsuario}";
 
+    protected override void OnInitialized()
+    {
+        Session.OnCambio += HandleSessionChange;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await Asistente.CargarContextoAsync();
+    }
+
+    private async void HandleSessionChange()
+    {
+        await InvokeAsync(async () =>
+        {
+            await Asistente.CargarContextoAsync();
+            StateHasChanged();
+        });
     }
 
     private async Task EnviarAsync()
@@ -132,5 +147,6 @@
 
     public void Dispose()
     {
+        Session.OnCambio -= HandleSessionChange;
     }
 }

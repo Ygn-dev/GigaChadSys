@@ -13460,6 +13460,11 @@ h1:focus {
         flex: 1;
     }
 
+    .socio-assistant-text {
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+    }
+
     .socio-assistant-message.usuario {
         flex-direction: row-reverse;
     }
