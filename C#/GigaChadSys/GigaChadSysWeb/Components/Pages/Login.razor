@@ -10,6 +10,7 @@
 @inject SessionServicio Session
 @inject NavigationManager Nav
 @inject ProtectedSessionStorage SessionStorage
+@inject ToastService ToastService
 
 <div class="auth-page">
     <!-- Decorative corner lines -->
@@ -34,17 +35,6 @@
         <h2 class="auth-title">Iniciar Sesión</h2>
         <p class="auth-desc">Bienvenido de vuelta a GigaChad</p>
 
-        <!-- Error Message -->
-        @if (!string.IsNullOrEmpty(mensajeError))
-        {
-            <div class="auth-error-msg">
-                <span>
-                    <i class="bi bi-exclamation-triangle"></i>
-                </span>
-                @mensajeError
-            </div>
-        }
-
         <!-- Form Card -->
         <div class="auth-card">
             <div class="auth-form-group">
@@ -57,7 +47,9 @@
 
                     <input type="email"
                            @bind="correo"
+                           @bind:event="oninput"
                            placeholder="Ej: juan@email.com"
+                           class="@(intentoGuardar && string.IsNullOrWhiteSpace(correo) ? "input-error" : "")"
                            disabled="@cargando" />
                 </div>
             </div>
@@ -72,7 +64,9 @@
 
                     <input type="@(mostrarPass ? "text" : "password")"
                            @bind="password"
+                           @bind:event="oninput"
                            placeholder="Ingresa tu contraseña"
+                           class="@(intentoGuardar && string.IsNullOrWhiteSpace(password) ? "input-error" : "")"
                            disabled="@cargando" />
 
                     <button class="auth-eye-btn"
@@ -122,21 +116,21 @@
     private string password = "";
     private bool mostrarPass = false;
     private bool cargando = false;
-    private string mensajeError = "";
+    private bool intentoGuardar = false;
 
     private async Task IniciarSesion()
     {
-        mensajeError = "";
+        intentoGuardar = true;
 
         if (string.IsNullOrWhiteSpace(correo))
         {
-            mensajeError = "Ingrese su correo electrónico.";
+            ToastService.ShowError("Ingrese su correo electrónico.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(password))
         {
-            mensajeError = "Ingrese su contraseña.";
+            ToastService.ShowError("Ingrese su contraseña.");
             return;
         }
 
@@ -167,18 +161,18 @@
                         break;
 
                     default:
-                        mensajeError = "Rol no reconocido. Contacte al administrador.";
+                        ToastService.ShowError("Rol no reconocido. Contacte al administrador.");
                         break;
                 }
             }
             else
             {
-                mensajeError = resultado.Mensaje;
+                ToastService.ShowError(resultado.Mensaje);
             }
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error de conexión: {ex.Message}";
+            ToastService.ShowError($"Error de conexión: {ex.Message}");
         }
         finally
         {
