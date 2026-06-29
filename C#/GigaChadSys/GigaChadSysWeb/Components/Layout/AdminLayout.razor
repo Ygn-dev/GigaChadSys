@@ -7,148 +7,157 @@
 @inject ProtectedSessionStorage SessionStorage
 @implements IDisposable
 
-<div class="admin-shell">
-    <aside class="admin-sidebar">
+@if (Session.EstaAutenticado && Session.EsAdmin)
+{
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
 
-        <!-- LOGO -->
-        <div class="admin-logo admin-logo-image-box">
-            <img src="/img/logo-gigachad-sidebar.png"
-                 alt="GigaChad"
-                 class="admin-brand-logo" />
-        </div>
-
-        <!-- MENÚ -->
-        <nav class="admin-nav">
-
-            <NavLink href="/admin/inicio" Match="NavLinkMatch.All">
-                <i class="bi bi-house-door nav-bi"></i>
-                <span>Inicio</span>
-            </NavLink>
-
-            <div class="nav-section">Usuarios</div>
-
-            <NavLink href="/admin/socios">
-                <i class="bi bi-people nav-bi"></i>
-                <span>Socios</span>
-            </NavLink>
-
-            <NavLink href="/admin/entrenadores">
-                <i class="bi bi-person-badge nav-bi"></i>
-                <span>Entrenadores</span>
-            </NavLink>
-
-            <NavLink href="/admin/administradores">
-                <i class="bi bi-person-workspace nav-bi"></i>
-                <span>Administradores</span>
-            </NavLink>
-
-            <div class="nav-section">Membresías</div>
-
-            <NavLink href="/admin/membresias">
-                <i class="bi bi-gem nav-bi"></i>
-                <span>Planes de Membresía</span>
-            </NavLink>
-
-            <NavLink href="/admin/suscripciones">
-                <i class="bi bi-card-checklist nav-bi"></i>
-                <span>Suscripciones Activas</span>
-            </NavLink>
-
-            <div class="nav-section">Operaciones</div>
-
-            <NavLink href="/admin/clases">
-                <i class="bi bi-fire nav-bi"></i>
-                <span>Clases</span>
-            </NavLink>
-
-            <NavLink href="/admin/sesiones">
-                <i class="bi bi-calendar-check nav-bi"></i>
-                <span>Sesiones</span>
-            </NavLink>
-
-            <NavLink href="/admin/reservas">
-                <i class="bi bi-clipboard-check nav-bi"></i>
-                <span>Reservas</span>
-            </NavLink>
-
-            <NavLink href="/admin/pagos">
-                <i class="bi bi-cash-coin nav-bi"></i>
-                <span>Pagos</span>
-            </NavLink>
-
-            <div class="nav-section">Infraestructura</div>
-
-            <NavLink href="/admin/salones">
-                <i class="bi bi-building nav-bi"></i>
-                <span>Salones</span>
-            </NavLink>
-
-            <div class="nav-section">Análisis</div>
-
-            <NavLink href="/admin/reportes">
-                <i class="bi bi-bar-chart-line nav-bi"></i>
-                <span>Reportes</span>
-            </NavLink>
-
-            <div class="nav-section">Cuenta</div>
-
-            <NavLink href="/admin/perfil">
-                <i class="bi bi-person-circle nav-bi"></i>
-                <span>Mi Perfil</span>
-            </NavLink>
-
-        </nav>
-
-        <!-- PERFIL ABAJO -->
-        <div class="admin-bottom">
-            <div class="admin-profile">
-                <div class="profile-avatar">
-                    @(Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
-                        ? Session.Nombres[0].ToString()
-                        : "A")
-                </div>
-
-                <div class="profile-info">
-                    <strong>@(Session.EstaAutenticado ? Session.Nombres : "Administrador")</strong>
-                    <span>@(Session.EstaAutenticado ? Session.Rol : "admin@gigachad.com")</span>
-                </div>
+            <!-- LOGO -->
+            <div class="admin-logo admin-logo-image-box">
+                <img src="/img/logo-gigachad-sidebar.png"
+                     alt="GigaChad"
+                     class="admin-brand-logo" />
             </div>
 
-            <button class="admin-logout" @onclick="CerrarSesion">
-                <i class="bi bi-box-arrow-left nav-bi"></i>
-                <span>Cerrar Sesión</span>
-            </button>
-        </div>
+            <!-- MENÚ -->
+            <nav class="admin-nav">
 
-    </aside>
+                <NavLink href="/admin/inicio" Match="NavLinkMatch.All">
+                    <i class="bi bi-house-door nav-bi"></i>
+                    <span>Inicio</span>
+                </NavLink>
 
-    <!-- CONTENIDO -->
-    <div class="admin-content-area">
+                <div class="nav-section">Usuarios</div>
 
-        <header class="entrenador-topbar">
-            <div></div>
+                <NavLink href="/admin/socios">
+                    <i class="bi bi-people nav-bi"></i>
+                    <span>Socios</span>
+                </NavLink>
 
-            <div class="topbar-actions">
-                <!-- Espacio libre en topbar para Admin -->
+                <NavLink href="/admin/entrenadores">
+                    <i class="bi bi-person-badge nav-bi"></i>
+                    <span>Entrenadores</span>
+                </NavLink>
 
-                <button class="topbar-btn topbar-logout" title="Salir" @onclick="CerrarSesion">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Salir</span>
+                <NavLink href="/admin/administradores">
+                    <i class="bi bi-person-workspace nav-bi"></i>
+                    <span>Administradores</span>
+                </NavLink>
+
+                <div class="nav-section">Membresías</div>
+
+                <NavLink href="/admin/membresias">
+                    <i class="bi bi-gem nav-bi"></i>
+                    <span>Planes de Membresía</span>
+                </NavLink>
+
+                <NavLink href="/admin/suscripciones">
+                    <i class="bi bi-card-checklist nav-bi"></i>
+                    <span>Suscripciones Activas</span>
+                </NavLink>
+
+                <div class="nav-section">Operaciones</div>
+
+                <NavLink href="/admin/clases">
+                    <i class="bi bi-fire nav-bi"></i>
+                    <span>Clases</span>
+                </NavLink>
+
+                <NavLink href="/admin/sesiones">
+                    <i class="bi bi-calendar-check nav-bi"></i>
+                    <span>Sesiones</span>
+                </NavLink>
+
+                <NavLink href="/admin/reservas">
+                    <i class="bi bi-clipboard-check nav-bi"></i>
+                    <span>Reservas</span>
+                </NavLink>
+
+                <NavLink href="/admin/pagos">
+                    <i class="bi bi-cash-coin nav-bi"></i>
+                    <span>Pagos</span>
+                </NavLink>
+
+                <div class="nav-section">Infraestructura</div>
+
+                <NavLink href="/admin/salones">
+                    <i class="bi bi-building nav-bi"></i>
+                    <span>Salones</span>
+                </NavLink>
+
+                <div class="nav-section">Análisis</div>
+
+                <NavLink href="/admin/reportes">
+                    <i class="bi bi-bar-chart-line nav-bi"></i>
+                    <span>Reportes</span>
+                </NavLink>
+
+                <div class="nav-section">Cuenta</div>
+
+                <NavLink href="/admin/perfil">
+                    <i class="bi bi-person-circle nav-bi"></i>
+                    <span>Mi Perfil</span>
+                </NavLink>
+
+            </nav>
+
+            <!-- PERFIL ABAJO -->
+            <div class="admin-bottom">
+                <div class="admin-profile">
+                    <div class="profile-avatar">
+                        @(Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
+                            ? Session.Nombres[0].ToString()
+                            : "A")
+                    </div>
+
+                    <div class="profile-info">
+                        <strong>@(Session.EstaAutenticado ? Session.Nombres : "Administrador")</strong>
+                        <span>@(Session.EstaAutenticado ? Session.Rol : "admin@gigachad.com")</span>
+                    </div>
+                </div>
+
+                <button class="admin-logout" @onclick="CerrarSesion">
+                    <i class="bi bi-box-arrow-left nav-bi"></i>
+                    <span>Cerrar Sesión</span>
                 </button>
             </div>
-        </header>
 
-        <main class="admin-main">
-            @Body
-        </main>
+        </aside>
+
+        <!-- CONTENIDO -->
+        <div class="admin-content-area">
+
+            <header class="entrenador-topbar">
+                <div></div>
+
+                <div class="topbar-actions">
+                    <!-- Espacio libre en topbar para Admin -->
+
+                    <button class="topbar-btn topbar-logout" title="Salir" @onclick="CerrarSesion">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Salir</span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="admin-main">
+                @Body
+            </main>
+
+        </div>
 
     </div>
 
-</div>
-
-@if (ToggleSvc.Visible)
+    @if (ToggleSvc.Visible)
+    {
+        <AppAdmins />
+    }
+}
+else
 {
-    <AppAdmins />
+    <div class="loading-overlay">
+        <p>Verificando permisos...</p>
+    </div>
 }
 
 @code {
@@ -163,6 +172,11 @@
         if (firstRender)
         {
             await Session.RestaurarDesdeStorageAsync(SessionStorage);
+            if (!Session.EstaAutenticado || !Session.EsAdmin)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
             StateHasChanged();
         }
     }

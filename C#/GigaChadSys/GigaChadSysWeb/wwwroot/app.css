@@ -13575,3 +13575,5 @@ h1:focus {
             justify-content: center;
         }
     }
+.loading-overlay { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #0D0D0D; color: #E53935; font-weight: 800; font-size: 1.2rem; }
+
