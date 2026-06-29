@@ -1,11 +1,11 @@
-@page "/admin/membresias/basic/editar"
+@page "/admin/membresias/basic/editar/{IdParam:int}"
 @layout AdminLayout
 @rendermode InteractiveServer
 
 @using System.Globalization
-@using System.Net.Http.Json
-@using System.Text.Json
-@inject HttpClient Http
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject MembresiaBasicServicio BasicService
 @inject NavigationManager Nav
 
 <section class="membership-edit-page">
@@ -556,11 +556,14 @@
         }
 </style>
 
-@code {
-    private const string Endpoint = "MembresiaBasicRS";
-    private const int IdPorDefecto = 1;
+@page "/admin/membresias/editar/{IdParam:int}"
+@inject MembresiaBasicServicio BasicService
+@inject NavigationManager Nav
 
-    private int IdMembresia = IdPorDefecto;
+@code {
+    [Parameter]
+    public int IdParam { get; set; }
+
     private string NombrePlan = "Membresía Basic";
     private decimal PrecioMensual = 79;
     private bool Activo = true;
@@ -583,11 +586,16 @@
 
         try
         {
-            bool cargado = await IntentarCargarPorId();
-
-            if (!cargado)
+            var dto = await BasicService.ObtenerPorIdAsync(IdParam);
+            if (dto == null)
             {
-                await IntentarCargarPorLista();
+                MostrarError("No se encontró el plan especificado.");
+            }
+            else
+            {
+                NombrePlan = dto.Nombre ?? "Membresía Basic";
+                PrecioMensual = (decimal)dto.CostoMantenimientoMensual;
+                Activo = dto.Activa;
             }
         }
         catch (Exception ex)
@@ -598,78 +606,6 @@
         {
             Cargando = false;
         }
-    }
-
-    private async Task<bool> IntentarCargarPorId()
-    {
-        var response = await Http.GetAsync($"{Endpoint}/{IdPorDefecto}");
-
-        if (!response.IsSuccessStatusCode)
-            return false;
-
-        var json = await response.Content.ReadAsStringAsync();
-
-        if (string.IsNullOrWhiteSpace(json) || json.TrimStart().StartsWith("<"))
-            return false;
-
-        using var doc = JsonDocument.Parse(json);
-        CargarDesdeJson(doc.RootElement);
-        return true;
-    }
-
-    private async Task<bool> IntentarCargarPorLista()
-    {
-        var response = await Http.GetAsync(Endpoint);
-
-        if (!response.IsSuccessStatusCode)
-            return false;
-
-        var json = await response.Content.ReadAsStringAsync();
-
-        if (string.IsNullOrWhiteSpace(json) || json.TrimStart().StartsWith("<"))
-            return false;
-
-        using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-
-        if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 0)
-        {
-            CargarDesdeJson(root[0]);
-            return true;
-        }
-
-        if (root.ValueKind == JsonValueKind.Object)
-        {
-            CargarDesdeJson(root);
-            return true;
-        }
-
-        return false;
-    }
-
-    private void CargarDesdeJson(JsonElement item)
-    {
-        IdMembresia = LeerEntero(item, IdPorDefecto,
-            "membresia_ID",
-            "membresiaId",
-            "idMembresia",
-            "idMembresiaBasic",
-            "id");
-
-        NombrePlan = LeerTexto(item, "Membresía Basic",
-            "nombrePlan",
-            "nombre",
-            "plan");
-
-        PrecioMensual = LeerDecimal(item, 79,
-            "costoMantenimientoMensual",
-            "monto",
-            "precio",
-            "precioMensual");
-
-        Activo = LeerBooleano(item, true,
-            "activo",
-            "active");
     }
 
     private void CambiarNombrePlan(ChangeEventArgs e)
@@ -719,64 +655,30 @@
 
         try
         {
-            var payload = new Dictionary<string, object?>
+            var dto = new MembresiaBasicDTO
             {
-                ["membresia_ID"] = IdMembresia,
-                ["idMembresia"] = IdMembresia,
-                ["idMembresiaBasic"] = IdMembresia,
-                ["nombrePlan"] = NombrePlan.Trim(),
-                ["costoMantenimientoMensual"] = PrecioMensual,
-                ["activo"] = Activo,
-                ["active"] = Activo
+                IdMembresia = IdParam,
+                Nombre = NombrePlan.Trim(),
+                CostoMantenimientoMensual = (double)PrecioMensual,
+                Activa = Activo
             };
 
-            var response = await Http.PutAsJsonAsync($"{Endpoint}/{IdMembresia}", payload);
-            string respuesta = await LeerRespuesta(response);
+            var respuesta = await BasicService.ActualizarAsync(IdParam, dto);
 
-            if (response.IsSuccessStatusCode)
+            if (!respuesta.StartsWith("Error") && !respuesta.ToLower().Contains("error"))
             {
-                MostrarExito(string.IsNullOrWhiteSpace(respuesta)
-                    ? "Membresía Basic actualizada correctamente."
-                    : respuesta);
-
-                await Task.Delay(700);
+                MostrarExito("Membresía Basic actualizada correctamente.");
+                await Task.Delay(1500);
                 Nav.NavigateTo("/admin/membresias");
             }
             else
             {
-                MostrarError(string.IsNullOrWhiteSpace(respuesta)
-                    ? "Error al actualizar Membresía Basic."
-                    : respuesta);
+                MostrarError(respuesta);
             }
         }
         catch (Exception ex)
         {
             MostrarError("Error al guardar cambios: " + ex.Message);
-        }
-    }
-
-    private static async Task<string> LeerRespuesta(HttpResponseMessage response)
-    {
-        string contenido = await response.Content.ReadAsStringAsync();
-
-        if (string.IsNullOrWhiteSpace(contenido))
-            return "";
-
-        if (contenido.TrimStart().StartsWith("<"))
-            return contenido;
-
-        try
-        {
-            using var doc = JsonDocument.Parse(contenido);
-
-            if (doc.RootElement.TryGetProperty("mensaje", out var mensaje))
-                return mensaje.GetString() ?? "";
-
-            return contenido;
-        }
-        catch
-        {
-            return contenido;
         }
     }
 

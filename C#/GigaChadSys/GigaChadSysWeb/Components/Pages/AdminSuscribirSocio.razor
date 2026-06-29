@@ -1,4 +1,4 @@
-@page "/admin/suscripciones/nuevo/{PlanTipo}"
+@page "/admin/suscripciones/nuevo/{PlanTipo}/{IdPlanParam:int}"
 @using System.Globalization
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
@@ -208,6 +208,9 @@
 @code {
     [Parameter]
     public string PlanTipo { get; set; } = "basic";
+    
+    [Parameter]
+    public int IdPlanParam { get; set; }
 
     private string TextoBusqueda { get; set; } = "";
 
@@ -273,25 +276,24 @@
 
     protected override async Task OnInitializedAsync()
     {
+        IdPlanSeleccionado = IdPlanParam;
+        
         if (PlanTipo.ToLower() == "black")
         {
-            var planes = await MembresiaBlackService.ListarMembresiasBlackAsync();
-            var plan = planes.FirstOrDefault();
+            var plan = await MembresiaBlackService.ObtenerPorIdAsync(IdPlanParam);
 
             if (plan != null)
             {
-                IdPlanSeleccionado = plan.IdMembresiaBlack;
                 PrecioPlan = (plan.CostoMantenimientoAnual / 12.0).ToString("0.00");
+                // TODO: we could map specific features if the DB provides them, for now fallback to defaults
             }
         }
         else
         {
-            var planes = await MembresiaBasicService.ListarMembresiasBasicAsync();
-            var plan = planes.FirstOrDefault();
+            var plan = await MembresiaBasicService.ObtenerPorIdAsync(IdPlanParam);
 
             if (plan != null)
             {
-                IdPlanSeleccionado = plan.IdMembresiaBasic;
                 PrecioPlan = plan.CostoMantenimientoMensual.ToString("0.00");
             }
         }
