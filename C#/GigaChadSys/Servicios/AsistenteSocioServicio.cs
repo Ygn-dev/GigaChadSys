@@ -141,6 +141,16 @@ public class AsistenteSocioServicio
             _esperandoSeleccionReserva = false;
         }
 
+        if (EsSolicitudCancelacion(texto))
+        {
+            _esperandoSeleccionReserva = false;
+        }
+
+        if (EsSolicitudReservaNueva(texto))
+        {
+            _esperandoSeleccionCancelacion = false;
+        }
+
         if (_esperandoSeleccionCancelacion || EsSolicitudCancelacion(texto))
         {
             string respuestaCancelacion = await IntentarCancelarReservaAsync(texto);
@@ -581,7 +591,7 @@ public class AsistenteSocioServicio
 
         if (sesionSeleccionada.CuposDisponibles <= 0)
         {
-            _esperandoSeleccionReserva = true;
+            _esperandoSeleccionReserva = false;
             return "Esa clase esta llena y no puedo registrarte desde el bot.";
         }
 
