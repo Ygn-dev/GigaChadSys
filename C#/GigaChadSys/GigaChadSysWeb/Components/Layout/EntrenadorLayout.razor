@@ -7,86 +7,108 @@
 @inject ProtectedSessionStorage SessionStorage
 @implements IDisposable
 
-<div class="role-shell entrenador-shell">
-    <aside class="role-sidebar entrenador-sidebar">
+@if (Session.EstaAutenticado && Session.EsEntrenador)
+{
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
 
-        <div class="role-logo">
-            <img src="/img/logo-gigachad-sidebar.png"
-                 alt="GigaChad"
-                 class="role-brand-logo" />
-        </div>
-
-        <nav class="role-nav entrenador-nav">
-
-            <NavLink href="/entrenador/inicio" Match="NavLinkMatch.All">
-                <i class="bi bi-house-door role-nav-icon"></i>
-                <span>Inicio</span>
-            </NavLink>
-
-            <NavLink href="/entrenador/horario">
-                <i class="bi bi-calendar-week role-nav-icon"></i>
-                <span>Mi Horario / Sesiones</span>
-            </NavLink>
-
-            <NavLink href="/entrenador/pagos">
-                <i class="bi bi-cash-coin role-nav-icon"></i>
-                <span>Mis Pagos</span>
-            </NavLink>
-
-            <NavLink href="/entrenador/perfil">
-                <i class="bi bi-person-circle role-nav-icon"></i>
-                <span>Mi Perfil</span>
-            </NavLink>
-
-        </nav>
-
-        <div class="role-bottom entrenador-bottom">
-            <div class="role-profile entrenador-profile">
-                <div class="profile-avatar">
-                    @(Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
-                        ? Session.Nombres[0].ToString()
-                        : "E")
-                </div>
-
-                <div class="role-profile-text">
-                    <strong>@(Session.EstaAutenticado ? Session.Nombres : "Entrenador")</strong>
-                    <span>@(Session.EstaAutenticado ? Session.Rol : "Staff")</span>
-                </div>
+            <div class="admin-logo admin-logo-image-box">
+                <img src="/img/logo-gigachad-sidebar.png"
+                     alt="GigaChad"
+                     class="admin-brand-logo" />
             </div>
 
-            <button class="role-logout" title="Salir" @onclick="CerrarSesion">
-                <i class="bi bi-box-arrow-left role-nav-icon"></i>
-                <span>Cerrar Sesión</span>
-            </button>
-        </div>
+            <nav class="entrenador-nav">
 
-    </aside>
+                <NavLink href="/entrenador/inicio" Match="NavLinkMatch.All">
+                    <i class="bi bi-house-door nav-bi"></i>
+                    <span>Inicio</span>
+                </NavLink>
 
-    <div class="role-content entrenador-content-area">
+                <div class="nav-section">Clases y Horarios</div>
 
-        <header class="role-topbar entrenador-topbar">
-            <div></div>
+                <NavLink href="/entrenador/horario">
+                    <i class="bi bi-calendar3 nav-bi"></i>
+                    <span>Mi Horario</span>
+                </NavLink>
 
-            <div class="topbar-actions">
-                <!-- Espacio libre en topbar para Entrenador -->
+                <div class="nav-section">Mis Pagos</div>
 
-                <button class="topbar-btn topbar-logout" title="Salir" @onclick="CerrarSesion">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Salir</span>
+                <NavLink href="/entrenador/pagos">
+                    <i class="bi bi-cash-stack nav-bi"></i>
+                    <span>Historial de Pagos</span>
+                </NavLink>
+
+                <div class="nav-section">Cuenta</div>
+
+                <NavLink href="/entrenador/perfil">
+                    <i class="bi bi-person-circle nav-bi"></i>
+                    <span>Mi Perfil</span>
+                </NavLink>
+
+            </nav>
+
+            <div class="entrenador-bottom">
+                <div class="entrenador-profile">
+                    <div class="profile-avatar">
+                        @(Session.EstaAutenticado && !string.IsNullOrWhiteSpace(Session.Nombres)
+                            ? Session.Nombres[0].ToString()
+                            : "E")
+                    </div>
+
+                    <div class="profile-info">
+                        <strong>@(Session.EstaAutenticado ? Session.Nombres : "Entrenador")</strong>
+                        <span>Instructor</span>
+                    </div>
+                </div>
+
+                <button class="entrenador-logout" @onclick="CerrarSesion">
+                    <i class="bi bi-box-arrow-left nav-bi"></i>
+                    <span>Cerrar Sesión</span>
                 </button>
             </div>
-        </header>
 
-        <main class="role-main entrenador-main">
-            @Body
-        </main>
+        </aside>
+
+        <div class="entrenador-content-area">
+
+            <header class="entrenador-topbar">
+                <div class="topbar-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Buscar clases, alumnos..." />
+                </div>
+
+                <div class="topbar-actions">
+                    <button class="topbar-btn topbar-notif">
+                        <i class="bi bi-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+
+                    <button class="topbar-btn topbar-logout" title="Salir" @onclick="CerrarSesion">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Salir</span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="entrenador-main">
+                @Body
+            </main>
+
+        </div>
 
     </div>
-</div>
 
-@if (ToggleSvc.Visible)
+    @if (ToggleSvc.Visible)
+    {
+        <AppAdmins />
+    }
+}
+else
 {
-    <AppAdmins />
+    <div class="loading-overlay">
+        <p>Verificando permisos...</p>
+    </div>
 }
 
 @code {
@@ -101,6 +123,11 @@
         if (firstRender)
         {
             await Session.RestaurarDesdeStorageAsync(SessionStorage);
+            if (!Session.EstaAutenticado || !Session.EsEntrenador)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
             StateHasChanged();
         }
     }
