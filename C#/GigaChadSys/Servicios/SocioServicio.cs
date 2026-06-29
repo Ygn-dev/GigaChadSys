@@ -45,8 +45,7 @@ public class SocioServicio
     public async Task<string> RegistrarAsync(SocioDTO socio)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, socio);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar socio.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar socio.");
     }
 
     /// <summary>
@@ -55,8 +54,7 @@ public class SocioServicio
     public async Task<string> ActualizarAsync(int idUsuario, SocioDTO socio)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", socio);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar socio.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar socio.");
     }
 
     /// <summary>
@@ -65,7 +63,6 @@ public class SocioServicio
     public async Task<string> EliminarAsync(int idUsuario)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idUsuario}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar socio.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar socio.");
     }
 }

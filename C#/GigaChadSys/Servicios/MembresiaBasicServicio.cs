@@ -43,8 +43,7 @@ public class MembresiaBasicServicio
     public async Task<string> RegistrarAsync(MembresiaBasicDTO membresia)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, membresia);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar membresía Basic.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar membresía Basic.");
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class MembresiaBasicServicio
     public async Task<string> ActualizarAsync(int idMembresia, MembresiaBasicDTO membresia)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idMembresia}", membresia);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar membresía Basic.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar membresía Basic.");
     }
 
     /// <summary>
@@ -63,7 +61,6 @@ public class MembresiaBasicServicio
     public async Task<string> EliminarAsync(int idMembresia)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idMembresia}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar membresía Basic.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar membresía Basic.");
     }
 }

@@ -43,8 +43,7 @@ public class EntrenadorServicio
     public async Task<string> RegistrarAsync(EntrenadorDTO entrenador)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, entrenador);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar entrenador.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar entrenador.");
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class EntrenadorServicio
     public async Task<string> ActualizarAsync(int idUsuario, EntrenadorDTO entrenador)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", entrenador);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar entrenador.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar entrenador.");
     }
 
     /// <summary>
@@ -63,7 +61,6 @@ public class EntrenadorServicio
     public async Task<string> EliminarAsync(int idUsuario)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idUsuario}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar entrenador.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar entrenador.");
     }
 }

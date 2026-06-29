@@ -1,0 +1,272 @@
+@page "/admin/membresias/nueva"
+@layout AdminLayout
+@rendermode InteractiveServer
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject MembresiaBasicServicio BasicService
+@inject MembresiaBlackServicio BlackService
+@inject NavigationManager Nav
+
+<section class="trainer-form-page">
+
+    <div class="trainer-breadcrumb">
+        <a href="/admin/inicio">Inicio</a>
+        <span>/</span>
+        <a href="/admin/membresias">Membresías</a>
+        <span>/</span>
+        <strong>Nueva Membresía</strong>
+    </div>
+
+    <div class="trainer-form-title">
+        <h1>Registrar Nuevo Plan de Membresía</h1>
+        <p>Crea un nuevo plan Basic o Black para el gimnasio.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    {
+        <div class="@ClaseMensajeFormulario">
+            @MensajeFormulario
+        </div>
+    }
+
+    <div class="trainer-section">
+        <h2>Tipo de Membresía</h2>
+
+        <div class="trainer-grid">
+            <div class="trainer-field">
+                <label>Selecciona el tipo de plan <span>*</span></label>
+                <select value="@TipoPlanValor" @onchange="CambiarTipoPlan">
+                    <option value="Basic">Membresía Basic</option>
+                    <option value="Black">Membresía Black</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Datos Generales</h2>
+
+        <div class="trainer-grid">
+            <div class="trainer-field">
+                <label>Nombre del plan <span>*</span></label>
+                <input type="text"
+                       autocomplete="off"
+                       placeholder="Ej: Plan Estudiante"
+                       value="@NombreValor"
+                       @oninput="CambiarNombre" />
+            </div>
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Configuración de Costos y Beneficios</h2>
+
+        <div class="trainer-grid">
+            @if (TipoPlanValor == "Basic")
+            {
+                <div class="trainer-field">
+                    <label>Costo Mensual (S/) <span>*</span></label>
+                    <input type="number"
+                           min="0"
+                           step="0.01"
+                           autocomplete="off"
+                           placeholder="80.00"
+                           value="@CostoMensualValor"
+                           @oninput="CambiarCostoMensual" />
+                </div>
+            }
+            else
+            {
+                <div class="trainer-field">
+                    <label>Costo Anual (S/) <span>*</span></label>
+                    <input type="number"
+                           min="0"
+                           step="0.01"
+                           autocomplete="off"
+                           placeholder="1200.00"
+                           value="@CostoAnualValor"
+                           @oninput="CambiarCostoAnual" />
+                </div>
+
+                <div class="trainer-field">
+                    <label>Invitados por mes <span>*</span></label>
+                    <input type="number"
+                           min="0"
+                           autocomplete="off"
+                           placeholder="2"
+                           value="@InvitadosValor"
+                           @oninput="CambiarInvitados" />
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Estado Inicial</h2>
+
+        <div class="trainer-radio-row">
+            <label>
+                <input type="radio"
+                       name="estadoMembresia"
+                       checked="@MembresiaActiva"
+                       @onclick="ActivarMembresia" />
+                Activa
+            </label>
+
+            <label>
+                <input type="radio"
+                       name="estadoMembresia"
+                       checked="@(!MembresiaActiva)"
+                       @onclick="DesactivarMembresia" />
+                Inactiva
+            </label>
+        </div>
+    </div>
+
+    <div class="trainer-actions">
+        <button type="button"
+                class="trainer-save-button"
+                @onclick="RegistrarMembresia">
+            ✓ Registrar Membresía
+        </button>
+
+        <button type="button"
+                class="trainer-cancel-button"
+                @onclick="LimpiarFormulario">
+            × Cancelar
+        </button>
+
+        <a class="trainer-return-link" href="/admin/membresias">
+            ← Volver al listado
+        </a>
+    </div>
+
+</section>
+
+@code {
+    private string TipoPlanValor { get; set; } = "Basic";
+    private string NombreValor { get; set; } = "";
+    private string CostoMensualValor { get; set; } = "";
+    private string CostoAnualValor { get; set; } = "";
+    private string InvitadosValor { get; set; } = "2";
+    private bool MembresiaActiva { get; set; } = true;
+
+    private string MensajeFormulario { get; set; } = "";
+    private string ClaseMensajeFormulario { get; set; } = "";
+
+    private void CambiarTipoPlan(ChangeEventArgs e)
+    {
+        TipoPlanValor = e.Value?.ToString() ?? "Basic";
+    }
+
+    private void CambiarNombre(ChangeEventArgs e) => NombreValor = e.Value?.ToString() ?? "";
+    private void CambiarCostoMensual(ChangeEventArgs e) => CostoMensualValor = e.Value?.ToString() ?? "";
+    private void CambiarCostoAnual(ChangeEventArgs e) => CostoAnualValor = e.Value?.ToString() ?? "";
+    private void CambiarInvitados(ChangeEventArgs e) => InvitadosValor = e.Value?.ToString() ?? "";
+
+    private void ActivarMembresia() => MembresiaActiva = true;
+    private void DesactivarMembresia() => MembresiaActiva = false;
+
+    private async Task RegistrarMembresia()
+    {
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+
+        if (string.IsNullOrWhiteSpace(NombreValor))
+        {
+            MostrarError("El nombre del plan es obligatorio.");
+            return;
+        }
+
+        string resultado = "";
+
+        if (TipoPlanValor == "Basic")
+        {
+            if (string.IsNullOrWhiteSpace(CostoMensualValor))
+            {
+                MostrarError("El costo mensual es obligatorio.");
+                return;
+            }
+
+            if (!decimal.TryParse(CostoMensualValor, out decimal costoM) || costoM < 0)
+            {
+                MostrarError("El costo mensual debe ser un número válido mayor o igual a cero.");
+                return;
+            }
+
+            var nuevaBasic = new MembresiaBasicDTO
+            {
+                Nombre = NombreValor.Trim(),
+                Activa = MembresiaActiva,
+                CostoMantenimientoMensual = (double)costoM
+            };
+
+            resultado = await BasicService.RegistrarAsync(nuevaBasic);
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(CostoAnualValor))
+            {
+                MostrarError("El costo anual es obligatorio.");
+                return;
+            }
+
+            if (!decimal.TryParse(CostoAnualValor, out decimal costoA) || costoA < 0)
+            {
+                MostrarError("El costo anual debe ser un número válido mayor o igual a cero.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(InvitadosValor) || !int.TryParse(InvitadosValor, out int invitados) || invitados < 0)
+            {
+                MostrarError("La cantidad de invitados debe ser un número válido mayor o igual a cero.");
+                return;
+            }
+
+            var nuevaBlack = new MembresiaBlackDTO
+            {
+                Nombre = NombreValor.Trim(),
+                Activa = MembresiaActiva,
+                CostoMantenimientoAnual = (double)costoA,
+                CantidadInvitadosPorMes = invitados
+            };
+
+            resultado = await BlackService.RegistrarAsync(nuevaBlack);
+        }
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MostrarExito("Membresía registrada correctamente.");
+            await Task.Delay(1500);
+            Nav.NavigateTo("/admin/membresias");
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message error";
+    }
+
+    private void MostrarExito(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message success";
+    }
+
+    private void LimpiarFormulario()
+    {
+        NombreValor = "";
+        CostoMensualValor = "";
+        CostoAnualValor = "";
+        InvitadosValor = "2";
+        MembresiaActiva = true;
+
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+    }
+}

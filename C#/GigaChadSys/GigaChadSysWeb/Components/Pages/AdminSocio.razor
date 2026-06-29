@@ -162,6 +162,20 @@
                                             @onclick="() => AbrirModalEditar(socio)">
                                         <i class="bi bi-pencil-fill"></i>
                                     </button>
+                                    @if (socio.Activo)
+                                    {
+                                        <button class="btn-s-action" title="Desactivar" style="color: #dc3545;"
+                                                @onclick="() => CambiarEstadoSocio(socio, false)">
+                                            <i class="bi bi-person-x-fill"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-s-action" title="Activar" style="color: #28a745;"
+                                                @onclick="() => CambiarEstadoSocio(socio, true)">
+                                            <i class="bi bi-person-check-fill"></i>
+                                        </button>
+                                    }
                                 </div>
                             </td>
                         </tr>
@@ -326,6 +340,22 @@
     private void AbrirModalEditar(SocioDTO s)
     {
         Nav.NavigateTo($"/admin/socios/editar/{s.IdUsuario}");
+    }
+
+    private async Task CambiarEstadoSocio(SocioDTO socio, bool nuevoEstado)
+    {
+        socio.Activo = nuevoEstado;
+        var resultado = await SocioService.ActualizarAsync(socio.IdUsuario, socio);
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MostrarToast("✅", $"Socio {(nuevoEstado ? "activado" : "desactivado")} correctamente.");
+        }
+        else
+        {
+            MostrarToast("❌", resultado);
+            socio.Activo = !nuevoEstado; // Revertir visualmente si falló
+        }
     }
 
     // ── Toast ──

@@ -9,8 +9,13 @@
 <section class="membership-page">
 
     <div class="membership-header">
-        <h1>Planes de Membresía</h1>
-        <p>Gestiona los planes disponibles para los socios.</p>
+        <div>
+            <h1>Planes de Membresía</h1>
+            <p>Gestiona los planes disponibles para los socios.</p>
+        </div>
+        <a class="new-button" href="/admin/membresias/nueva">
+            + Nuevo Plan
+        </a>
     </div>
 
     @if (Cargando)
@@ -31,118 +36,118 @@
     {
         <div class="membership-grid">
 
-            <div class="membership-card">
-                <div class="membership-top">
-                    <div class="membership-title-block">
-                        <div class="membership-icon">◎</div>
-                        <div>
-                            <h2>@NombreBasic</h2>
+            @foreach (var basic in MembresiasBasic)
+            {
+                <div class="membership-card">
+                    <div class="membership-top">
+                        <div class="membership-title-block">
+                            <div class="membership-icon">◎</div>
+                            <div>
+                                <h2>@GetNombre(basic.Nombre, "Basic")</h2>
 
-                            @if (BasicActiva)
-                            {
-                                <span class="membership-status">Activa</span>
-                            }
-                            else
-                            {
-                                <span class="membership-status inactive">Inactiva</span>
-                            }
+                                @if (basic.Activa)
+                                {
+                                    <span class="membership-status">Activa</span>
+                                }
+                                else
+                                {
+                                    <span class="membership-status inactive">Inactiva</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="membership-price">
+                            <strong>S/ @Math.Round((decimal)basic.CostoMantenimientoMensual, 0).ToString("0")</strong>
+                            <span>/mes</span>
                         </div>
                     </div>
 
-                    <div class="membership-price">
-                        <strong>S/ @PrecioBasicTexto</strong>
-                        <span>/mes</span>
+                    <div class="membership-section">
+                        <h3>Beneficios</h3>
+                        <ul>
+                            <li>Acceso a sala de musculación</li>
+                            <li>Acceso a cardio</li>
+                            <li>Vestuario incluido</li>
+                            <li>App móvil</li>
+                        </ul>
                     </div>
-                </div>
 
-                <div class="membership-section">
-                    <h3>Beneficios</h3>
-
-                    <ul>
-                        <li>Acceso a sala de musculación</li>
-                        <li>Acceso a cardio</li>
-                        <li>Vestuario incluido</li>
-                        <li>App móvil</li>
-                    </ul>
-                </div>
-
-                <div class="membership-section">
-                    <h3>Características</h3>
-
-                    <div class="membership-tags">
-                        <span>Sin clases grupales</span>
-                        <span>Acceso limitado a horario diurno</span>
-                        <span>Sin zona de spa</span>
-                    </div>
-                </div>
-
-                <div class="membership-actions">
-                    <a class="membership-button-secondary" href="/admin/membresias/basic/editar">
-                        ✎ Editar Plan
-                    </a>
-
-                    <a class="membership-button-primary" href="/admin/suscripciones/nuevo/basic">
-                        ♙ Suscribir Socio
-                    </a>
-                </div>
-            </div>
-
-            <div class="membership-card">
-                <div class="membership-top">
-                    <div class="membership-title-block">
-                        <div class="membership-icon black">♛</div>
-                        <div>
-                            <h2>@NombreBlack</h2>
-
-                            @if (BlackActiva)
-                            {
-                                <span class="membership-status">Activa</span>
-                            }
-                            else
-                            {
-                                <span class="membership-status inactive">Inactiva</span>
-                            }
+                    <div class="membership-section">
+                        <h3>Características</h3>
+                        <div class="membership-tags">
+                            <span>Sin clases grupales</span>
+                            <span>Acceso limitado a horario diurno</span>
+                            <span>Sin zona de spa</span>
                         </div>
                     </div>
 
-                    <div class="membership-price">
-                        <strong>S/ @PrecioBlackTexto</strong>
-                        <span>/mes</span>
+                    <div class="membership-actions">
+                        <a class="membership-button-secondary" href="/admin/membresias/basic/editar/@basic.IdMembresia">
+                            ✎ Editar Plan
+                        </a>
+                        <a class="membership-button-primary" href="/admin/suscripciones/nuevo/basic/@basic.IdMembresia">
+                            ♙ Suscribir Socio
+                        </a>
                     </div>
                 </div>
+            }
 
-                <div class="membership-section">
-                    <h3>Beneficios</h3>
+            @foreach (var black in MembresiasBlack)
+            {
+                <div class="membership-card">
+                    <div class="membership-top">
+                        <div class="membership-title-block">
+                            <div class="membership-icon black">♛</div>
+                            <div>
+                                <h2>@GetNombre(black.Nombre, "Black")</h2>
 
-                    <ul>
-                        <li>Todo lo de Basic</li>
-                        <li>Clases grupales ilimitadas</li>
-                        <li>Acceso 24/7</li>
-                        <li>Zona de spa</li>
-                        <li>Entrenador personal 2x/mes</li>
-                    </ul>
-                </div>
+                                @if (black.Activa)
+                                {
+                                    <span class="membership-status">Activa</span>
+                                }
+                                else
+                                {
+                                    <span class="membership-status inactive">Inactiva</span>
+                                }
+                            </div>
+                        </div>
 
-                <div class="membership-section">
-                    <h3>Características</h3>
+                        <div class="membership-price">
+                            <strong>S/ @Math.Round((decimal)black.CostoMantenimientoAnual / 12m, 0).ToString("0")</strong>
+                            <span>/mes</span>
+                        </div>
+                    </div>
 
-                    <div class="membership-tags">
-                        <span>Acceso total a horarios</span>
-                        <span>Reserva de clases preferencial</span>
-                        <span>Invitados gratuitos @CantidadInvitadosBlack/mes</span>
+                    <div class="membership-section">
+                        <h3>Beneficios</h3>
+                        <ul>
+                            <li>Todo lo de Basic</li>
+                            <li>Clases grupales ilimitadas</li>
+                            <li>Acceso 24/7</li>
+                            <li>Zona de spa</li>
+                            <li>Entrenador personal 2x/mes</li>
+                        </ul>
+                    </div>
+
+                    <div class="membership-section">
+                        <h3>Características</h3>
+                        <div class="membership-tags">
+                            <span>Acceso total a horarios</span>
+                            <span>Reserva de clases preferencial</span>
+                            <span>Invitados gratuitos @black.CantidadInvitadosPorMes/mes</span>
+                        </div>
+                    </div>
+
+                    <div class="membership-actions">
+                        <a class="membership-button-secondary" href="/admin/membresias/black/editar/@black.IdMembresia">
+                            ✎ Editar Plan
+                        </a>
+                        <a class="membership-button-primary" href="/admin/suscripciones/nuevo/black/@black.IdMembresia">
+                            ♙ Suscribir Socio
+                        </a>
                     </div>
                 </div>
-
-                <div class="membership-actions">
-                    <a class="membership-button-secondary" href="/admin/membresias/black/editar">
-                        ✎ Editar Plan
-                    </a>
-
-                    <a class="membership-button-primary" href="/admin/suscripciones/nuevo/black">
-                        ♙ Suscribir Socio
-                    </a>
-                </div>
-            </div>
+            }
 
         </div>
     }
@@ -153,40 +158,16 @@
     private bool Cargando { get; set; } = true;
     private string MensajeError { get; set; } = "";
 
-    private MembresiaBasicDTO? MembresiaBasic { get; set; }
-    private MembresiaBlackDTO? MembresiaBlack { get; set; }
+    private List<MembresiaBasicDTO> MembresiasBasic { get; set; } = new();
+    private List<MembresiaBlackDTO> MembresiasBlack { get; set; } = new();
 
-    private string NombreBasic =>
-        string.IsNullOrWhiteSpace(MembresiaBasic?.Nombre)
-            ? "Membresía Basic"
-            : MembresiaBasic.Nombre.Contains("Membresía", StringComparison.OrdinalIgnoreCase)
-                ? MembresiaBasic.Nombre
-                : $"Membresía {MembresiaBasic.Nombre}";
-
-    private string NombreBlack =>
-        string.IsNullOrWhiteSpace(MembresiaBlack?.Nombre)
-            ? "Membresía Black"
-            : MembresiaBlack.Nombre.Contains("Membresía", StringComparison.OrdinalIgnoreCase)
-                ? MembresiaBlack.Nombre
-                : $"Membresía {MembresiaBlack.Nombre}";
-
-    private bool BasicActiva => MembresiaBasic?.Activa ?? false;
-    private bool BlackActiva => MembresiaBlack?.Activa ?? false;
-
-    private string PrecioBasicTexto =>
-        MembresiaBasic == null
-            ? "—"
-            : Math.Round((decimal)MembresiaBasic.CostoMantenimientoMensual, 0).ToString("0");
-
-    private string PrecioBlackTexto =>
-        MembresiaBlack == null
-            ? "—"
-            : Math.Round((decimal)MembresiaBlack.CostoMantenimientoAnual / 12m, 0).ToString("0");
-
-    private int CantidadInvitadosBlack =>
-        MembresiaBlack?.CantidadInvitadosPorMes > 0
-            ? MembresiaBlack.CantidadInvitadosPorMes
-            : 2;
+    private string GetNombre(string? nombre, string tipo)
+    {
+        if (string.IsNullOrWhiteSpace(nombre)) return $"Membresía {tipo}";
+        return nombre.Contains("Membresía", StringComparison.OrdinalIgnoreCase)
+            ? nombre
+            : $"Membresía {nombre}";
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -203,13 +184,8 @@
             var basics = await BasicService.ListarMembresiasBasicAsync();
             var blacks = await BlackService.ListarMembresiasBlackAsync();
 
-            MembresiaBasic = basics
-                .OrderBy(b => b.IdMembresia)
-                .FirstOrDefault();
-
-            MembresiaBlack = blacks
-                .OrderBy(b => b.IdMembresia)
-                .FirstOrDefault();
+            MembresiasBasic = basics.OrderBy(b => b.IdMembresia).ToList();
+            MembresiasBlack = blacks.OrderBy(b => b.IdMembresia).ToList();
         }
         catch (Exception ex)
         {

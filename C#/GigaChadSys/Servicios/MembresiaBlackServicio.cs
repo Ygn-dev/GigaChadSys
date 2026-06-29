@@ -44,8 +44,7 @@ public class MembresiaBlackServicio
     public async Task<string> RegistrarAsync(MembresiaBlackDTO membresia)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, membresia);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar membresía Black.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar membresía Black.");
     }
 
     /// <summary>
@@ -54,8 +53,7 @@ public class MembresiaBlackServicio
     public async Task<string> ActualizarAsync(int idMembresia, MembresiaBlackDTO membresia)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idMembresia}", membresia);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar membresía Black.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar membresía Black.");
     }
 
     /// <summary>
@@ -64,7 +62,6 @@ public class MembresiaBlackServicio
     public async Task<string> EliminarAsync(int idMembresia)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idMembresia}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar membresía Black.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar membresía Black.");
     }
 }

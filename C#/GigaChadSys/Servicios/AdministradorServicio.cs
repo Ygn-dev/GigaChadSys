@@ -43,8 +43,7 @@ public class AdministradorServicio
     public async Task<string> RegistrarAsync(AdministradorDTO administrador)
     {
         var response = await _httpClient.PostAsJsonAsync(Endpoint, administrador);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al registrar administrador.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al registrar administrador.");
     }
 
     /// <summary>
@@ -53,8 +52,7 @@ public class AdministradorServicio
     public async Task<string> ActualizarAsync(int idUsuario, AdministradorDTO administrador)
     {
         var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{idUsuario}", administrador);
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al actualizar administrador.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al actualizar administrador.");
     }
 
     /// <summary>
@@ -63,7 +61,6 @@ public class AdministradorServicio
     public async Task<string> EliminarAsync(int idUsuario)
     {
         var response = await _httpClient.DeleteAsync($"{Endpoint}/{idUsuario}");
-        var result = await response.Content.ReadFromJsonAsync<MensajeRespuesta>();
-        return result?.Mensaje ?? "Error al eliminar administrador.";
+        return await HttpUtils.LeerMensajeRespuestaAsync(response, "Error al eliminar administrador.");
     }
 }

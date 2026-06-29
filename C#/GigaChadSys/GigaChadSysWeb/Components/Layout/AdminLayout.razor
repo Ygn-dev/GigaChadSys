@@ -37,11 +37,21 @@
                 <span>Entrenadores</span>
             </NavLink>
 
+            <NavLink href="/admin/administradores">
+                <i class="bi bi-person-workspace nav-bi"></i>
+                <span>Administradores</span>
+            </NavLink>
+
             <div class="nav-section">Membresías</div>
 
             <NavLink href="/admin/membresias">
                 <i class="bi bi-gem nav-bi"></i>
-                <span>Membresías</span>
+                <span>Planes de Membresía</span>
+            </NavLink>
+
+            <NavLink href="/admin/suscripciones">
+                <i class="bi bi-card-checklist nav-bi"></i>
+                <span>Suscripciones Activas</span>
             </NavLink>
 
             <div class="nav-section">Operaciones</div>
@@ -119,13 +129,7 @@
             <div></div>
 
             <div class="topbar-actions">
-                <button class="topbar-btn" title="Notificaciones">
-                    <i class="bi bi-bell"></i>
-                </button>
-
-                <button class="topbar-btn" title="Buscar">
-                    <i class="bi bi-search"></i>
-                </button>
+                <!-- Espacio libre en topbar para Admin -->
 
                 <button class="topbar-btn topbar-logout" title="Salir" @onclick="CerrarSesion">
                     <i class="bi bi-box-arrow-right"></i>

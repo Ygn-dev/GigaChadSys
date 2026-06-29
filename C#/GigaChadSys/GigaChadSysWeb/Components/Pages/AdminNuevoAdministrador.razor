@@ -1,0 +1,342 @@
+@page "/admin/administradores/nuevo"
+@layout AdminLayout
+@rendermode InteractiveServer
+@using GigaChadSys.Servicios
+@using GigaChadSys.Servicios.DTO
+@inject AdministradorServicio AdministradorService
+@inject NavigationManager Nav
+
+<section class="trainer-form-page">
+
+    <div class="trainer-breadcrumb">
+        <a href="/admin/inicio">Inicio</a>
+        <span>/</span>
+        <a href="/admin/administradores">Administradores</a>
+        <span>/</span>
+        <strong>Nuevo Administrador</strong>
+    </div>
+
+    <div class="trainer-form-title">
+        <h1>Registrar Nuevo Administrador</h1>
+        <p>Completa la información del personal administrativo del sistema.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(MensajeFormulario))
+    {
+        <div class="@ClaseMensajeFormulario">
+            @MensajeFormulario
+        </div>
+    }
+
+    <div class="trainer-section">
+        <h2>Información Personal</h2>
+
+        <div class="trainer-grid">
+            <div class="trainer-field">
+                <label>DNI <span>*</span></label>
+                <input type="text"
+                       maxlength="8"
+                       autocomplete="off"
+                       placeholder="40567234"
+                       value="@DniValor"
+                       @oninput="CambiarDni" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Fecha de nacimiento <span>*</span></label>
+                <input type="date"
+                       autocomplete="off"
+                       value="@FechaNacimientoValor"
+                       @onchange="CambiarFechaNacimiento" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Nombres <span>*</span></label>
+                <input type="text"
+                       autocomplete="off"
+                       placeholder="Pedro"
+                       value="@NombresValor"
+                       @oninput="CambiarNombres" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Apellido paterno <span>*</span></label>
+                <input type="text"
+                       autocomplete="off"
+                       placeholder="Sánchez"
+                       value="@ApellidoPaternoValor"
+                       @oninput="CambiarApellidoPaterno" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Apellido materno <span>*</span></label>
+                <input type="text"
+                       autocomplete="off"
+                       placeholder="Ramos"
+                       value="@ApellidoMaternoValor"
+                       @oninput="CambiarApellidoMaterno" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Teléfono <span>*</span></label>
+                <input type="text"
+                       maxlength="9"
+                       autocomplete="off"
+                       placeholder="998877666"
+                       value="@TelefonoValor"
+                       @oninput="CambiarTelefono" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Correo electrónico <span>*</span></label>
+                <input type="email"
+                       autocomplete="off"
+                       placeholder="admin@email.com"
+                       value="@CorreoValor"
+                       @oninput="CambiarCorreo" />
+            </div>
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Información Profesional</h2>
+
+        <div class="trainer-grid">
+            <div class="trainer-field">
+                <label>Sede <span>*</span></label>
+                <select value="@SedeValor" @onchange="CambiarSede">
+                    <option value="">Seleccione una sede</option>
+                    <option value="Sede Central">Sede Central</option>
+                    <option value="Sede Norte">Sede Norte</option>
+                    <option value="Sede Sur">Sede Sur</option>
+                </select>
+            </div>
+
+            <div class="trainer-field">
+                <label>Cargo <span>*</span></label>
+                <select value="@CargoValor" @onchange="CambiarCargo">
+                    <option value="">Seleccione un cargo</option>
+                    <option value="Gerente">Gerente</option>
+                    <option value="Coordinador">Coordinador</option>
+                    <option value="Asistente Administrativo">Asistente Administrativo</option>
+                    <option value="Recepcionista">Recepcionista</option>
+                </select>
+            </div>
+
+            <div class="trainer-field">
+                <label>Sueldo mensual <span>*</span></label>
+                <input type="number"
+                       min="0"
+                       step="0.01"
+                       autocomplete="off"
+                       placeholder="4500.00"
+                       value="@SueldoMensualValor"
+                       @oninput="CambiarSueldoMensual" />
+            </div>
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Cuenta de Acceso</h2>
+
+        <div class="trainer-grid">
+            <div class="trainer-field">
+                <label>Contraseña <span>*</span></label>
+                <input type="password"
+                       autocomplete="new-password"
+                       placeholder="Mínimo 6 caracteres"
+                       value="@ContraseniaValor"
+                       @oninput="CambiarContrasenia" />
+            </div>
+
+            <div class="trainer-field">
+                <label>Confirmar contraseña <span>*</span></label>
+                <input type="password"
+                       autocomplete="new-password"
+                       placeholder="Repite la contraseña"
+                       value="@ConfirmarContraseniaValor"
+                       @oninput="CambiarConfirmarContrasenia" />
+            </div>
+        </div>
+    </div>
+
+    <div class="trainer-section">
+        <h2>Estado</h2>
+
+        <div class="trainer-radio-row">
+            <label>
+                <input type="radio"
+                       name="estadoAdmin"
+                       checked="@AdminActivo"
+                       @onclick="ActivarAdmin" />
+                Activo
+            </label>
+
+            <label>
+                <input type="radio"
+                       name="estadoAdmin"
+                       checked="@(!AdminActivo)"
+                       @onclick="DesactivarAdmin" />
+                Inactivo
+            </label>
+        </div>
+    </div>
+
+    <div class="trainer-actions">
+        <button type="button"
+                class="trainer-save-button"
+                @onclick="RegistrarAdministrador">
+            ✓ Registrar Administrador
+        </button>
+
+        <button type="button"
+                class="trainer-cancel-button"
+                @onclick="LimpiarFormulario">
+            × Cancelar
+        </button>
+
+        <a class="trainer-return-link" href="/admin/administradores">
+            ← Volver al listado
+        </a>
+    </div>
+
+</section>
+
+@code {
+    private string DniValor { get; set; } = "";
+    private string FechaNacimientoValor { get; set; } = "";
+    private string NombresValor { get; set; } = "";
+    private string ApellidoPaternoValor { get; set; } = "";
+    private string ApellidoMaternoValor { get; set; } = "";
+    private string TelefonoValor { get; set; } = "";
+    private string CorreoValor { get; set; } = "";
+
+    private string SedeValor { get; set; } = "";
+    private string CargoValor { get; set; } = "";
+    private string SueldoMensualValor { get; set; } = "";
+
+    private string ContraseniaValor { get; set; } = "";
+    private string ConfirmarContraseniaValor { get; set; } = "";
+    private bool AdminActivo { get; set; } = true;
+
+    private string MensajeFormulario { get; set; } = "";
+    private string ClaseMensajeFormulario { get; set; } = "";
+
+    private void CambiarDni(ChangeEventArgs e) => DniValor = e.Value?.ToString() ?? "";
+    private void CambiarFechaNacimiento(ChangeEventArgs e) => FechaNacimientoValor = e.Value?.ToString() ?? "";
+    private void CambiarNombres(ChangeEventArgs e) => NombresValor = e.Value?.ToString() ?? "";
+    private void CambiarApellidoPaterno(ChangeEventArgs e) => ApellidoPaternoValor = e.Value?.ToString() ?? "";
+    private void CambiarApellidoMaterno(ChangeEventArgs e) => ApellidoMaternoValor = e.Value?.ToString() ?? "";
+    private void CambiarTelefono(ChangeEventArgs e) => TelefonoValor = e.Value?.ToString() ?? "";
+    private void CambiarCorreo(ChangeEventArgs e) => CorreoValor = e.Value?.ToString() ?? "";
+
+    private void CambiarSede(ChangeEventArgs e) => SedeValor = e.Value?.ToString() ?? "";
+    private void CambiarCargo(ChangeEventArgs e) => CargoValor = e.Value?.ToString() ?? "";
+    private void CambiarSueldoMensual(ChangeEventArgs e) => SueldoMensualValor = e.Value?.ToString() ?? "";
+
+    private void CambiarContrasenia(ChangeEventArgs e) => ContraseniaValor = e.Value?.ToString() ?? "";
+    private void CambiarConfirmarContrasenia(ChangeEventArgs e) => ConfirmarContraseniaValor = e.Value?.ToString() ?? "";
+
+    private void ActivarAdmin() => AdminActivo = true;
+    private void DesactivarAdmin() => AdminActivo = false;
+
+    private async Task RegistrarAdministrador()
+    {
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+
+        if (string.IsNullOrWhiteSpace(DniValor)) { MostrarError("El DNI es obligatorio."); return; }
+        if (DniValor.Length != 8 || !int.TryParse(DniValor, out int dniConvertido)) { MostrarError("El DNI debe tener 8 dígitos numéricos."); return; }
+        if (string.IsNullOrWhiteSpace(FechaNacimientoValor)) { MostrarError("La fecha de nacimiento es obligatoria."); return; }
+        if (!DateTime.TryParse(FechaNacimientoValor, out DateTime fechaNacimientoConvertida)) { MostrarError("La fecha de nacimiento no es válida."); return; }
+        if (string.IsNullOrWhiteSpace(NombresValor)) { MostrarError("Los nombres son obligatorios."); return; }
+        if (string.IsNullOrWhiteSpace(ApellidoPaternoValor)) { MostrarError("El apellido paterno es obligatorio."); return; }
+        if (string.IsNullOrWhiteSpace(ApellidoMaternoValor)) { MostrarError("El apellido materno es obligatorio."); return; }
+        if (string.IsNullOrWhiteSpace(TelefonoValor)) { MostrarError("El teléfono es obligatorio."); return; }
+        if (TelefonoValor.Length != 9 || !int.TryParse(TelefonoValor, out int telefonoConvertido)) { MostrarError("El teléfono debe tener 9 dígitos numéricos."); return; }
+        if (string.IsNullOrWhiteSpace(CorreoValor)) { MostrarError("El correo electrónico es obligatorio."); return; }
+        if (!CorreoValor.Contains("@") || !CorreoValor.Contains(".")) { MostrarError("Ingrese un correo electrónico válido."); return; }
+        if (string.IsNullOrWhiteSpace(SedeValor)) { MostrarError("Debe seleccionar una sede."); return; }
+        if (string.IsNullOrWhiteSpace(CargoValor)) { MostrarError("Debe seleccionar un cargo."); return; }
+        if (string.IsNullOrWhiteSpace(SueldoMensualValor)) { MostrarError("El sueldo mensual es obligatorio."); return; }
+        if (!decimal.TryParse(SueldoMensualValor, out decimal sueldoConvertido) || sueldoConvertido <= 0) { MostrarError("El sueldo mensual debe ser mayor a cero."); return; }
+        if (string.IsNullOrWhiteSpace(ContraseniaValor)) { MostrarError("La contraseña es obligatoria."); return; }
+        if (ContraseniaValor.Length < 6) { MostrarError("La contraseña debe tener mínimo 6 caracteres."); return; }
+        if (ContraseniaValor != ConfirmarContraseniaValor) { MostrarError("Las contraseñas no coinciden."); return; }
+
+        var nuevoAdmin = new AdministradorDTO
+        {
+            Dni = dniConvertido,
+            Nombres = NombresValor.Trim(),
+            ApellidoPaterno = ApellidoPaternoValor.Trim(),
+            ApellidoMaterno = ApellidoMaternoValor.Trim(),
+            Edad = CalcularEdad(fechaNacimientoConvertida),
+            Telefono = telefonoConvertido,
+            Email = CorreoValor.Trim(),
+            Contrasenia = ContraseniaValor.Trim(),
+            Rol = "Administrador",
+            Sede = SedeValor,
+            Cargo = CargoValor,
+            Sueldo = (double)sueldoConvertido,
+            Activo = AdminActivo
+        };
+
+        var resultado = await AdministradorService.RegistrarAsync(nuevoAdmin);
+
+        if (!resultado.StartsWith("Error") && !resultado.ToLower().Contains("error"))
+        {
+            MostrarExito("Administrador registrado correctamente.");
+            await Task.Delay(1500);
+            Nav.NavigateTo("/admin/administradores");
+        }
+        else
+        {
+            MostrarError(resultado);
+        }
+    }
+
+    private void MostrarError(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message error";
+    }
+
+    private void MostrarExito(string mensaje)
+    {
+        MensajeFormulario = mensaje;
+        ClaseMensajeFormulario = "trainer-message success";
+    }
+
+    private void LimpiarFormulario()
+    {
+        DniValor = "";
+        FechaNacimientoValor = "";
+        NombresValor = "";
+        ApellidoPaternoValor = "";
+        ApellidoMaternoValor = "";
+        TelefonoValor = "";
+        CorreoValor = "";
+
+        SedeValor = "";
+        CargoValor = "";
+        SueldoMensualValor = "";
+
+        ContraseniaValor = "";
+        ConfirmarContraseniaValor = "";
+        AdminActivo = true;
+
+        MensajeFormulario = "";
+        ClaseMensajeFormulario = "";
+    }
+
+    private static int CalcularEdad(DateTime fechaNacimiento)
+    {
+        var hoy = DateTime.Today;
+        var edad = hoy.Year - fechaNacimiento.Year;
+
+        if (fechaNacimiento.Date > hoy.AddYears(-edad))
+            edad--;
+
+        return edad;
+    }
+}
