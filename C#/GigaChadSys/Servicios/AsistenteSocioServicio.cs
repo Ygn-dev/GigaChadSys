@@ -250,7 +250,7 @@ public class AsistenteSocioServicio
         if (resultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase)) return resultado;
 
         await CargarContextoAsync(true);
-        return $"✅ ¡Listo! Ejecuté la reserva en el sistema correctamente.\nClase: **{sesion.ClaseGrupal?.Nombre}**\nFecha: {sesion.FechaTexto} a las {sesion.HorarioTexto}.";
+        return $"¡Listo! Ejecuté la reserva en el sistema correctamente.\nClase: **{sesion.ClaseGrupal?.Nombre}**\nFecha: {sesion.FechaTexto} a las {sesion.HorarioTexto}.";
     }
 
     private async Task<string> EjecutarCancelacionRealAsync(int idReserva)
@@ -264,7 +264,7 @@ public class AsistenteSocioServicio
         if (resultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase)) return resultado;
 
         await CargarContextoAsync(true);
-        return $"🗑️ Acabo de cancelar oficialmente tu reserva para **{reserva.SesionClase?.ClaseGrupal?.Nombre}** en el sistema.";
+        return $"Acabo de cancelar oficialmente tu reserva para **{reserva.SesionClase?.ClaseGrupal?.Nombre}** en el sistema.";
     }
 
     private string ConstruirContextoParaIA()
