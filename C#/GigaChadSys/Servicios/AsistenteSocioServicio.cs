@@ -564,7 +564,8 @@ public class AsistenteSocioServicio
         bool yaExisteMismaClase = reservas.Any(r =>
             r.Activo &&
             r.IdUsuario == _session.IdUsuario &&
-            r.SesionClase?.ClaseGrupal?.IdClase == sesionSeleccionada.ClaseGrupal?.IdClase &&
+            r.SesionClase != null &&
+            r.SesionClase.ClaseGrupal?.IdClase == sesionSeleccionada.ClaseGrupal?.IdClase &&
             r.SesionClase.FechaHoraFin != default &&
             r.SesionClase.FechaHoraFin >= DateTime.Now);
 
