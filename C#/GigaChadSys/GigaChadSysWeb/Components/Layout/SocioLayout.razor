@@ -3,6 +3,8 @@
 @inject NavigationManager Navigation
 @inject GigaChadSysWeb.AppAdminsToggleService ToggleSvc
 @inject IJSRuntime JS
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage SessionStorage
 @implements IDisposable
 
 <div class="role-shell socio-shell">
@@ -112,6 +114,15 @@
         ToggleSvc.OnAutoClick += HandleAutoClick;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Session.RestaurarDesdeStorageAsync(SessionStorage);
+            StateHasChanged();
+        }
+    }
+
     private async void HandleAutoClick()
     {
         await InvokeAsync(async () =>
@@ -127,8 +138,9 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private void CerrarSesion()
+    private async Task CerrarSesion()
     {
+        await Session.LimpiarStorageAsync(SessionStorage);
         Session.CerrarSesion();
         Navigation.NavigateTo("/login", forceLoad: true);
     }

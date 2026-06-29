@@ -3,11 +3,13 @@
 @using GigaChadSysWeb.Components.Layout
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @layout AuthLayout
 @rendermode InteractiveServer
 @inject AuthServicio AuthService
 @inject SessionServicio Session
 @inject NavigationManager Nav
+@inject ProtectedSessionStorage SessionStorage
 
 <div class="auth-page">
     <!-- Decorative corner lines -->
@@ -148,6 +150,7 @@
             if (resultado.Exito)
             {
                 Session.IniciarSesion(resultado);
+                await Session.GuardarEnStorageAsync(SessionStorage);
 
                 switch (resultado.Rol)
                 {
