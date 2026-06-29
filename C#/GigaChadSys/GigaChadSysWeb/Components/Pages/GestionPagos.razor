@@ -672,6 +672,7 @@
                 dictSuscripciones.TryGetValue(pago.IdPago, out var suscripcion);
 
                 bool esEgreso = EsPagoEgreso(pago);
+                bool esCapitalInicial = EsCapitalInicial(pago);
 
                 string usuarioNombre = "Usuario no asociado";
                 string usuarioDetalle = "-";
@@ -679,7 +680,16 @@
                 string concepto = pago.Tipo ?? "Pago";
                 string rolUsuario = "Usuario";
 
-                if (esEgreso)
+                if (esCapitalInicial)
+                {
+                    usuarioNombre = "GigaChadSys";
+                    usuarioDetalle = "Movimiento administrativo";
+                    iniciales = "GC";
+                    rolUsuario = "Administración";
+                    concepto = pago.Tipo ?? "Capital inicial del gimnasio";
+                    esEgreso = false;
+                }
+                else if (esEgreso)
                 {
                     var entrenador = ObtenerEntrenadorDesdePago(pago, entrenadoresResult);
 
@@ -897,6 +907,18 @@
                tipo.Contains("entrenador");
     }
 
+    private static bool EsCapitalInicial(PagoDTO pago)
+    {
+        if (string.IsNullOrWhiteSpace(pago.Tipo))
+            return false;
+
+        string tipo = NormalizarTexto(pago.Tipo);
+
+        return tipo.Contains("capital inicial") ||
+               tipo.Contains("aporte inicial") ||
+               tipo.Contains("capital del gimnasio");
+    }
+
     private static EntrenadorDTO? ObtenerEntrenadorDesdePago(
         PagoDTO pago,
         List<EntrenadorDTO> entrenadores)
@@ -1030,7 +1052,7 @@
         public string ClaseRol =>
             RolUsuario == "Entrenador"
                 ? "pagos-estado estado-pendiente"
-                : RolUsuario == "Socio"
+                : RolUsuario == "Socio" || RolUsuario == "Administración"
                     ? "pagos-estado estado-pagado"
                     : "pagos-estado";
     }
