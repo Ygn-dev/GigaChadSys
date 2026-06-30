@@ -5,6 +5,9 @@
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
 @inject SocioServicio SocioService
+@inject SuscripcionServicio SuscripcionService
+@inject MembresiaBasicServicio MembresiaBasicService
+@inject MembresiaBlackServicio MembresiaBlackService
 @inject NavigationManager Nav
 @inject ToastService ToastService
 
@@ -343,6 +346,13 @@
     private Dictionary<string, string> errores = new();
     private FormEditarSocio form = new();
 
+    // Suscripción activa del socio (la que alimenta la pantalla "Suscripciones Activas")
+    private SuscripcionDTO? suscripcionActual;
+
+    // IDs de catálogo de los planes Basic/Black (se asume un único registro activo por tipo)
+    private int? idMembresiaBasicCatalogo;
+    private int? idMembresiaBlackCatalogo;
+
     private string NombreCompletoVista
     {
         get
@@ -368,8 +378,45 @@
 
             var socio = await SocioService.ObtenerPorIdAsync(Id);
 
+            // Buscar la suscripción activa más reciente del socio.
+            // No existe un endpoint específico por idUsuario, así que filtramos en cliente.
+            var suscripciones = await SuscripcionService.ListarSuscripcionesAsync();
+            suscripcionActual = suscripciones
+                .Where(s => s.IdUsuario == Id && s.Activo)
+                .OrderByDescending(s => s.FechaIngreso)
+                .FirstOrDefault();
+
+            // Catálogo de planes (asumiendo un único registro activo por tipo)
+            try
+            {
+                var basics = await MembresiaBasicService.ListarMembresiasBasicAsync();
+                idMembresiaBasicCatalogo = basics.FirstOrDefault()?.IdMembresiaBasic;
+            }
+            catch
+            {
+                idMembresiaBasicCatalogo = null;
+            }
+
+            try
+            {
+                var blacks = await MembresiaBlackService.ListarMembresiasBlackAsync();
+                idMembresiaBlackCatalogo = blacks.FirstOrDefault()?.IdMembresiaBlack;
+            }
+            catch
+            {
+                idMembresiaBlackCatalogo = null;
+            }
+
             if (socio != null)
             {
+                string planDesdeSuscripcion = suscripcionActual == null
+                    ? ""
+                    : suscripcionActual.EsBlack
+                        ? "black"
+                        : suscripcionActual.EsBasic
+                            ? "basic"
+                            : "";
+
                 form = new FormEditarSocio
                 {
                     Dni = socio.Dni.ToString(),
@@ -381,9 +428,15 @@
                     Email = socio.Email ?? "",
                     ContraseniaOriginal = socio.Contrasenia ?? "",
                     RolOriginal = string.IsNullOrWhiteSpace(socio.Rol) ? "Socio" : socio.Rol,
-                    PlanSeleccionado = socio.EstadoMembresia ? "basic" : "",
-                    EstadoMembresia = socio.EstadoMembresia ? "Activa" : "Vencida",
-                    EstadoSocio = socio.Activo ? "Activo" : "Inactivo"
+                    EstadoSocio = socio.Activo ? "Activo" : "Inactivo",
+
+                    // Estos tres ya NO se leen del booleano del socio, sino de la suscripción real
+                    PlanSeleccionado = planDesdeSuscripcion,
+                    FechaInicio = suscripcionActual?.FechaIngreso,
+                    FechaVencimiento = suscripcionActual?.FechaFinMembresia,
+                    EstadoMembresia = (suscripcionActual != null && suscripcionActual.EsActiva)
+                        ? "Activa"
+                        : "Vencida"
                 };
             }
         }
@@ -510,18 +563,53 @@
 
             var resultado = await SocioService.ActualizarAsync(Id, dto);
 
-            if (!resultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase) &&
-                !resultado.ToLower().Contains("error"))
-            {
-                ToastService.ShowSuccess("Cambios guardados correctamente.");
-                Nav.NavigateTo("/admin/socios", forceLoad: true);
-            }
-            else
+            bool socioOk = !resultado.StartsWith("Error", StringComparison.OrdinalIgnoreCase) &&
+                           !resultado.ToLower().Contains("error");
+
+            if (!socioOk)
             {
                 errores["dni"] = resultado;
                 ToastService.ShowError(resultado);
                 StateHasChanged();
+                return;
             }
+
+            // Sincronizar la suscripción real (la que alimenta "Suscripciones Activas")
+            if (suscripcionActual != null)
+            {
+                int? idBasicFinal = form.PlanSeleccionado == "basic" ? idMembresiaBasicCatalogo : null;
+                int? idBlackFinal = form.PlanSeleccionado == "black" ? idMembresiaBlackCatalogo : null;
+
+                var dtoSuscripcion = new SuscripcionDTO
+                {
+                    IdSuscripcion = suscripcionActual.IdSuscripcion,
+                    IdUsuario = Id,
+                    IdPago = suscripcionActual.IdPago,
+                    Activo = form.EstadoMembresia != "Vencida" || !string.IsNullOrEmpty(form.PlanSeleccionado),
+                    EstadoMembresia = form.EstadoMembresia == "Activa" ? "true" : "false",
+                    FechaIngreso = form.FechaInicio,
+                    FechaFinMembresia = form.FechaVencimiento,
+                    IdMembresiaBasic = idBasicFinal,
+                    IdMembresiaBlack = idBlackFinal
+                };
+
+                var resultadoSuscripcion = await SuscripcionService.ActualizarAsync(
+                    suscripcionActual.IdSuscripcion,
+                    dtoSuscripcion);
+
+                if (resultadoSuscripcion.ToLower().Contains("error"))
+                {
+                    ToastService.ShowError(resultadoSuscripcion);
+                    StateHasChanged();
+                    return;
+                }
+            }
+            // Nota: si el socio no tiene ninguna suscripción activa (suscripcionActual == null)
+            // y se le asigna un plan desde aquí, actualmente no se crea una nueva suscripción.
+            // Eso debería manejarse desde el flujo de alta de suscripción/pago, no desde Editar Socio.
+
+            ToastService.ShowSuccess("Cambios guardados correctamente.");
+            Nav.NavigateTo("/admin/socios", forceLoad: true);
         }
         finally
         {
