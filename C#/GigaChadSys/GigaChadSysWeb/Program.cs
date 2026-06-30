@@ -12,7 +12,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped(_ => new HttpClient
 {
     BaseAddress = new Uri(
-         "http://localhost:8080/GigaChadSys-REST/webresources/"
+        "http://18.206.151.222:8080/GigaChadSys-REST/webresources/"
     )
 });
 
