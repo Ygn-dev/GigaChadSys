@@ -26,6 +26,7 @@
                 @onclick='() => tabActiva = "activas"'>
             Sesiones Activas (@sesionesActivas.Count)
         </button>
+
         <button class="horario-tab @(tabActiva == "historial" ? "tab-active" : "")"
                 @onclick='() => tabActiva = "historial"'>
             Historial (@sesionesHistorial.Count)
@@ -40,11 +41,15 @@
 
         @foreach (var sesion in listaMostrar)
         {
-            <a href="/entrenador/sesiones/detalle/@sesion.Id" class="horario-sesion-card" style="text-decoration:none; color:inherit; cursor:pointer;">
+            <a href="/entrenador/sesiones/detalle/@sesion.Id"
+               class="horario-sesion-card"
+               style="text-decoration:none; color:inherit; cursor:pointer;">
+
                 <div class="horario-sesion-left">
                     <div class="horario-sesion-icon">
                         <span>📋</span>
                     </div>
+
                     <div class="horario-sesion-info">
                         <strong>@sesion.NombreClase</strong>
                         <span class="horario-sesion-cat">@sesion.Categoria</span>
@@ -56,10 +61,12 @@
                         <span class="meta-label">Fecha</span>
                         <span class="meta-value">@sesion.Fecha.ToString("yyyy-MM-dd")</span>
                     </div>
+
                     <div class="horario-meta-col">
                         <span class="meta-label">Hora</span>
                         <span class="meta-value">@sesion.Hora</span>
                     </div>
+
                     <div class="horario-meta-col">
                         <span class="meta-label">Salón</span>
                         <span class="meta-value">@sesion.Salon</span>
@@ -71,7 +78,10 @@
                     <span class="horario-alumnos">@sesion.Inscritos/@sesion.Capacidad alumnos</span>
                 </div>
 
-                <button class="horario-btn-cancel" title="Cancelar sesión" @onclick="() => CancelarSesion(sesion)" @onclick:preventDefault="true">
+                <button class="horario-btn-cancel"
+                        title="Cancelar sesión"
+                        @onclick="() => CancelarSesion(sesion)"
+                        @onclick:preventDefault="true">
                     ✕
                 </button>
             </a>
@@ -98,7 +108,8 @@
 
     private async Task CargarSesiones()
     {
-        if (!Session.EstaAutenticado) return;
+        if (!Session.EstaAutenticado)
+            return;
 
         var todasSesiones = await SesionClaseService.ListarSesionesAsync();
         var todasReservas = await ReservaService.ListarReservasAsync();
@@ -112,7 +123,7 @@
 
         foreach (var s in misSesiones)
         {
-            int inscritos = todasReservas.Count(r => r.SesionClase?.IdSesion == s.IdSesion);
+            int inscritos = ContarAlumnosUnicosActivosPorSesion(todasReservas, s.IdSesion);
             int capacidad = s.Salon?.AforoMaximo ?? 0;
 
             var vista = new SesionHorario
@@ -137,11 +148,33 @@
                 sesionesActivas.Add(vista);
             }
         }
+
+        sesionesActivas = sesionesActivas
+            .OrderBy(s => s.Fecha)
+            .ThenBy(s => s.Hora)
+            .ToList();
+
+        sesionesHistorial = sesionesHistorial
+            .OrderByDescending(s => s.Fecha)
+            .ThenBy(s => s.Hora)
+            .ToList();
+    }
+
+    private static int ContarAlumnosUnicosActivosPorSesion(IEnumerable<ReservaDTO> reservas, int idSesion)
+    {
+        return reservas
+            .Where(r =>
+                r.Activo &&
+                r.SesionClase?.IdSesion == idSesion &&
+                r.IdUsuario > 0)
+            .GroupBy(r => r.IdUsuario)
+            .Count();
     }
 
     private async Task CancelarSesion(SesionHorario sesion)
     {
         var response = await SesionClaseService.EliminarAsync(sesion.Id);
+
         if (!response.StartsWith("Error"))
         {
             await CargarSesiones();

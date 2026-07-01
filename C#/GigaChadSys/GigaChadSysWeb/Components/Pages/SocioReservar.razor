@@ -251,12 +251,13 @@
 
             int idClase = sesion.ClaseGrupal.IdClase;
 
-            int inscritos = reservas.Count(r =>
-                r.Activo &&
-                r.SesionClase?.IdSesion == sesion.IdSesion);
+            var reservasActivasUnicasSesion = ObtenerReservasActivasUnicasPorSesion(reservas, sesion.IdSesion);
+
+            int inscritos = reservasActivasUnicasSesion.Count;
 
             int capacidad = sesion.Salon?.CapacidadMax ?? 0;
-            int cuposDisponibles = capacidad > 0 ? capacidad - inscritos : sesion.CuposDisponibles;
+            int capacidadReal = capacidad > 0 ? capacidad : sesion.CuposDisponibles;
+            int cuposDisponibles = Math.Max(0, capacidadReal - inscritos);
 
             if (cuposDisponibles <= 0)
                 continue;
@@ -282,7 +283,7 @@
                     ? $"{sesion.Entrenador.Nombres} {sesion.Entrenador.ApellidoPaterno}".Trim()
                     : "Sin asignar",
                 Salon = sesion.Salon?.Nombre ?? "Sin asignar",
-                Capacidad = capacidad > 0 ? capacidad : sesion.CuposDisponibles,
+                Capacidad = capacidadReal,
                 Inscritos = inscritos,
                 Nivel = string.IsNullOrWhiteSpace(sesion.ClaseGrupal.Nivel) ? "Todos" : sesion.ClaseGrupal.Nivel,
                 Duracion = sesion.ClaseGrupal.DuracionMinutos > 0
@@ -294,6 +295,21 @@
         }
 
         Cargando = false;
+    }
+
+    private static List<ReservaDTO> ObtenerReservasActivasUnicasPorSesion(IEnumerable<ReservaDTO> reservas, int idSesion)
+    {
+        return reservas
+            .Where(r =>
+                r.Activo &&
+                r.SesionClase?.IdSesion == idSesion &&
+                r.IdUsuario > 0)
+            .GroupBy(r => r.IdUsuario)
+            .Select(g => g
+                .OrderByDescending(r => r.FechaHoraReserva ?? DateTime.MinValue)
+                .ThenByDescending(r => r.IdReserva)
+                .First())
+            .ToList();
     }
 
     private void CambiarDisciplina(ChangeEventArgs e)

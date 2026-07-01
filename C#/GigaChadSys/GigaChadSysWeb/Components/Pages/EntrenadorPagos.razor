@@ -1,6 +1,8 @@
 @page "/entrenador/pagos"
 @using GigaChadSys.Servicios
 @using GigaChadSys.Servicios.DTO
+@using System.Globalization
+@using System.Text
 @layout EntrenadorLayout
 @rendermode InteractiveServer
 @inject PagoServicio PagoService
@@ -96,7 +98,7 @@
                                 <tr>
                                     <td colspan="6" style="padding:24px; color:rgba(255,255,255,0.65);">
                                         <i class="bi bi-info-circle"></i>
-                                        No se encontraron pagos de sueldo o bono.
+                                        No se encontraron pagos registrados para este entrenador.
                                     </td>
                                 </tr>
                             }
@@ -192,6 +194,8 @@
 
     private string EspecialidadActual { get; set; } = "No especificada";
 
+    private string NombreEntrenadorActual { get; set; } = "";
+
     private decimal totalCobrado =>
         pagos.Where(p => p.Estado == "Pagado").Sum(p => p.Monto);
 
@@ -268,9 +272,23 @@
 
         var entrenador = await EntrenadorService.ObtenerPorIdAsync(Session.IdUsuario);
 
-        if (entrenador != null && !string.IsNullOrWhiteSpace(entrenador.Especialidad))
+        if (entrenador == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(entrenador.Especialidad))
         {
             EspecialidadActual = entrenador.Especialidad;
+        }
+
+        var nombres = ObtenerPropiedadTexto(entrenador, "Nombres", "Nombre");
+        var apellidoPaterno = ObtenerPropiedadTexto(entrenador, "ApellidoPaterno", "ApellidosPaterno");
+        var apellidoMaterno = ObtenerPropiedadTexto(entrenador, "ApellidoMaterno", "ApellidosMaterno");
+
+        NombreEntrenadorActual = $"{nombres} {apellidoPaterno} {apellidoMaterno}".Trim();
+
+        if (string.IsNullOrWhiteSpace(NombreEntrenadorActual))
+        {
+            NombreEntrenadorActual = nombres.Trim();
         }
     }
 
@@ -279,19 +297,22 @@
         var todosPagos = await PagoService.ListarPagosAsync();
         var listaMetodos = await MetodoPagoService.ListarMetodosDePagoAsync();
 
+        var tokensEntrenador = ObtenerTokensEntrenador();
+
+        pagos.Clear();
+
+        if (tokensEntrenador.Count == 0)
+            return;
+
         var pagosSueldo = todosPagos
             .Where(p =>
                 !string.IsNullOrWhiteSpace(p.Tipo) &&
-                (
-                    p.Tipo.ToLower().Contains("sueldo") ||
-                    p.Tipo.ToLower().Contains("bono")
-                )
+                EsPagoDeEntrenador(p.Tipo) &&
+                PerteneceAlEntrenadorActual(p.Tipo, tokensEntrenador)
             )
             .OrderByDescending(p => p.FechaPago ?? DateTime.MinValue)
             .ThenByDescending(p => p.IdPago)
             .ToList();
-
-        pagos.Clear();
 
         foreach (var p in pagosSueldo)
         {
@@ -308,6 +329,74 @@
                 Estado = p.Activo ? "Pagado" : "Pendiente"
             });
         }
+    }
+
+    private List<string> ObtenerTokensEntrenador()
+    {
+        return NormalizarTexto(NombreEntrenadorActual)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(token => token.Length >= 3)
+            .Distinct()
+            .ToList();
+    }
+
+    private static bool EsPagoDeEntrenador(string tipo)
+    {
+        var texto = NormalizarTexto(tipo);
+
+        return texto.Contains("sueldo") ||
+               texto.Contains("bono");
+    }
+
+    private static bool PerteneceAlEntrenadorActual(string tipo, List<string> tokensEntrenador)
+    {
+        var concepto = NormalizarTexto(tipo);
+
+        return tokensEntrenador.Any(token => concepto.Contains(token));
+    }
+
+    private static string ObtenerPropiedadTexto(object objeto, params string[] nombresPropiedad)
+    {
+        foreach (var nombrePropiedad in nombresPropiedad)
+        {
+            var propiedad = objeto.GetType().GetProperty(nombrePropiedad);
+
+            if (propiedad == null)
+                continue;
+
+            var valor = propiedad.GetValue(objeto);
+
+            if (valor == null)
+                continue;
+
+            var texto = valor.ToString();
+
+            if (!string.IsNullOrWhiteSpace(texto))
+                return texto.Trim();
+        }
+
+        return "";
+    }
+
+    private static string NormalizarTexto(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+            return "";
+
+        var textoNormalizado = texto.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder();
+
+        foreach (var caracter in textoNormalizado)
+        {
+            var categoria = CharUnicodeInfo.GetUnicodeCategory(caracter);
+
+            if (categoria != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(caracter);
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
     }
 
     private string ObtenerIconoTipo(string? tipo)
