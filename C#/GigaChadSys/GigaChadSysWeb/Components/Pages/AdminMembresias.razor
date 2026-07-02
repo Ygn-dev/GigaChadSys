@@ -10,11 +10,12 @@
 <section class="membership-page">
 
     <div class="membership-header">
-        <div>
+        <div class="membership-header-text">
             <h1>Planes de Membresía</h1>
             <p>Gestiona los planes disponibles para los socios.</p>
         </div>
-        <a class="new-button" href="/admin/membresias/nueva">
+
+        <a class="new-button membership-new-button" href="/admin/membresias/nueva">
             + Nuevo Plan
         </a>
     </div>
@@ -156,7 +157,9 @@
 
     private string GetNombre(string? nombre, string tipo)
     {
-        if (string.IsNullOrWhiteSpace(nombre)) return $"Membresía {tipo}";
+        if (string.IsNullOrWhiteSpace(nombre))
+            return $"Membresía {tipo}";
+
         return nombre.Contains("Membresía", StringComparison.OrdinalIgnoreCase)
             ? nombre
             : $"Membresía {nombre}";

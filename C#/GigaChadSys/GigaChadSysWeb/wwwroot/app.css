@@ -13634,3 +13634,27 @@ h1:focus {
         outline: none !important;
         box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.25) !important;
     }
+/* FIX: botón Nuevo Plan en pantalla de membresías */
+.membership-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.membership-header-text {
+    flex: 1;
+    min-width: 260px;
+}
+
+.membership-new-button {
+    margin-left: auto;
+    align-self: flex-start;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
